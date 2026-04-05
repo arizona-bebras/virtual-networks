@@ -3,10 +3,7 @@
 	import * as Form from '$lib/components/ui/form/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { formSchema } from './schema';
-	import SuperDebug, {
-		superForm,
-		defaults
-	} from 'sveltekit-superforms';
+	import SuperDebug, { superForm, defaults } from 'sveltekit-superforms';
 	import { zod4 } from 'sveltekit-superforms/adapters';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
 
