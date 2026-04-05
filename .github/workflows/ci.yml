@@ -6,6 +6,10 @@ on:
       - main
   pull_request:
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   changes:
     name: Detect Changes
@@ -220,3 +224,4 @@ jobs:
           fi
 
           go build ./...
+
