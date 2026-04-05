@@ -73,9 +73,6 @@ func (r *routerRuntime) close() {
 	if r.backend != nil && r.backend.device != nil {
 		r.backend.device.Close()
 	}
-	if r.backend != nil && r.backend.tun != nil {
-		_ = r.backend.tun.Close()
-	}
 	if r.frontend != nil {
 		_ = r.frontend.Close()
 	}
