@@ -172,6 +172,7 @@ jobs:
 
           (
             cd frontend
+            pnpm exec svelte-kit sync
             pnpm exec svelte-check --tsconfig ./tsconfig.json --output machine
           ) >"$output_file" 2>&1 || status=$?
 
@@ -331,3 +332,5 @@ jobs:
         working-directory: router
         shell: bash
         run: go build ./...
+
+
