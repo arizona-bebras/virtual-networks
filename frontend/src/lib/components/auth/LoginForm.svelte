@@ -4,8 +4,6 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { formSchema } from './schema';
 	import SuperDebug, {
-		type SuperValidated,
-		type Infer,
 		superForm,
 		defaults
 	} from 'sveltekit-superforms';

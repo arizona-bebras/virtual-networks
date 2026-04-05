@@ -2,7 +2,7 @@
 	import ClientNode from '$lib/components/ClientNode.svelte';
 	import SwitchNode from '$lib/components/SwitchNode.svelte';
 	import DevicesMenu from '$lib/components/DevicesMenu.svelte';
-	import { SvelteFlow, Background, type Connection, type Edge, addEdge } from '@xyflow/svelte';
+	import { SvelteFlow, Background, type Connection, type Edge } from '@xyflow/svelte';
 	import '@xyflow/svelte/dist/style.css';
 	import EdgeInfo from '$lib/components/EdgeInfo.svelte';
 

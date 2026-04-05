@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Handle, Position, useSvelteFlow, type NodeProps } from '@xyflow/svelte';
+	import { Handle, Position, type NodeProps } from '@xyflow/svelte';
 
 	let { data }: NodeProps = $props();
 </script>
