@@ -1,0 +1,4 @@
+router.exe
+*.exe
+*.test
+*.out
