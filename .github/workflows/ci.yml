@@ -202,26 +202,9 @@ jobs:
       - name: Lint router Go module
         working-directory: router
         shell: bash
-        run: |
-          packages="$(go list ./... 2>/dev/null || true)"
-
-          if [ -z "$packages" ]; then
-            echo "No Go packages found in router; skipping go vet."
-            exit 0
-          fi
-
-          go vet ./...
+        run: go vet ./...
 
       - name: Build router Go module
         working-directory: router
         shell: bash
-        run: |
-          packages="$(go list ./... 2>/dev/null || true)"
-
-          if [ -z "$packages" ]; then
-            echo "No Go packages found in router; skipping go build."
-            exit 0
-          fi
-
-          go build ./...
-
+        run: go build ./...
