@@ -17,6 +17,7 @@
 		onSubmit: async () => {
 			console.log('Form submitted with data:', $formData);
 			sessionStorage.setItem('isAuthenticated', 'true');
+			document.cookie = "isAuthenticated=true; path=/";
 			goto('/dashboard');
 		},
 		validators: zod4Client(formSchema)
