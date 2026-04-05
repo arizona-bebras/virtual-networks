@@ -77,10 +77,34 @@ jobs:
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Lint backend
+        id: backend_lint
+        continue-on-error: true
         run: pnpm --filter backend exec eslint "{src,apps,libs,test}/**/*.ts"
 
       - name: Build backend
+        id: backend_build
+        continue-on-error: true
         run: pnpm --filter backend build
+
+      - name: Fail if backend checks failed
+        if: always()
+        env:
+          BACKEND_LINT_OUTCOME: ${{ steps.backend_lint.outcome }}
+          BACKEND_BUILD_OUTCOME: ${{ steps.backend_build.outcome }}
+        run: |
+          failed=0
+
+          if [ "$BACKEND_LINT_OUTCOME" != "success" ]; then
+            echo "Backend lint failed."
+            failed=1
+          fi
+
+          if [ "$BACKEND_BUILD_OUTCOME" != "success" ]; then
+            echo "Backend build failed."
+            failed=1
+          fi
+
+          exit "$failed"
 
   frontend:
     name: Frontend
@@ -107,14 +131,57 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
+      - name: Check frontend formatting
+        id: frontend_prettier
+        continue-on-error: true
+        run: pnpm --filter frontend exec prettier --check .
+
       - name: Lint frontend
-        run: pnpm --filter frontend lint
+        id: frontend_eslint
+        continue-on-error: true
+        run: pnpm --filter frontend exec eslint .
 
       - name: Type-check frontend
+        id: frontend_check
+        continue-on-error: true
         run: pnpm --filter frontend check
 
       - name: Build frontend
+        id: frontend_build
+        continue-on-error: true
         run: pnpm --filter frontend build
+
+      - name: Fail if frontend checks failed
+        if: always()
+        env:
+          FRONTEND_PRETTIER_OUTCOME: ${{ steps.frontend_prettier.outcome }}
+          FRONTEND_ESLINT_OUTCOME: ${{ steps.frontend_eslint.outcome }}
+          FRONTEND_CHECK_OUTCOME: ${{ steps.frontend_check.outcome }}
+          FRONTEND_BUILD_OUTCOME: ${{ steps.frontend_build.outcome }}
+        run: |
+          failed=0
+
+          if [ "$FRONTEND_PRETTIER_OUTCOME" != "success" ]; then
+            echo "Frontend prettier check failed."
+            failed=1
+          fi
+
+          if [ "$FRONTEND_ESLINT_OUTCOME" != "success" ]; then
+            echo "Frontend eslint failed."
+            failed=1
+          fi
+
+          if [ "$FRONTEND_CHECK_OUTCOME" != "success" ]; then
+            echo "Frontend type-check failed."
+            failed=1
+          fi
+
+          if [ "$FRONTEND_BUILD_OUTCOME" != "success" ]; then
+            echo "Frontend build failed."
+            failed=1
+          fi
+
+          exit "$failed"
 
   proto:
     name: Proto Validation
@@ -202,9 +269,37 @@ jobs:
       - name: Lint router Go module
         working-directory: router
         shell: bash
-        run: go vet ./...
+        run: |
+          list_output="$(go list ./... 2>&1)"
+          list_status=$?
+
+          if [ "$list_status" -ne 0 ]; then
+            printf '%s\n' "$list_output"
+            exit "$list_status"
+          fi
+
+          if printf '%s\n' "$list_output" | grep -q 'matched no packages'; then
+            echo "No Go packages found in router; skipping go vet."
+            exit 0
+          fi
+
+          go vet ./...
 
       - name: Build router Go module
         working-directory: router
         shell: bash
-        run: go build ./...
+        run: |
+          list_output="$(go list ./... 2>&1)"
+          list_status=$?
+
+          if [ "$list_status" -ne 0 ]; then
+            printf '%s\n' "$list_output"
+            exit "$list_status"
+          fi
+
+          if printf '%s\n' "$list_output" | grep -q 'matched no packages'; then
+            echo "No Go packages found in router; skipping go build."
+            exit 0
+          fi
+
+          go build ./...
