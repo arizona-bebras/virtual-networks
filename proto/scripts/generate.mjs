@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 import { existsSync, mkdirSync, rmSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-const scriptDir = new URL('.', import.meta.url).pathname;
+const scriptDir = dirname(fileURLToPath(import.meta.url));
 const protoDir = resolve(scriptDir, '..');
-const repoDir = resolve(protoDir, '..');
 const tsOutDir = resolve(protoDir, 'gen', 'ts');
 const goOutDir = resolve(protoDir, 'gen', 'go');
 
@@ -59,7 +59,7 @@ const generateTs = () => {
     '-o',
     resolve(tsOutDir, 'helloworld.js'),
     resolve(protoDir, 'helloworld.proto'),
-  ]);
+  ], { cwd: protoDir });
 
   run('pnpm', [
     'exec',
@@ -67,7 +67,7 @@ const generateTs = () => {
     '-o',
     resolve(tsOutDir, 'helloworld.d.ts'),
     resolve(tsOutDir, 'helloworld.js'),
-  ]);
+  ], { cwd: protoDir });
 };
 
 const generateGo = () => {
@@ -82,6 +82,7 @@ const generateGo = () => {
   const gopathResult = spawnSync('go', ['env', 'GOPATH'], {
     encoding: 'utf8',
     shell: process.platform === 'win32',
+    cwd: protoDir,
   });
 
   if (gopathResult.status !== 0) {
@@ -105,7 +106,7 @@ const generateGo = () => {
       `-I${protoDir}`,
       resolve(protoDir, 'helloworld.proto'),
     ],
-    { env },
+    { cwd: protoDir, env },
   );
 };
 

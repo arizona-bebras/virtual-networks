@@ -18,7 +18,7 @@ pnpm --filter proto clean
 
 ## Automation behavior (important)
 
-- **pnpm**: not automatic by default unless you wire scripts. This package now has a `prepare` script (`generate`) so installs/build flows that run package lifecycle scripts will regenerate both TS and Go outputs.
+- **pnpm**: this package has a `prepare` script that regenerates the TypeScript output during installs/build flows that run package lifecycle scripts.
 - **go**: `go build` / `go test` do **not** run protobuf generation automatically. You must run generation explicitly (e.g. `pnpm --filter proto generate:go`) before building Go consumers.
 
 ## Consumption
