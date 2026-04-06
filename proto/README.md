@@ -20,6 +20,7 @@ pnpm --filter proto clean
 
 - **pnpm**: this package has a `prepare` script that regenerates the TypeScript output during installs/build flows that run package lifecycle scripts.
 - **go**: `go build` / `go test` do **not** run protobuf generation automatically. You must run generation explicitly (e.g. `pnpm --filter proto generate:go`) before building Go consumers.
+- **protoc version**: CI pins `protoc` to `25.2` so local Go regeneration should use the same release to avoid generated-file diffs such as the stamped `protoc` version line.
 
 ## Consumption
 
