@@ -1,4 +1,12 @@
 <script lang="ts">
 </script>
 
-<a href="/dashboard">dashboard</a>
+<div class="flex flex-col">
+	<a href="/dashboard">dashboard</a>
+	{#if !localStorage.getItem('token')}
+		<a href="/auth/register">Регистрация</a>
+		<a href="/auth/login">Войти</a>
+	{:else}
+		<p>Вы уже в системе</p>
+	{/if}
+</div>
