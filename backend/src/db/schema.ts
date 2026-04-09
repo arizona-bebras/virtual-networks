@@ -1,14 +1,22 @@
-import { integer, pgTable, varchar, text, jsonb, uuid, primaryKey } from 'drizzle-orm/pg-core';
+import { 
+  integer, 
+  pgTable, 
+  varchar, 
+  text, 
+  jsonb, 
+  uuid, 
+  primaryKey, 
+} from 'drizzle-orm/pg-core';
 import { defineRelations } from 'drizzle-orm';
 
 export const users = pgTable('users', {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).unique().notNull(),
   email: varchar({ length: 255 }).notNull().unique(),
 });
 
 export const networks = pgTable('networks', {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
   description: varchar({ length: 255 }).notNull(),
   ip: varchar({ length: 15 }).notNull(),
@@ -18,7 +26,7 @@ export const networks = pgTable('networks', {
 });
 
 export const devices = pgTable('devices', {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
   ip: varchar({ length: 17 }).notNull().unique(),
   config: text().notNull(),
@@ -26,7 +34,7 @@ export const devices = pgTable('devices', {
 });
 
 export const tags = pgTable('tags', {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull().unique(),
   rules: jsonb(),
   network_id: uuid().notNull().references(() => networks.id),
