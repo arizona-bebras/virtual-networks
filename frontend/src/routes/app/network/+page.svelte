@@ -5,12 +5,13 @@
 	import { SvelteFlow, Background, type Connection, type Edge } from '@xyflow/svelte';
 	import '@xyflow/svelte/dist/style.css';
 	import EdgeInfo from '$lib/components/EdgeInfo.svelte';
+	import type { EdgeData } from '$lib/components/edgesTypes';
 
 	let deviceMenuOpen = $state(false);
 	let isEdgeInfoOpen = $state(false);
-	let edgeData = $state<null | { edge: Edge; event: MouseEvent }>(null);
+	let edgeData = $state<null | { edge: Edge<EdgeData>; event: MouseEvent }>(null);
 	let nodes = $state.raw([]);
-	let edges = $state.raw([]);
+	let edges: Edge<EdgeData>[] = $state.raw([]);
 
 	let nodeTypes = { clientNode: ClientNode, switchNode: SwitchNode };
 
@@ -45,25 +46,48 @@
 		{nodeTypes}
 		class="h-full w-full"
 		{isValidConnection}
-		onedgeclick={(evt) => {
+		onedgeclick={(evt: { edge: Edge<EdgeData>; event: MouseEvent }) => {
 			isEdgeInfoOpen = true;
 			edgeData = evt;
 		}}
-		onconnect={(evt) => {
-			const connectionType = getConnectionType(evt);
-			const newEdge = {
-				source: evt.source,
-				target: evt.target,
-				id: `edge-${edges.length + 1}`,
-				connectionType: connectionType
+		// onconnect={(evt) => {
+		// 	const connectionType = getConnectionType(evt);
+		// 	const newEdge: Edge<EdgeData> = {
+		// 		source: evt.source,
+		// 		target: evt.target,
+		// 		id: `edge-${edges.length + 1}`
+		// 	};
+
+		// 	if (connectionType === 'client-switch') {
+		// 		newEdge.data = {
+		// 			connectionType: connectionType,
+		// 			speed: Math.floor(Math.random() * 10) + 1
+		// 		};
+		// 	}
+		// 	if (connectionType === 'switch-server') {
+		// 		newEdge.data = { connectionType: connectionType, status: 'ОК' };
+		// 	}
+		// 	// Создаются дубли, надо бы исправить
+		// 	edges = [...edges, newEdge];
+		// 	console.log('Подключение изменено', edges);
+		// }}
+		onbeforeconnect={(connection: Connection) => {
+			const connectionType = getConnectionType(connection);
+			const newEdge: Edge<EdgeData> = {
+				source: connection.source,
+				target: connection.target,
+				id: `edge-${edges.length + 1}`
 			};
+
 			if (connectionType === 'client-switch') {
-				newEdge.data = { speed: Math.floor(Math.random() * 10) + 1 };
+				newEdge.data = {
+					connectionType: connectionType,
+					speed: Math.floor(Math.random() * 10) + 1
+				};
 			}
 			if (connectionType === 'switch-server') {
-				newEdge.data = { status: 'ОК' };
+				newEdge.data = { connectionType: connectionType, status: 'ОК' };
 			}
-			// Создаются дубли, надо бы исправить
 			edges = [...edges, newEdge];
 			console.log('Подключение изменено', edges);
 		}}
@@ -72,5 +96,5 @@
 	</SvelteFlow>
 
 	<DevicesMenu bind:open={deviceMenuOpen} bind:nodes />
-	<EdgeInfo bind:open={isEdgeInfoOpen} edgeData={edgeData as { edge: Edge; event: MouseEvent }} />
+	<EdgeInfo bind:open={isEdgeInfoOpen} edgeData={edgeData!} />
 </div>

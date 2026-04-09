@@ -1,6 +1,5 @@
 <script lang="ts">
   import { LineChart, Points } from "layerchart";
-  import TrendingUpIcon from "@lucide/svelte/icons/trending-up";
   import GitCommitVerticalIcon from "@lucide/svelte/icons/git-commit-vertical";
   import { scaleUtc } from "d3-scale";
   import { curveNatural } from "d3-shape";

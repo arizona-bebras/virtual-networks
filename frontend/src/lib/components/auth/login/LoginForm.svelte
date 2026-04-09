@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import * as Form from '$lib/components/ui/form/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import { createMutation, createQueries } from '@tanstack/svelte-query';
+	import { createMutation } from '@tanstack/svelte-query';
 	import { formSchema } from '../login/schema';
 	import SuperDebug, { superForm, defaults } from 'sveltekit-superforms';
 	import { zod4 } from 'sveltekit-superforms/adapters';

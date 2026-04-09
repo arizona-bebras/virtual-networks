@@ -1,13 +1,10 @@
+export type EdgeData = ClientToSwitchData | SwitchToServerData;
 export type ClientToSwitchData = {
 	connectionType: 'client-switch';
-	data: {
-		speed: number;
-	};
+	speed: number;
 };
 
 export type SwitchToServerData = {
 	connectionType: 'switch-server';
-	data: {
-		status: string;
-	};
+	status: string;
 };
