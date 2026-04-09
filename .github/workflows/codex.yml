@@ -113,7 +113,6 @@ jobs:
                       "title",
                       "body",
                       "confidence_score",
-                      "priority",
                       "code_location"
                     ],
                     "additionalProperties": false
