@@ -1,21 +1,21 @@
-import { defineRelations } from "drizzle-orm";
-import {
-  integer,
-  jsonb,
-  pgTable,
-  primaryKey,
-  text,
-  uuid,
-  varchar,
-} from "drizzle-orm/pg-core";
+import { 
+  integer, 
+  pgTable, 
+  varchar, 
+  text, 
+  jsonb, 
+  uuid, 
+  primaryKey, 
+} from 'drizzle-orm/pg-core';
+import { defineRelations } from 'drizzle-orm';
 
-export const users = pgTable("users", {
+export const users = pgTable('users', {
   id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).unique().notNull(),
   email: varchar({ length: 255 }).notNull().unique(),
 });
 
-export const networks = pgTable("networks", {
+export const networks = pgTable('networks', {
   id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
   description: varchar({ length: 255 }).notNull(),
@@ -27,7 +27,7 @@ export const networks = pgTable("networks", {
     .references(() => users.id),
 });
 
-export const devices = pgTable("devices", {
+export const devices = pgTable('devices', {
   id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
   ip: varchar({ length: 17 }).notNull().unique(),
@@ -37,7 +37,7 @@ export const devices = pgTable("devices", {
     .references(() => networks.id),
 });
 
-export const tags = pgTable("tags", {
+export const tags = pgTable('tags', {
   id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull().unique(),
   rules: jsonb(),
