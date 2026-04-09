@@ -1,4 +1,4 @@
-import { 
+import {
   integer,
   pgTable,
   varchar,
@@ -47,7 +47,7 @@ export const tags = pgTable('tags', {
 });
 
 export const devicesTags = pgTable(
-  "devices_tags",
+  'devices_tags',
   {
     device_id: uuid()
       .notNull()
