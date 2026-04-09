@@ -6,6 +6,6 @@ import { TagsService } from './tags/tags.service';
 
 @Module({
   controllers: [NetworksController],
-  providers: [NetworksService, DevicesService, TagsService]
+  providers: [NetworksService, DevicesService, TagsService],
 })
 export class NetworksModule {}
