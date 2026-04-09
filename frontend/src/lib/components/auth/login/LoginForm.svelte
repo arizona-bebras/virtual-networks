@@ -15,7 +15,7 @@
 			if (request) {
 				const { token } = request;
 				localStorage.setItem('token', token);
-				goto('/dashboard');
+				goto('/app');
 			}
 		},
 		validators: zod4Client(formSchema)

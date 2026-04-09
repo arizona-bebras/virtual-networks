@@ -13,7 +13,7 @@
 		},
 		{
 			title: 'Панель управления',
-			url: 'control-panel'
+			url: 'dashboard'
 		}
 		//   {
 		//    title: "Search",
@@ -36,7 +36,7 @@
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton>
 								{#snippet child({ props })}
-									<a href={`/dashboard/${item.url}`} {...props}>
+									<a href={`/app/${item.url}`} {...props}>
 										<span>{item.title}</span>
 									</a>
 								{/snippet}

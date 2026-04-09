@@ -9,7 +9,7 @@
 <Sidebar.Provider>
 	<AppSidebar />
 	<main class="relative w-screen">
-		<Sidebar.Trigger class="absolute z-1  bg-green-500" />
+		<Sidebar.Trigger class=" bg-green-500" />
 		{@render children?.()}
 		<button class="bg-red-400 text-white p-1 rounded right-1 top-1 absolute" onclick={() => {
 			localStorage.removeItem('token');
