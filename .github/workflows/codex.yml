@@ -20,6 +20,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      issues: write
     env:
       GITHUB_TOKEN: ${{ github.token }}
       CODEX_MODEL: ${{ vars.CODEX_MODEL || 'gpt-5.3-codex' }}
