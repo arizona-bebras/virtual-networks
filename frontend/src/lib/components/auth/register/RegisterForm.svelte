@@ -7,6 +7,7 @@
 	import { zod4 } from 'sveltekit-superforms/adapters';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
 	import { createMutation } from '@tanstack/svelte-query';
+	import { LoaderCircle } from '@lucide/svelte';
 
 	const form = superForm(defaults(zod4(formSchema)), {
 		SPA: true,
@@ -18,10 +19,16 @@
 				goto('/app');
 			}
 		},
+		onChange: async () => {
+			let form = await validateForm();
+			isFormValid = form.valid;
+		},
 		validators: zod4Client(formSchema)
 	});
 
-	const { form: formData, enhance } = form;
+	const { form: formData, enhance, validateForm } = form;
+
+	let isFormValid = $state(false);
 
 	const registerQuery = createMutation(() => ({
 		mutationKey: ['register'],
@@ -67,7 +74,15 @@
 			<!-- <Form.Description>This is your public display name.</Form.Description> -->
 			<Form.FieldErrors />
 		</Form.Field>
-		<Form.Button>Войти</Form.Button>
+		<div class="flex items-center gap-1">
+			<Form.Button disabled={!isFormValid || registerQuery.isPending}>Войти</Form.Button>
+			{#if registerQuery.isPending}
+				<LoaderCircle class="animate-spin" />
+			{/if}
+		</div>
+		{#if registerQuery.isError}
+			<p class="text-red-500">Ошибка регистрации: {registerQuery.error.message}</p>
+		{/if}
 	</form>
 </div>
 
