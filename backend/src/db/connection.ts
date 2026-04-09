@@ -9,6 +9,6 @@ const password = process.env.POSTGRES_PASSWORD ?? '';
 const database = process.env.POSTGRES_DB ?? 'postgres';
 
 export const db = drizzle(
-    `postgresql://${user}:${password}@${host}:${port}/${database}`,
-    { relations }
+  `postgresql://${user}:${password}@${host}:${port}/${database}`,
+  { relations }
 );

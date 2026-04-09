@@ -1,11 +1,11 @@
 import { 
-  integer, 
-  pgTable, 
-  varchar, 
-  text, 
-  jsonb, 
-  uuid, 
-  primaryKey, 
+  integer,
+  pgTable,
+  varchar,
+  text,
+  jsonb,
+  uuid,
+  primaryKey,
 } from 'drizzle-orm/pg-core';
 import { defineRelations } from 'drizzle-orm';
 
