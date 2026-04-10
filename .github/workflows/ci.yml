@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
 
 jobs:
   changes:
@@ -61,7 +60,6 @@ jobs:
     permissions:
       contents: read
       checks: write
-      issues: write
       pull-requests: write
 
     steps:
@@ -83,33 +81,23 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Check backend with Biome
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
+
+      - name: Comment backend Biome issues
         id: backend_lint
         continue-on-error: true
-        uses: mongolyy/reviewdog-action-biome@v2.11.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workdir: backend
-          tool_name: biome-backend
-          reporter: ${{ github.event_name == 'pull_request' && 'github-pr-check' || 'github-check' }}
-          filter_mode: file
-          fail_level: any
-          biome_flags: check backend
+        shell: bash
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          reporter="github-check"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            reporter="github-pr-review"
+          fi
 
-      - name: Generate backend Biome suggestions
-        if: github.event_name == 'pull_request'
-        continue-on-error: true
-        run: pnpm --filter backend exec biome check --write .
-
-      - name: Comment backend Biome suggestions
-        if: github.event_name == 'pull_request'
-        continue-on-error: true
-        uses: reviewdog/action-suggester@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tool_name: biome-backend-suggestions
-          filter_mode: diff_context
-          fail_level: none
+          pnpm --filter backend exec biome check --reporter=rdjson . \
+            | reviewdog -f=rdjson -name="biome-backend" -reporter="$reporter" -filter-mode=diff_context -fail-level=any
 
       - name: Build backend
         id: backend_build
@@ -144,7 +132,6 @@ jobs:
     permissions:
       contents: read
       checks: write
-      issues: write
       pull-requests: write
 
     steps:
@@ -166,33 +153,23 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Check frontend with Biome
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
+
+      - name: Comment frontend Biome issues
         id: frontend_lint
         continue-on-error: true
-        uses: mongolyy/reviewdog-action-biome@v2.11.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workdir: frontend
-          tool_name: biome-frontend
-          reporter: ${{ github.event_name == 'pull_request' && 'github-pr-check' || 'github-check' }}
-          filter_mode: file
-          fail_level: any
-          biome_flags: check frontend
+        shell: bash
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          reporter="github-check"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            reporter="github-pr-review"
+          fi
 
-      - name: Generate frontend Biome suggestions
-        if: github.event_name == 'pull_request'
-        continue-on-error: true
-        run: pnpm --filter frontend exec biome check --write .
-
-      - name: Comment frontend Biome suggestions
-        if: github.event_name == 'pull_request'
-        continue-on-error: true
-        uses: reviewdog/action-suggester@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tool_name: biome-frontend-suggestions
-          filter_mode: diff_context
-          fail_level: none
+          pnpm --filter frontend exec biome check --reporter=rdjson . \
+            | reviewdog -f=rdjson -name="biome-frontend" -reporter="$reporter" -filter-mode=diff_context -fail-level=any
 
       - name: Type-check frontend
         id: frontend_check
