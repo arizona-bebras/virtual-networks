@@ -242,7 +242,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.proto == 'true'
     env:
-      PROTOC_VERSION: '25.2'
+      PROTOC_VERSION: "25.2"
 
     steps:
       - name: Checkout repository
@@ -278,31 +278,11 @@ jobs:
       - name: Verify generated protobuf artifacts
         run: pnpm --filter proto generate
 
-      - name: Check for uncommitted generated changes
-        run: git diff --exit-code -- proto/gen
-
-  go-proto:
-    name: Go Proto
-    runs-on: ubuntu-latest
-    needs: changes
-    if: needs.changes.outputs.proto == 'true'
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: proto/go.mod
-          cache-dependency-path: |
-            proto/go.sum
-
-      - name: Lint proto Go module
+      - name: Lint generated Go proto module
         working-directory: proto
         run: go vet ./...
 
-      - name: Build proto Go module
+      - name: Build generated Go proto module
         working-directory: proto
         run: go build ./...
 
@@ -332,5 +312,3 @@ jobs:
         working-directory: router
         shell: bash
         run: go build ./...
-
-

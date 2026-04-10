@@ -1,6 +1,9 @@
 onlyBuiltDependencies:
   - esbuild
 packages:
-  - 'backend'
-  - 'frontend'
-  - 'proto'
+  - "backend"
+  - "frontend"
+  - "proto"
+gitBranchLockfile: true
+mergeGitBranchLockfilesBranchPattern:
+  - main
