@@ -97,8 +97,20 @@ jobs:
             reporter="github-pr-review"
           fi
 
-          pnpm --filter backend exec biome check --reporter=checkstyle . \
-            | reviewdog -f=checkstyle -name="biome-backend" -reporter="$reporter" -filter-mode=diff_context -fail-level=any
+          output_file="$(mktemp)"
+          biome_status=0
+
+          pnpm --filter backend exec biome check --reporter=checkstyle . >"$output_file" || biome_status=$?
+
+          reviewdog -f=checkstyle -name="biome-backend" -reporter="$reporter" -filter-mode=diff_context -fail-level=any <"$output_file"
+          reviewdog_status=$?
+
+          if [ "$biome_status" -gt 1 ]; then
+            cat "$output_file"
+            exit "$biome_status"
+          fi
+
+          exit "$reviewdog_status"
 
       - name: Build backend
         id: backend_build
@@ -169,8 +181,20 @@ jobs:
             reporter="github-pr-review"
           fi
 
-          pnpm --filter frontend exec biome check --reporter=checkstyle . \
-            | reviewdog -f=checkstyle -name="biome-frontend" -reporter="$reporter" -filter-mode=diff_context -fail-level=any
+          output_file="$(mktemp)"
+          biome_status=0
+
+          pnpm --filter frontend exec biome check --reporter=checkstyle . >"$output_file" || biome_status=$?
+
+          reviewdog -f=checkstyle -name="biome-frontend" -reporter="$reporter" -filter-mode=diff_context -fail-level=any <"$output_file"
+          reviewdog_status=$?
+
+          if [ "$biome_status" -gt 1 ]; then
+            cat "$output_file"
+            exit "$biome_status"
+          fi
+
+          exit "$reviewdog_status"
 
       - name: Type-check frontend
         id: frontend_check
