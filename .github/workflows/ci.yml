@@ -100,9 +100,9 @@ jobs:
           output_file="$(mktemp)"
           biome_status=0
 
-          pnpm --filter backend exec biome check --reporter=checkstyle . >"$output_file" || biome_status=$?
+          ./backend/node_modules/.bin/biome check --reporter=checkstyle backend >"$output_file" || biome_status=$?
 
-          reviewdog -f=checkstyle -name="biome-backend" -reporter="$reporter" -filter-mode=diff_context -fail-level=any <"$output_file"
+          reviewdog -f=checkstyle -name="biome-backend" -reporter="$reporter" -filter-mode=file -fail-level=any <"$output_file"
           reviewdog_status=$?
 
           if [ "$biome_status" -gt 1 ]; then
@@ -184,9 +184,9 @@ jobs:
           output_file="$(mktemp)"
           biome_status=0
 
-          pnpm --filter frontend exec biome check --reporter=checkstyle . >"$output_file" || biome_status=$?
+          ./frontend/node_modules/.bin/biome check --reporter=checkstyle frontend >"$output_file" || biome_status=$?
 
-          reviewdog -f=checkstyle -name="biome-frontend" -reporter="$reporter" -filter-mode=diff_context -fail-level=any <"$output_file"
+          reviewdog -f=checkstyle -name="biome-frontend" -reporter="$reporter" -filter-mode=file -fail-level=any <"$output_file"
           reviewdog_status=$?
 
           if [ "$biome_status" -gt 1 ]; then
