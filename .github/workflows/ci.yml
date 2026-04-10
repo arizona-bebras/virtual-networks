@@ -97,8 +97,8 @@ jobs:
             reporter="github-pr-review"
           fi
 
-          pnpm --filter backend exec biome check --reporter=rdjson . \
-            | reviewdog -f=rdjson -name="biome-backend" -reporter="$reporter" -filter-mode=diff_context -fail-level=any
+          pnpm --filter backend exec biome check --reporter=checkstyle . \
+            | reviewdog -f=checkstyle -name="biome-backend" -reporter="$reporter" -filter-mode=diff_context -fail-level=any
 
       - name: Build backend
         id: backend_build
@@ -169,8 +169,8 @@ jobs:
             reporter="github-pr-review"
           fi
 
-          pnpm --filter frontend exec biome check --reporter=rdjson . \
-            | reviewdog -f=rdjson -name="biome-frontend" -reporter="$reporter" -filter-mode=diff_context -fail-level=any
+          pnpm --filter frontend exec biome check --reporter=checkstyle . \
+            | reviewdog -f=checkstyle -name="biome-frontend" -reporter="$reporter" -filter-mode=diff_context -fail-level=any
 
       - name: Type-check frontend
         id: frontend_check
