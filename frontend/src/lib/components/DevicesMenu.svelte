@@ -1,25 +1,25 @@
 <script lang="ts">
-	import * as Sheet from '$lib/components/ui/sheet/index.js';
+import * as Sheet from "$lib/components/ui/sheet/index.js";
 
-	let {
-		open = $bindable(),
-		nodes = $bindable()
-	}: {
-		open: boolean;
-		nodes: {
-			id: string;
-			position: { x: number; y: number };
-			data: { label: string };
-			[key: string]: unknown;
-		}[];
-	} = $props();
+let {
+  open = $bindable(),
+  nodes = $bindable(),
+}: {
+  open: boolean;
+  nodes: {
+    id: string;
+    position: { x: number; y: number };
+    data: { label: string };
+    [key: string]: unknown;
+  }[];
+} = $props();
 </script>
 
 <Sheet.Root bind:open>
-	<Sheet.Content>
-		<Sheet.Header>
-			<button
-				onclick={() => {
+  <Sheet.Content>
+    <Sheet.Header>
+      <button
+        onclick={() => {
 					const serverCont = nodes.filter((obj) => obj.id.startsWith('server')).length;
 					nodes = [
 						...nodes,
@@ -30,10 +30,12 @@
 						}
 					];
 					open = false;
-				}}>Сервер</button
-			>
-			<button
-				onclick={() => {
+				}}
+      >
+        Сервер
+      </button>
+      <button
+        onclick={() => {
 					const clientCont = nodes.filter((obj) => obj.id.startsWith('client')).length;
 					nodes = [
 						...nodes,
@@ -45,10 +47,12 @@
 						}
 					];
 					open = false;
-				}}>Клиент</button
-			>
-			<button
-				onclick={() => {
+				}}
+      >
+        Клиент
+      </button>
+      <button
+        onclick={() => {
 					const switchCont = nodes.filter((obj) => obj.id.startsWith('switch')).length;
 					nodes = [
 						...nodes,
@@ -60,8 +64,10 @@
 						}
 					];
 					open = false;
-				}}>Коммутатор</button
-			>
-		</Sheet.Header>
-	</Sheet.Content>
+				}}
+      >
+        Коммутатор
+      </button>
+    </Sheet.Header>
+  </Sheet.Content>
 </Sheet.Root>
