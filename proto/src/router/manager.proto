@@ -1,0 +1,166 @@
+syntax = "proto3";
+
+package router.manager;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "proto/gen/go/router/manager;managerpb";
+
+// TODO: review file structure, split to multiple files
+
+// ==========================================
+// SERVICES
+// ==========================================
+
+// RouterManager defines a protocol-agnostic interface for orchestrating
+// userspace virtual network routers. It abstracts away specific VPN
+// implementations (WireGuard, etc.) into a generic peer and network model.
+service RouterManager {
+  // GetInfo returns the router's current operational state and capabilities.
+  rpc GetInfo(google.protobuf.Empty) returns (RouterInfo);
+
+  // Configure updates the global network parameters of the router.
+  rpc Configure(ConfigureRequest) returns (RouterInfo);
+
+  // UpsertPeer adds or updates a peer in the network. The router will
+  // use the protocol-specific data provided in the message.
+  rpc UpsertPeer(UpsertPeerRequest) returns (google.protobuf.Empty);
+
+  // DeletePeer removes a peer from the network by its unique ID.
+  rpc DeletePeer(DeletePeerRequest) returns (google.protobuf.Empty);
+
+  // ListPeers returns a snapshot of all peers currently managed by this router.
+  rpc ListPeers(google.protobuf.Empty) returns (ListPeersResponse);
+
+  // WatchEvents provides a real-time stream of connectivity and traffic events.
+  rpc WatchEvents(WatchEventsRequest) returns (stream Event);
+}
+
+// ==========================================
+// REQUEST/RESPONSE DTOS
+// ==========================================
+
+message ConfigureRequest {
+  NetworkConfig config = 1;
+
+  // Optional configuration for specific protocols during initialization.
+  oneof protocol_config {
+    WireGuardGlobalConfig wireguard = 10;
+  }
+}
+
+message UpsertPeerRequest {
+  Peer peer = 1;
+}
+
+message DeletePeerRequest {
+  string id = 1;
+}
+
+message ListPeersResponse {
+  repeated Peer peers = 1;
+}
+
+message WatchEventsRequest {
+  repeated string peer_ids = 1; // Optional filter
+}
+
+// ==========================================
+// ENTITIES
+// ==========================================
+
+message RouterInfo {
+  string router_id = 1;
+  string version = 2;
+
+  // The generic network configuration currently applied.
+  NetworkConfig config = 3;
+
+  // Protocol-specific global state (e.g., WireGuard public keys).
+  oneof protocol_state {
+    WireGuardGlobalState wireguard = 10;
+  }
+
+  repeated string supported_protocols = 20;
+}
+
+message NetworkConfig {
+  string overlay_cidr = 1; // e.g., "10.44.0.0/24"
+  string server_address = 2; // The router's own IP in the overlay, e.g., "10.44.0.1"
+  uint32 mtu = 3;
+  string public_host = 4; // Advertised public IP or DNS name
+  uint32 listen_port = 5;
+}
+
+message Peer {
+  string id = 1; // Backend-assigned unique identifier
+  string name = 2;
+  repeated string internal_ips = 3; // Assigned IPs within the overlay
+
+  // Protocol-specific peer credentials and configuration.
+  oneof protocol_data {
+    WireGuardPeerConfig wireguard = 10;
+  }
+
+  // Read-only status populated by the router.
+  PeerStatus status = 20;
+}
+
+message PeerStatus {
+  bool is_active = 1;
+  optional string last_endpoint = 2;
+  optional google.protobuf.Timestamp last_seen = 3;
+  uint64 rx_bytes = 4;
+  uint64 tx_bytes = 5;
+}
+
+message Event {
+  google.protobuf.Timestamp timestamp = 1;
+  string peer_id = 2;
+
+  oneof event_type {
+    PeerConnected connected = 3;
+    PeerDisconnected disconnected = 4;
+    TrafficUpdate traffic = 5;
+    ProtocolSpecificEvent protocol = 6;
+  }
+}
+
+message PeerConnected {
+  string endpoint = 1;
+}
+
+message PeerDisconnected {}
+
+message TrafficUpdate {
+  uint64 rx_bytes = 1;
+  uint64 tx_bytes = 2;
+}
+
+// ==========================================
+// PROTOCOL-SPECIFIC ENTITIES
+// ==========================================
+
+// WireGuard Specific Messages
+
+message WireGuardGlobalState {
+  string public_key = 1;
+}
+
+message WireGuardGlobalConfig {
+  // Can be used to set a specific private key if managed by backend
+  optional string private_key = 1;
+}
+
+message WireGuardPeerConfig {
+  string public_key = 1;
+  google.protobuf.Duration persistent_keepalive = 2;
+  repeated string allowed_ips = 3;
+}
+
+message ProtocolSpecificEvent {
+  string protocol_name = 1;
+  map<string, string> metadata = 2;
+}
