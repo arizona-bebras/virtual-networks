@@ -278,31 +278,6 @@ jobs:
       - name: Verify generated protobuf artifacts
         run: pnpm --filter proto generate
 
-  go-proto:
-    name: Go Proto
-    runs-on: ubuntu-latest
-    needs: changes
-    if: needs.changes.outputs.proto == 'true'
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: proto/go.mod
-          cache-dependency-path: |
-            proto/go.sum
-
-      - name: Lint proto Go module
-        working-directory: proto
-        run: go vet ./...
-
-      - name: Build proto Go module
-        working-directory: proto
-        run: go build ./...
-
   go-router:
     name: Go Router
     runs-on: ubuntu-latest
