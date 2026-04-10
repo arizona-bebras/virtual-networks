@@ -134,7 +134,28 @@ jobs:
       - name: Check frontend formatting
         id: frontend_prettier
         continue-on-error: true
-        run: pnpm --filter frontend exec prettier --check .
+        shell: bash
+        run: |
+          output_file="$RUNNER_TEMP/prettier.txt"
+          status=0
+
+          (
+            cd frontend
+            pnpm exec prettier --list-different .
+          ) >"$output_file" 2>&1 || status=$?
+
+          while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            case "$file" in
+              \[*|Checking\ formatting...|All\ matched\ files\ use*)
+                continue
+                ;;
+            esac
+            echo "::error file=frontend/$file::File is not formatted with Prettier"
+          done <"$output_file"
+
+          cat "$output_file"
+          exit "$status"
 
       - name: Lint frontend
         id: frontend_eslint
@@ -144,7 +165,39 @@ jobs:
       - name: Type-check frontend
         id: frontend_check
         continue-on-error: true
-        run: pnpm --filter frontend check
+        shell: bash
+        run: |
+          output_file="$RUNNER_TEMP/svelte-check.txt"
+          status=0
+
+          (
+            cd frontend
+            pnpm exec svelte-kit sync
+            pnpm exec svelte-check --tsconfig ./tsconfig.json --output machine
+          ) >"$output_file" 2>&1 || status=$?
+
+          while IFS= read -r line; do
+            if [[ "$line" =~ ^[0-9]+\ (ERROR|WARNING)\ \"([^\"]+)\"\ ([0-9]+):([0-9]+)\ \"(.*)\"$ ]]; then
+              severity=$(printf '%s' "${BASH_REMATCH[1]}" | tr '[:upper:]' '[:lower:]')
+              file="${BASH_REMATCH[2]}"
+              line_no="${BASH_REMATCH[3]}"
+              col_no="${BASH_REMATCH[4]}"
+              message="${BASH_REMATCH[5]}"
+
+              if [ "$line_no" -le 0 ]; then
+                line_no=1
+              fi
+
+              if [ "$col_no" -le 0 ]; then
+                col_no=1
+              fi
+
+              echo "::$severity file=frontend/$file,line=$line_no,col=$col_no::$message"
+            fi
+          done <"$output_file"
+
+          cat "$output_file"
+          exit "$status"
 
       - name: Build frontend
         id: frontend_build
@@ -279,3 +332,5 @@ jobs:
         working-directory: router
         shell: bash
         run: go build ./...
+
+

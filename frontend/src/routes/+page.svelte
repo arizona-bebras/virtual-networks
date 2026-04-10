@@ -1,2 +1,12 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+</script>
+
+<div class="flex flex-col">
+	<a href="/app">dashboard</a>
+	{#if !localStorage.getItem('token')}
+		<a href="/auth/register">Регистрация</a>
+		<a href="/auth/login">Войти</a>
+	{:else}
+		<p>Вы уже в системе</p>
+	{/if}
+</div>
