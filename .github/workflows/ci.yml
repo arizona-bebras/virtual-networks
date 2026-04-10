@@ -278,6 +278,14 @@ jobs:
       - name: Verify generated protobuf artifacts
         run: pnpm --filter proto generate
 
+      - name: Lint generated Go proto module
+        working-directory: proto
+        run: go vet ./...
+
+      - name: Build generated Go proto module
+        working-directory: proto
+        run: go build ./...
+
   go-router:
     name: Go Router
     runs-on: ubuntu-latest
