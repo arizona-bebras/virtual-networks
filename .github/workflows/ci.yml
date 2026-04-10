@@ -61,6 +61,7 @@ jobs:
     permissions:
       contents: read
       checks: write
+      issues: write
       pull-requests: write
 
     steps:
@@ -90,10 +91,25 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workdir: backend
           tool_name: biome-backend
-          reporter: ${{ github.event_name == 'pull_request' && 'github-pr-review' || 'github-check' }}
-          filter_mode: diff_context
+          reporter: ${{ github.event_name == 'pull_request' && 'github-pr-check' || 'github-check' }}
+          filter_mode: file
           fail_level: any
           biome_flags: check backend
+
+      - name: Generate backend Biome suggestions
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: pnpm --filter backend exec biome check --write .
+
+      - name: Comment backend Biome suggestions
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: reviewdog/action-suggester@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tool_name: biome-backend-suggestions
+          filter_mode: diff_context
+          fail_level: none
 
       - name: Build backend
         id: backend_build
@@ -128,6 +144,7 @@ jobs:
     permissions:
       contents: read
       checks: write
+      issues: write
       pull-requests: write
 
     steps:
@@ -157,10 +174,25 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workdir: frontend
           tool_name: biome-frontend
-          reporter: ${{ github.event_name == 'pull_request' && 'github-pr-review' || 'github-check' }}
-          filter_mode: diff_context
+          reporter: ${{ github.event_name == 'pull_request' && 'github-pr-check' || 'github-check' }}
+          filter_mode: file
           fail_level: any
           biome_flags: check frontend
+
+      - name: Generate frontend Biome suggestions
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: pnpm --filter frontend exec biome check --write .
+
+      - name: Comment frontend Biome suggestions
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: reviewdog/action-suggester@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tool_name: biome-frontend-suggestions
+          filter_mode: diff_context
+          fail_level: none
 
       - name: Type-check frontend
         id: frontend_check
