@@ -17,7 +17,7 @@
 
 ### Using
 
-Always run `pnpm check`, `pnpm lint`, `pnpm format` and fix all issues after implementing a task.
+Always run `pnpm check`, `pnpm lint`, `pnpm format` and fix all issues after implementing a task in `backend` and `frontend`. Run `go vet` for Go code.
 
 ## Monorepo Structure
 
