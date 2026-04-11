@@ -3,50 +3,39 @@ import { LoaderCircle } from "@lucide/svelte";
 import { createMutation } from "@tanstack/svelte-query";
 import SuperDebug, { defaults, superForm } from "sveltekit-superforms";
 import { zod4, zod4Client } from "sveltekit-superforms/adapters";
+import type { z } from "zod/v4";
 import { goto } from "$app/navigation";
+import { API_URL } from "$env/static/private";
 import * as Form from "$lib/components/ui/form/index.js";
 import { Input } from "$lib/components/ui/input/index.js";
-import { formSchema } from "../register/schema";
-
-const form = superForm(defaults(zod4(formSchema)), {
-  SPA: true,
-  onSubmit: async () => {
-    const request = await registerQuery.mutateAsync();
-    if (request) {
-      const { token } = request;
-      localStorage.setItem("token", token);
-      goto("/app");
-    }
-  },
-  onChange: async () => {
-    let form = await validateForm();
-    isFormValid = form.valid;
-  },
-  validators: zod4Client(formSchema),
-});
-
-const { form: formData, enhance, validateForm } = form;
-
-let isFormValid = $state(false);
+import { useForm } from "$lib/components/useForm.svelte";
+import { type FormSchema, formSchema } from "../register/schema";
 
 const registerQuery = createMutation(() => ({
   mutationKey: ["register"],
-  mutationFn: async () => {
-    const response = await fetch("http://localhost:3000/register", {
+  mutationFn: async (data: z.infer<typeof formSchema>) => {
+    const response = await fetch(`${API_URL}/register`, {
       method: "POST",
       body: JSON.stringify({
-        email: $formData.mail,
-        password: $formData.password,
+        email: data.mail,
+        password: data.password,
       }),
     });
-    const data = await response.json();
+    const responseData = await response.json();
     if (response.ok) {
       return data;
     } else {
-      throw new Error(data?.error);
+      throw new Error(responseData?.error);
     }
   },
 }));
+
+const {
+  forms: form,
+  valid,
+  enhance,
+  formData,
+} = useForm(formSchema, registerQuery);
 </script>
 
 <div class="w-112.5 rounded-lg bg-gray-400 p-6">
@@ -76,7 +65,7 @@ const registerQuery = createMutation(() => ({
       <Form.FieldErrors />
     </Form.Field>
     <div class="flex items-center gap-1">
-      <Form.Button disabled={!isFormValid || registerQuery.isPending}>
+      <Form.Button disabled={!valid || registerQuery.isPending}>
         Войти
       </Form.Button>
       {#if registerQuery.isPending}

@@ -20,6 +20,6 @@ let { children } = $props();
 		}}
     >
       Выйти с аккаунта
-    </button>
+    </button>   
   </main>
 </Sidebar.Provider>

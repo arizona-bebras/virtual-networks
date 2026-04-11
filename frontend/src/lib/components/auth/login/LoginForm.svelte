@@ -1,52 +1,39 @@
 <script lang="ts">
 import { LoaderCircle } from "@lucide/svelte";
 import { createMutation } from "@tanstack/svelte-query";
-import SuperDebug, { defaults, superForm } from "sveltekit-superforms";
-import { zod4, zod4Client } from "sveltekit-superforms/adapters";
-import { goto } from "$app/navigation";
+import SuperDebug from "sveltekit-superforms";
+import type { z } from "zod/v4";
+import { API_URL } from "$env/static/private";
 import * as Form from "$lib/components/ui/form/index.js";
 import { Input } from "$lib/components/ui/input/index.js";
+import { useForm } from "$lib/components/useForm.svelte";
 import { formSchema } from "../login/schema";
-
-const form = superForm(defaults(zod4(formSchema)), {
-  SPA: true,
-  onSubmit: async () => {
-    const request = await loginQuery.mutateAsync();
-    if (request) {
-      const { token } = request;
-      localStorage.setItem("token", token);
-      goto("/app");
-    }
-  },
-  onChange: async () => {
-    let form = await validateForm();
-    isFormValid = form.valid;
-  },
-  validators: zod4Client(formSchema),
-});
-
-const { form: formData, enhance, validateForm } = form;
-
-let isFormValid = $state(false);
 
 const loginQuery = createMutation(() => ({
   mutationKey: ["login"],
-  mutationFn: async () => {
-    const response = await fetch("http://localhost:3000/auth", {
+  mutationFn: async (data: z.infer<typeof formSchema>) => {
+    const response = await fetch(`${API_URL}/auth`, {
       method: "POST",
       body: JSON.stringify({
         email: $formData.mail,
         password: $formData.password,
       }),
     });
-    const data = await response.json();
+    const responseData = await response.json();
     if (response.ok) {
       return data;
     } else {
-      throw new Error(data?.error);
+      throw new Error(responseData?.error);
     }
   },
 }));
+
+const {
+  forms: form,
+  valid,
+  enhance,
+  formData,
+} = useForm(formSchema, loginQuery);
 </script>
 
 <div class="w-112.5 rounded-lg bg-gray-400 p-6">
@@ -76,9 +63,7 @@ const loginQuery = createMutation(() => ({
       <Form.FieldErrors />
     </Form.Field>
     <div class="flex items-center gap-1">
-      <Form.Button disabled={!isFormValid || loginQuery.isPending}>
-        Войти
-      </Form.Button>
+      <Form.Button disabled={!valid || loginQuery.isPending}>Войти</Form.Button>
       {#if loginQuery.isPending}
         <LoaderCircle class="animate-spin" />
       {/if}
