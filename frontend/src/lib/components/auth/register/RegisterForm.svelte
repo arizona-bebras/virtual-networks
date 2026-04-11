@@ -67,7 +67,7 @@ const {
       <Form.FieldErrors />
     </Form.Field>
     <div class="flex items-center gap-1">
-      <Form.Button disabled={!valid || registerQuery.isPending}>
+      <Form.Button disabled={!valid() || registerQuery.isPending}>
         Войти
       </Form.Button>
       {#if registerQuery.isPending}

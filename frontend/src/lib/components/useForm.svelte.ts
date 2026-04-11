@@ -18,7 +18,7 @@ export function useForm<TSchema extends ZodObject>(
 ): SuperForm<z.infer<TSchema>> & {
   forms: SuperForm<z.infer<TSchema>>;
   formData: SuperFormData<z.infer<TSchema>>;
-  valid: {value: boolean};
+  valid: () => boolean;
 } {
   const valid = $state({
     value: false,
@@ -51,6 +51,6 @@ export function useForm<TSchema extends ZodObject>(
     forms: form,
     formData: form.form,
     ...form,
-    valid,
+    valid: () => valid.value,
   };
 }
