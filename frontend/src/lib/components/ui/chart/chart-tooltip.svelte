@@ -1,4 +1,6 @@
 <script lang="ts">
+// biome-ignore lint/correctness/noUnusedImports: TooltipPrimitive is referenced in the Svelte template.
+import { Tooltip as TooltipPrimitive } from "bits-ui";
 import { getChartContext } from "layerchart";
 import type { Snippet } from "svelte";
 import type { HTMLAttributes } from "svelte/elements";
@@ -106,7 +108,7 @@ const nestLabel = $derived(visibleSeries.length === 1 && indicator !== "dot");
   {/if}
 {/snippet}
 
-<TooltipPrimitive.Root variant="none">
+<TooltipPrimitive.Root>
   <div
     bind:this={ref}
     class={cn(

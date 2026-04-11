@@ -28,13 +28,20 @@ type Props = {
 };
 
 let { content, context, attach }: Props = $props();
+
+function renderContent(
+  renderer: (context: TContext) => unknown,
+  renderContext: TContext,
+) {
+  return renderer(renderContext);
+}
 </script>
 
 {#if typeof content === "string"}
   {content}
 {:else if content instanceof Function}
   <!-- It's unlikely that a CellContext will be passed to a Header -->
-  {@const result = content(context as any)}
+  {@const result = renderContent(content as (context: TContext) => unknown, context)}
   {#if result instanceof RenderComponentConfig}
     {@const { component: Component, props } = result}
     <Component {...props} {attach} />

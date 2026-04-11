@@ -1,4 +1,6 @@
 <script lang="ts">
+// biome-ignore lint/correctness/noUnusedImports: DialogPrimitive is referenced in the Svelte template.
+import { Dialog as DialogPrimitive } from "bits-ui";
 import type { HTMLAttributes } from "svelte/elements";
 import { Button } from "$lib/components/ui/button/index.js";
 import { cn, type WithElementRef } from "$lib/utils.js";
