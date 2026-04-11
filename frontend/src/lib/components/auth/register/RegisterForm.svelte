@@ -5,7 +5,7 @@ import SuperDebug, { defaults, superForm } from "sveltekit-superforms";
 import { zod4, zod4Client } from "sveltekit-superforms/adapters";
 import type { z } from "zod/v4";
 import { goto } from "$app/navigation";
-import { API_URL } from "$env/static/private";
+import { PUBLIC_API_URL } from "$env/static/public";
 import * as Form from "$lib/components/ui/form/index.js";
 import { Input } from "$lib/components/ui/input/index.js";
 import { useForm } from "$lib/components/useForm.svelte";
@@ -13,8 +13,10 @@ import { type FormSchema, formSchema } from "../register/schema";
 
 const registerQuery = createMutation(() => ({
   mutationKey: ["register"],
-  mutationFn: async (data: z.infer<typeof formSchema>) => {
-    const response = await fetch(`${API_URL}/register`, {
+  mutationFn: async (
+    data: z.infer<typeof formSchema>,
+  ): Promise<Record<string, string>> => {
+    const response = await fetch(`${PUBLIC_API_URL}/register`, {
       method: "POST",
       body: JSON.stringify({
         email: data.mail,
@@ -23,7 +25,7 @@ const registerQuery = createMutation(() => ({
     });
     const responseData = await response.json();
     if (response.ok) {
-      return data;
+      return responseData;
     } else {
       throw new Error(responseData?.error);
     }

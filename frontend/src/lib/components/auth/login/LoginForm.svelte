@@ -3,7 +3,7 @@ import { LoaderCircle } from "@lucide/svelte";
 import { createMutation } from "@tanstack/svelte-query";
 import SuperDebug from "sveltekit-superforms";
 import type { z } from "zod/v4";
-import { API_URL } from "$env/static/private";
+import { PUBLIC_API_URL } from "$env/static/public";
 import * as Form from "$lib/components/ui/form/index.js";
 import { Input } from "$lib/components/ui/input/index.js";
 import { useForm } from "$lib/components/useForm.svelte";
@@ -11,8 +11,10 @@ import { formSchema } from "../login/schema";
 
 const loginQuery = createMutation(() => ({
   mutationKey: ["login"],
-  mutationFn: async (data: z.infer<typeof formSchema>) => {
-    const response = await fetch(`${API_URL}/auth`, {
+  mutationFn: async (
+    data: z.infer<typeof formSchema>,
+  ): Promise<Record<string, string>> => {
+    const response = await fetch(`${PUBLIC_API_URL}/auth`, {
       method: "POST",
       body: JSON.stringify({
         email: $formData.mail,
@@ -21,7 +23,7 @@ const loginQuery = createMutation(() => ({
     });
     const responseData = await response.json();
     if (response.ok) {
-      return data;
+      return responseData;
     } else {
       throw new Error(responseData?.error);
     }
