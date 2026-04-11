@@ -1,13 +1,12 @@
 <script lang="ts">
+import { LoaderCircle } from "@lucide/svelte";
+import { createMutation } from "@tanstack/svelte-query";
+import SuperDebug, { defaults, superForm } from "sveltekit-superforms";
+import { zod4, zod4Client } from "sveltekit-superforms/adapters";
 import { goto } from "$app/navigation";
 import * as Form from "$lib/components/ui/form/index.js";
 import { Input } from "$lib/components/ui/input/index.js";
 import { formSchema } from "../register/schema";
-import SuperDebug, { superForm, defaults } from "sveltekit-superforms";
-import { zod4 } from "sveltekit-superforms/adapters";
-import { zod4Client } from "sveltekit-superforms/adapters";
-import { createMutation } from "@tanstack/svelte-query";
-import { LoaderCircle } from "@lucide/svelte";
 
 const form = superForm(defaults(zod4(formSchema)), {
   SPA: true,

@@ -19,6 +19,7 @@ let {
   <Sheet.Content>
     <Sheet.Header>
       <button
+        type="button"
         onclick={() => {
 					const serverCont = nodes.filter((obj) => obj.id.startsWith('server')).length;
 					nodes = [
@@ -35,6 +36,7 @@ let {
         Сервер
       </button>
       <button
+        type="button"
         onclick={() => {
 					const clientCont = nodes.filter((obj) => obj.id.startsWith('client')).length;
 					nodes = [
@@ -52,6 +54,7 @@ let {
         Клиент
       </button>
       <button
+        type="button"
         onclick={() => {
 					const switchCont = nodes.filter((obj) => obj.id.startsWith('switch')).length;
 					nodes = [

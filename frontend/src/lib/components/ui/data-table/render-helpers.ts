@@ -75,7 +75,7 @@ export class RenderSnippetConfig<TProps> {
  * @see {@link https://tanstack.com/table/latest/docs/guide/column-defs}
  */
 export function renderComponent<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: allow any type for the component props as they can be of any shape depending on the use case.
   T extends Component<any>,
   Props extends ComponentProps<T>,
 >(component: T, props: Props = {} as Props) {

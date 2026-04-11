@@ -1,8 +1,8 @@
 <script lang="ts">
-import { Button } from "$lib/components/ui/button/index.js";
 import SidebarIcon from "phosphor-svelte/lib/Sidebar";
-import { cn } from "$lib/utils.js";
 import type { ComponentProps } from "svelte";
+import { Button } from "$lib/components/ui/button/index.js";
+import { cn } from "$lib/utils.js";
 import { useSidebar } from "./context.svelte.js";
 
 let {

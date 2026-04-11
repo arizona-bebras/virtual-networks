@@ -8,10 +8,10 @@ const password = process.env.POSTGRES_PASSWORD ?? "";
 const database = process.env.POSTGRES_DB ?? "postgres";
 
 export default defineConfig({
-	out: "./drizzle",
-	schema: "./src/db/schema.ts",
-	dialect: "postgresql",
-	dbCredentials: {
-		url: `postgresql://${user}:${password}@${host}:${port}/${database}`,
-	},
+  out: "./drizzle",
+  schema: "./src/db/schema.ts",
+  dialect: "postgresql",
+  dbCredentials: {
+    url: `postgresql://${user}:${password}@${host}:${port}/${database}`,
+  },
 });

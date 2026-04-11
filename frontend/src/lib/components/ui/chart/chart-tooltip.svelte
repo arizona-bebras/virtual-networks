@@ -1,15 +1,15 @@
 <script lang="ts">
-import { cn, type WithElementRef, type WithoutChildren } from "$lib/utils.js";
+import { getChartContext } from "layerchart";
+import type { Snippet } from "svelte";
 import type { HTMLAttributes } from "svelte/elements";
+import { cn, type WithElementRef, type WithoutChildren } from "$lib/utils.js";
 import {
   getPayloadConfigFromPayload,
-  useChart,
   type TooltipPayload,
+  useChart,
 } from "./chart-utils.js";
-import { getChartContext, Tooltip as TooltipPrimitive } from "layerchart";
-import type { Snippet } from "svelte";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: allow any type for the labelFormatter return value as it can be of any shape depending on the use case.
 function defaultFormatter(value: any) {
   return `${value}`;
 }
@@ -36,7 +36,7 @@ let {
   labelKey?: string;
   hideIndicator?: boolean;
   labelClassName?: string;
-  labelFormatter?: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  labelFormatter?: // biome-ignore lint/suspicious/noExplicitAny: allow any type for the labelFormatter return value as it can be of any shape depending on the use case.
   ((value: any, payload: TooltipPayload[]) => string | number | Snippet) | null;
   formatter?: Snippet<
     [

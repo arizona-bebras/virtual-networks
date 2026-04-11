@@ -1,10 +1,10 @@
 import {
+  createTable,
   type RowData,
   type TableOptions,
   type TableOptionsResolved,
   type TableState,
   type Updater,
-  createTable,
 } from "@tanstack/table-core";
 
 /**
@@ -92,7 +92,7 @@ type Intersection<T extends readonly unknown[]> = (T extends [
  *
  * Proxy-based to avoid known WebKit recursion issue.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: allow any type for the merged objects as they can be of any shape depending on the use case.
 export function mergeObjects<Sources extends readonly MaybeThunk<any>[]>(
   ...sources: Sources
 ): Intersection<{ [K in keyof Sources]: Sources[K] }> {
@@ -138,7 +138,7 @@ export function mergeObjects<Sources extends readonly MaybeThunk<any>[]>(
       return {
         configurable: true,
         enumerable: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: allow any type for the source object as it can be of any shape depending on the use case.
         value: (src as any)[key],
         writable: true,
       };

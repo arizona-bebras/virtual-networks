@@ -1,5 +1,5 @@
 <script lang="ts">
-import { THEMES, type ChartConfig } from "./chart-utils.js";
+import { type ChartConfig, THEMES } from "./chart-utils.js";
 
 let { id, config }: { id: string; config: ChartConfig } = $props();
 
@@ -12,7 +12,7 @@ const colorConfig = $derived(
 );
 
 const themeContents = $derived.by(() => {
-  if (!colorConfig || !colorConfig.length) return;
+  if (!colorConfig?.length) return;
 
   const themeContents = [];
   for (const [_theme, prefix] of Object.entries(THEMES)) {
@@ -23,7 +23,7 @@ const themeContents = $derived.by(() => {
       return color ? `\t--color-${key}: ${color};` : null;
     });
 
-    content += color.join("\n") + "\n}";
+    content += `${color.join("\n")}\n}`;
 
     themeContents.push(content);
   }

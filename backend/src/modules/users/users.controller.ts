@@ -1,36 +1,36 @@
 import {
-	Controller,
-	Get,
-	Param,
-	Post,
-	Body,
-	Delete,
-	Put,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
 } from "@nestjs/common";
-import type { UsersService } from "./users.service";
 import type { User } from "./interfaces/user.interface";
+import type { UsersService } from "./users.service";
 
 @Controller("users")
 export class UsersController {
-	constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) {}
 
-	@Post()
-	create(@Body() user: User) {
-		return this.usersService.create(user);
-	}
+  @Post()
+  create(@Body() user: User) {
+    return this.usersService.create(user);
+  }
 
-	@Get(":id")
-	read(@Param("id") id: string) {
-		return this.usersService.read(id);
-	}
+  @Get(":id")
+  read(@Param("id") id: string) {
+    return this.usersService.read(id);
+  }
 
-	@Put(":id")
-	update(@Param("id") id: string, @Body() user: User) {
-		return this.usersService.update(id, user);
-	}
+  @Put(":id")
+  update(@Param("id") id: string, @Body() user: User) {
+    return this.usersService.update(id, user);
+  }
 
-	@Delete(":id")
-	delete(@Param("id") id: string) {
-		return this.usersService.delete(id);
-	}
+  @Delete(":id")
+  delete(@Param("id") id: string) {
+    return this.usersService.delete(id);
+  }
 }

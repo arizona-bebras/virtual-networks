@@ -1,7 +1,7 @@
 <script lang="ts">
-import * as Sidebar from "$lib/components/ui/sidebar/index.js";
-import AppSidebar from "$lib/components/Sidebar.svelte";
 import { goto } from "$app/navigation";
+import AppSidebar from "$lib/components/Sidebar.svelte";
+import * as Sidebar from "$lib/components/ui/sidebar/index.js";
 
 let { children } = $props();
 </script>
@@ -12,6 +12,7 @@ let { children } = $props();
     <Sidebar.Trigger class=" bg-green-500" />
     {@render children?.()}
     <button
+      type="button"
       class="bg-red-400 text-white p-1 rounded right-1 top-1 absolute"
       onclick={() => {
 			localStorage.removeItem('token');

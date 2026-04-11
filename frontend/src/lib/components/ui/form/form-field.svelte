@@ -3,9 +3,9 @@
   generics="T extends Record<string, unknown>, U extends FormPath<T>"
 >
 import * as FormPrimitive from "formsnap";
+import type { HTMLAttributes } from "svelte/elements";
 import type { FormPath } from "sveltekit-superforms";
 import { cn, type WithElementRef, type WithoutChildren } from "$lib/utils.js";
-import type { HTMLAttributes } from "svelte/elements";
 
 let {
   ref = $bindable(null),

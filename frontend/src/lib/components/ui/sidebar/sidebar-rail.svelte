@@ -1,6 +1,6 @@
 <script lang="ts">
-import { cn, type WithElementRef } from "$lib/utils.js";
 import type { HTMLAttributes } from "svelte/elements";
+import { cn, type WithElementRef } from "$lib/utils.js";
 import { useSidebar } from "./context.svelte.js";
 
 let {
@@ -17,6 +17,7 @@ const sidebar = useSidebar();
 </script>
 
 <button
+  type="button"
   bind:this={ref}
   data-sidebar="rail"
   data-slot="sidebar-rail"

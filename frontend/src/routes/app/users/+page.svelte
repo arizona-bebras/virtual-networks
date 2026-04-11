@@ -1,6 +1,6 @@
 <script lang="ts">
-import DataTable from "$lib/components/table/data-table.svelte";
 import { createColumns, type User } from "$lib/components/table/columns.js";
+import DataTable from "$lib/components/table/data-table.svelte";
 
 let vpnUsers = $state<User[]>([
   {

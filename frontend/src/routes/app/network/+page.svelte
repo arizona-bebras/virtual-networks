@@ -1,13 +1,13 @@
 <script lang="ts">
-import ClientNode from "$lib/components/ClientNode.svelte";
-import SwitchNode from "$lib/components/SwitchNode.svelte";
-import DevicesMenu from "$lib/components/DevicesMenu.svelte";
 import {
-  SvelteFlow,
   Background,
   type Connection,
   type Edge,
+  SvelteFlow,
 } from "@xyflow/svelte";
+import ClientNode from "$lib/components/ClientNode.svelte";
+import DevicesMenu from "$lib/components/DevicesMenu.svelte";
+import SwitchNode from "$lib/components/SwitchNode.svelte";
 import "@xyflow/svelte/dist/style.css";
 import EdgeInfo from "$lib/components/EdgeInfo.svelte";
 import type { EdgeData } from "$lib/components/edgesTypes";
@@ -45,6 +45,7 @@ function getConnectionType(
 
 <div class="relative h-screen w-full">
   <button
+    type="button"
     class="absolute right-2 bottom-4 z-2 rounded bg-blue-500 p-2 text-white"
     onclick={() => (deviceMenuOpen = true)}
   >

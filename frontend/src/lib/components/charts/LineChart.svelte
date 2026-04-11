@@ -1,10 +1,10 @@
 <script lang="ts">
-import { LineChart, Points } from "layerchart";
 import GitCommitVerticalIcon from "@lucide/svelte/icons/git-commit-vertical";
 import { scaleUtc } from "d3-scale";
 import { curveNatural } from "d3-shape";
-import * as Chart from "$lib/components/ui/chart/index.js";
+import { LineChart, Points } from "layerchart";
 import * as Card from "$lib/components/ui/card/index.js";
+import * as Chart from "$lib/components/ui/chart/index.js";
 
 const chartData = [
   { date: new Date("2024-01-01"), desktop: 186 },

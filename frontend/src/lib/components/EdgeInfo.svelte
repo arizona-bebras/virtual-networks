@@ -1,7 +1,8 @@
 <script lang="ts">
-import * as Dialog from "$lib/components/ui/dialog/index.js";
 import type { Edge } from "@xyflow/svelte";
 import type { EdgeData } from "$lib/components/edgesTypes";
+import * as Dialog from "$lib/components/ui/dialog/index.js";
+
 let {
   open = $bindable(),
   edgeData,
