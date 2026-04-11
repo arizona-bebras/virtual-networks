@@ -32,12 +32,14 @@ jobs:
             backend:
               - 'backend/**'
               - 'proto/**'
+              - 'biome.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
               - '.github/workflows/ci.yml'
             frontend:
               - 'frontend/**'
               - 'proto/**'
+              - 'biome.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
               - '.github/workflows/ci.yml'
@@ -56,6 +58,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.backend == 'true'
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository
@@ -76,10 +82,35 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Lint backend
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
+
+      - name: Comment backend Biome issues
         id: backend_lint
         continue-on-error: true
-        run: pnpm --filter backend exec eslint "{src,apps,libs,test}/**/*.ts"
+        shell: bash
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          reporter="github-check"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            reporter="github-pr-review"
+          fi
+
+          output_file="$(mktemp)"
+          biome_status=0
+
+          ./backend/node_modules/.bin/biome check --reporter=checkstyle backend >"$output_file" || biome_status=$?
+
+          reviewdog -f=checkstyle -name="biome-backend" -reporter="$reporter" -filter-mode=file -fail-level=any <"$output_file"
+          reviewdog_status=$?
+
+          if [ "$biome_status" -gt 1 ]; then
+            cat "$output_file"
+            exit "$biome_status"
+          fi
+
+          exit "$reviewdog_status"
 
       - name: Build backend
         id: backend_build
@@ -95,7 +126,7 @@ jobs:
           failed=0
 
           if [ "$BACKEND_LINT_OUTCOME" != "success" ]; then
-            echo "Backend lint failed."
+            echo "Backend Biome check failed."
             failed=1
           fi
 
@@ -111,6 +142,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.frontend == 'true'
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository
@@ -131,36 +166,35 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Check frontend formatting
-        id: frontend_prettier
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
+
+      - name: Comment frontend Biome issues
+        id: frontend_lint
         continue-on-error: true
         shell: bash
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          output_file="$RUNNER_TEMP/prettier.txt"
-          status=0
+          reporter="github-check"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            reporter="github-pr-review"
+          fi
 
-          (
-            cd frontend
-            pnpm exec prettier --list-different .
-          ) >"$output_file" 2>&1 || status=$?
+          output_file="$(mktemp)"
+          biome_status=0
 
-          while IFS= read -r file; do
-            [ -n "$file" ] || continue
-            case "$file" in
-              \[*|Checking\ formatting...|All\ matched\ files\ use*)
-                continue
-                ;;
-            esac
-            echo "::error file=frontend/$file::File is not formatted with Prettier"
-          done <"$output_file"
+          ./frontend/node_modules/.bin/biome check --reporter=checkstyle frontend >"$output_file" || biome_status=$?
 
-          cat "$output_file"
-          exit "$status"
+          reviewdog -f=checkstyle -name="biome-frontend" -reporter="$reporter" -filter-mode=file -fail-level=any <"$output_file"
+          reviewdog_status=$?
 
-      - name: Lint frontend
-        id: frontend_eslint
-        continue-on-error: true
-        run: pnpm --filter frontend exec eslint .
+          if [ "$biome_status" -gt 1 ]; then
+            cat "$output_file"
+            exit "$biome_status"
+          fi
+
+          exit "$reviewdog_status"
 
       - name: Type-check frontend
         id: frontend_check
@@ -207,20 +241,14 @@ jobs:
       - name: Fail if frontend checks failed
         if: always()
         env:
-          FRONTEND_PRETTIER_OUTCOME: ${{ steps.frontend_prettier.outcome }}
-          FRONTEND_ESLINT_OUTCOME: ${{ steps.frontend_eslint.outcome }}
+          FRONTEND_LINT_OUTCOME: ${{ steps.frontend_lint.outcome }}
           FRONTEND_CHECK_OUTCOME: ${{ steps.frontend_check.outcome }}
           FRONTEND_BUILD_OUTCOME: ${{ steps.frontend_build.outcome }}
         run: |
           failed=0
 
-          if [ "$FRONTEND_PRETTIER_OUTCOME" != "success" ]; then
-            echo "Frontend prettier check failed."
-            failed=1
-          fi
-
-          if [ "$FRONTEND_ESLINT_OUTCOME" != "success" ]; then
-            echo "Frontend eslint failed."
+          if [ "$FRONTEND_LINT_OUTCOME" != "success" ]; then
+            echo "Frontend Biome check failed."
             failed=1
           fi
 

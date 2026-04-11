@@ -2,9 +2,7 @@
   "version": "8",
   "dialect": "postgres",
   "id": "b1546f67-f034-4c7d-9bbc-7b7dc56aa7b2",
-  "prevIds": [
-    "00000000-0000-0000-0000-000000000000"
-  ],
+  "prevIds": ["00000000-0000-0000-0000-000000000000"],
   "ddl": [
     {
       "isRlsEnabled": false,
@@ -311,14 +309,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "network_id"
-      ],
+      "columns": ["network_id"],
       "schemaTo": "public",
       "tableTo": "networks",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "devices_network_id_networks_id_fkey",
@@ -328,14 +322,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "device_id"
-      ],
+      "columns": ["device_id"],
       "schemaTo": "public",
       "tableTo": "devices",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "devices_tags_device_id_devices_id_fkey",
@@ -345,14 +335,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "tag_id"
-      ],
+      "columns": ["tag_id"],
       "schemaTo": "public",
       "tableTo": "tags",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "devices_tags_tag_id_tags_id_fkey",
@@ -362,14 +348,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "admin_id"
-      ],
+      "columns": ["admin_id"],
       "schemaTo": "public",
       "tableTo": "users",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "networks_admin_id_users_id_fkey",
@@ -379,14 +361,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "network_id"
-      ],
+      "columns": ["network_id"],
       "schemaTo": "public",
       "tableTo": "networks",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "tags_network_id_networks_id_fkey",
@@ -395,10 +373,7 @@
       "table": "tags"
     },
     {
-      "columns": [
-        "device_id",
-        "tag_id"
-      ],
+      "columns": ["device_id", "tag_id"],
       "nameExplicit": false,
       "name": "devices_tags_pkey",
       "entityType": "pks",
@@ -406,9 +381,7 @@
       "table": "devices_tags"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "devices_pkey",
       "schema": "public",
@@ -416,9 +389,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "networks_pkey",
       "schema": "public",
@@ -426,9 +397,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "tags_pkey",
       "schema": "public",
@@ -436,9 +405,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "users_pkey",
       "schema": "public",
@@ -447,9 +414,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "ip"
-      ],
+      "columns": ["ip"],
       "nullsNotDistinct": false,
       "name": "devices_ip_key",
       "schema": "public",
@@ -458,9 +423,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "name"
-      ],
+      "columns": ["name"],
       "nullsNotDistinct": false,
       "name": "tags_name_key",
       "schema": "public",
@@ -469,9 +432,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "name"
-      ],
+      "columns": ["name"],
       "nullsNotDistinct": false,
       "name": "users_name_key",
       "schema": "public",
@@ -480,9 +441,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "email"
-      ],
+      "columns": ["email"],
       "nullsNotDistinct": false,
       "name": "users_email_key",
       "schema": "public",
