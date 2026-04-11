@@ -15,6 +15,10 @@
 - Backend build/tooling: Nest CLI, TypeScript
 - Go validation: `go vet`, `go build`
 
+### Using
+
+Always run `pnpm check`, `pnpm lint`, `pnpm format` and fix all issues after implementing a task.
+
 ## Monorepo Structure
 
 - `frontend/`, `backend/`, and `proto/` are `pnpm` workspace packages
