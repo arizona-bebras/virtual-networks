@@ -8,6 +8,7 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
+import { delayWhen } from "rxjs";
 
 export const users = pgTable("users", {
   id: uuid(`id`).primaryKey().defaultRandom(),
@@ -59,8 +60,18 @@ export const devicesTags = pgTable(
   (t) => [primaryKey({ columns: [t.device_id, t.tag_id] })],
 );
 
+export const rules = pgTable("rules", {
+  id: uuid(`id`).primaryKey().defaultRandom(),
+  source: uuid().notNull().references(() => tags.id),
+  dest: uuid().notNull().references(() => tags.id),
+  port: integer().notNull(),
+  network_id: uuid()
+    .notNull()
+    .references(() => networks.id),
+});
+
 export const relations = defineRelations(
-  { users, networks, devices, tags, devicesTags },
+  { users, networks, devices, tags, devicesTags, rules },
   (r) => ({
     users: {
       networks: r.many.networks(),
@@ -72,6 +83,7 @@ export const relations = defineRelations(
       }),
       devices: r.many.devices(),
       tags: r.many.tags(),
+      rules: r.many.rules(),
     },
     devices: {
       network: r.one.networks({
@@ -89,6 +101,29 @@ export const relations = defineRelations(
         to: r.networks.id,
       }),
       devices: r.many.devices(),
+      source_rules: r.many.rules({
+        from: r.tags.id,
+        to: r.rules.source,
+      }),
+      dest_rules: r.many.rules({
+        from: r.tags.id,
+        to: r.rules.dest,
+      }),
     },
+    rules : {
+      network: r.one.networks({
+        from: r.rules.network_id,
+        to: r.networks.id,
+      }),
+      source_tag: r.one.tags({
+        from: r.rules.source,
+        to: r.tags.id,
+      }),
+      dest_tag: r.one.tags({
+        from: r.rules.dest,
+        to: r.tags.id,
+      }),
+    },
+
   }),
 );
