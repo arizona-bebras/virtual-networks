@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import type { Device } from '../interfaces/network.interface';
-import { db } from '../../../db/connection';
-import { devices } from '../../../db/schema';
+import type { Device } from './interfaces/device.interface';
+import { db } from '../../db/connection';
+import { devices } from '../../db/schema';
 import { eq } from 'drizzle-orm/sql/expressions/conditions';
 
 @Injectable()
