@@ -21,7 +21,7 @@ import { TagsModule } from '../tags/tags.module';
           {
             path: ':network_id/tags',
             module: TagsModule,
-          },
+          }
         ],
       },
     ]),
