@@ -1,51 +1,47 @@
 <script lang="ts">
 import { LoaderCircle } from "@lucide/svelte";
 import { createMutation } from "@tanstack/svelte-query";
-import SuperDebug, { defaults, superForm } from "sveltekit-superforms";
-import { zod4, zod4Client } from "sveltekit-superforms/adapters";
-import { goto } from "$app/navigation";
+import SuperDebug from "sveltekit-superforms";
+import type { z } from "zod/v4";
+import { PUBLIC_API_URL } from "$env/static/public";
+import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { Button } from "$shared/ui/button/index.js";
 import * as Card from "$shared/ui/card/index.js";
 import * as Form from "$shared/ui/form/index.js";
 import { Input } from "$shared/ui/input/index.js";
 import { formSchema } from "../model/schema.js";
 
-const form = superForm(defaults(zod4(formSchema)), {
-  SPA: true,
-  onSubmit: async () => {
-    // Mock successful registration for now
-    localStorage.setItem("token", "mock-token");
-    goto("/app/dashboard");
-  },
-  onChange: async () => {
-    let form = await validateForm();
-    isFormValid = form.valid;
-  },
-  validators: zod4Client(formSchema),
-});
-
-const { form: formData, enhance, validateForm } = form;
-
-let isFormValid = $state(false);
-
 const registerQuery = createMutation(() => ({
   mutationKey: ["register"],
-  mutationFn: async () => {
-    const response = await fetch("http://localhost:3000/register", {
+  mutationFn: async (
+    data: z.infer<typeof formSchema>,
+  ): Promise<Record<string, string>> => {
+    const response = await fetch(`${PUBLIC_API_URL}/register`, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
-        email: $formData.mail,
-        password: $formData.password,
+        email: data.mail,
+        password: data.password,
       }),
     });
-    const data = await response.json();
+    const responseData = await response.json();
+
     if (response.ok) {
-      return data;
-    } else {
-      throw new Error(data?.error);
+      return responseData;
     }
+
+    throw new Error(responseData?.error);
   },
 }));
+
+const {
+  forms: form,
+  valid,
+  enhance,
+  formData,
+} = useForm(formSchema, registerQuery);
 </script>
 
 <Card.Root class="w-full max-w-md">
@@ -83,7 +79,7 @@ const registerQuery = createMutation(() => ({
       <Button
         type="submit"
         class="w-full"
-        disabled={!isFormValid || registerQuery.isPending}
+        disabled={!valid() || registerQuery.isPending}
       >
         {#if registerQuery.isPending}
           <LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
