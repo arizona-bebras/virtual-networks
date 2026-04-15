@@ -1,0 +1,83 @@
+import type { ColumnDef } from "@tanstack/table-core";
+import type { Tag } from "$entities/tag/model/types.js";
+import TagColorCell from "$entities/tag/ui/tag-color-cell.svelte";
+import TagCountCell from "$entities/tag/ui/tag-count-cell.svelte";
+import TagNameCell from "$entities/tag/ui/tag-name-cell.svelte";
+import DataTableCheckbox from "$shared/ui/data-table/data-table-checkbox.svelte";
+import DataTableSortButton from "$shared/ui/data-table/data-table-sort-button.svelte";
+import { renderComponent } from "$shared/ui/data-table/index.js";
+import TagActionsCell from "../ui/tag-actions-cell.svelte";
+
+export const columns: ColumnDef<Tag>[] = [
+  {
+    id: "select",
+    header: ({ table }) => {
+      return renderComponent(DataTableCheckbox, {
+        checked: table.getIsAllPageRowsSelected(),
+        onCheckedChange: (value: boolean | "indeterminate") =>
+          table.toggleAllPageRowsSelected(!!value),
+        ariaLabel: "Select all",
+      });
+    },
+    cell: ({ row }) => {
+      return renderComponent(DataTableCheckbox, {
+        checked: row.getIsSelected(),
+        onCheckedChange: (value: boolean | "indeterminate") =>
+          row.toggleSelected(!!value),
+        ariaLabel: "Select row",
+      });
+    },
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "name",
+    header: ({ column }) => {
+      return renderComponent(DataTableSortButton, {
+        label: "Tag",
+        onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+      });
+    },
+    cell: ({ row }) => {
+      return renderComponent(TagNameCell, {
+        name: row.getValue("name"),
+        icon: row.original.icon,
+        color: row.original.color,
+      });
+    },
+  },
+  {
+    accessorKey: "color",
+    header: ({ column }) => {
+      return renderComponent(DataTableSortButton, {
+        label: "Color",
+        onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+      });
+    },
+    cell: ({ row }) => {
+      return renderComponent(TagColorCell, {
+        color: row.getValue("color"),
+      });
+    },
+  },
+  {
+    accessorKey: "count",
+    header: ({ column }) => {
+      return renderComponent(DataTableSortButton, {
+        label: "Device Count",
+        onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+      });
+    },
+    cell: ({ row }) => {
+      return renderComponent(TagCountCell, {
+        count: row.getValue("count"),
+      });
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      return renderComponent(TagActionsCell, { id: row.original.id });
+    },
+  },
+];
