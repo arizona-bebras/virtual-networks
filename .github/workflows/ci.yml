@@ -80,7 +80,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --merge-git-branch-lockfiles --frozen-lockfile --ignore-scripts
 
       - name: Setup reviewdog
         uses: reviewdog/action-setup@v1
@@ -164,7 +164,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --merge-git-branch-lockfiles --frozen-lockfile --ignore-scripts
 
       - name: Setup reviewdog
         uses: reviewdog/action-setup@v1
@@ -296,7 +296,7 @@ jobs:
           cache: pnpm
 
       - name: Install Node dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --merge-git-branch-lockfiles --frozen-lockfile --ignore-scripts
 
       - name: Install protoc
         uses: arduino/setup-protoc@v3
