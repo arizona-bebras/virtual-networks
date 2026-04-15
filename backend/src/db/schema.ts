@@ -64,6 +64,7 @@ export const rules = pgTable("rules", {
   id: uuid(`id`).primaryKey().defaultRandom(),
   source: uuid().notNull().references(() => tags.id),
   dest: uuid().notNull().references(() => tags.id),
+  protocol: varchar({ length: 32 }).notNull(),
   port: integer().notNull(),
   network_id: uuid()
     .notNull()
