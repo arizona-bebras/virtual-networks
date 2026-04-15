@@ -4,6 +4,8 @@ import { createMutation } from "@tanstack/svelte-query";
 import SuperDebug, { defaults, superForm } from "sveltekit-superforms";
 import { zod4, zod4Client } from "sveltekit-superforms/adapters";
 import { goto } from "$app/navigation";
+import { Button } from "$lib/components/ui/button/index.js";
+import * as Card from "$lib/components/ui/card/index.js";
 import * as Form from "$lib/components/ui/form/index.js";
 import { Input } from "$lib/components/ui/input/index.js";
 import { formSchema } from "../login/schema";
@@ -11,12 +13,9 @@ import { formSchema } from "../login/schema";
 const form = superForm(defaults(zod4(formSchema)), {
   SPA: true,
   onSubmit: async () => {
-    const request = await loginQuery.mutateAsync();
-    if (request) {
-      const { token } = request;
-      localStorage.setItem("token", token);
-      goto("/app");
-    }
+    // Mock successful login for now
+    localStorage.setItem("token", "mock-token");
+    goto("/app/dashboard");
   },
   onChange: async () => {
     let form = await validateForm();
@@ -49,46 +48,67 @@ const loginQuery = createMutation(() => ({
 }));
 </script>
 
-<div class="w-112.5 rounded-lg bg-gray-400 p-6">
-  <p>Авторизация</p>
-  <p class="mb-2 text-[12px]">
-    Введите свой логин и пароль для входа в свой аккаунт
-  </p>
-  <form method="POST" use:enhance class="">
-    <Form.Field {form} name="mail">
-      <Form.Control>
-        {#snippet children({ props })}
-          <Form.Label>Почта</Form.Label>
-          <Input {...props} bind:value={$formData.mail} />
-        {/snippet}
-      </Form.Control>
-      <!-- <Form.Description>This is your public display name.</Form.Description> -->
-      <Form.FieldErrors color="text-green" />
-    </Form.Field>
-    <Form.Field {form} name="password">
-      <Form.Control>
-        {#snippet children({ props })}
-          <Form.Label>Пароль</Form.Label>
-          <Input {...props} bind:value={$formData.password} />
-        {/snippet}
-      </Form.Control>
-      <!-- <Form.Description>This is your public display name.</Form.Description> -->
-      <Form.FieldErrors />
-    </Form.Field>
-    <div class="flex items-center gap-1">
-      <Form.Button disabled={!isFormValid || loginQuery.isPending}>
-        Войти
-      </Form.Button>
-      {#if loginQuery.isPending}
-        <LoaderCircle class="animate-spin" />
-      {/if}
+<Card.Root class="w-full max-w-md">
+  <Card.Header>
+    <Card.Title class="text-2xl">Login</Card.Title>
+    <Card.Description>
+      Enter your email and password to access your account.
+    </Card.Description>
+  </Card.Header>
+  <Card.Content>
+    <form method="POST" use:enhance class="space-y-4">
+      <Form.Field {form} name="mail">
+        <Form.Control>
+          {#snippet children({ props })}
+            <Form.Label>Email</Form.Label>
+            <Input
+              {...props}
+              bind:value={$formData.mail}
+              placeholder="m@example.com"
+            />
+          {/snippet}
+        </Form.Control>
+        <Form.FieldErrors />
+      </Form.Field>
+      <Form.Field {form} name="password">
+        <Form.Control>
+          {#snippet children({ props })}
+            <Form.Label>Password</Form.Label>
+            <Input {...props} type="password" bind:value={$formData.password} />
+          {/snippet}
+        </Form.Control>
+        <Form.FieldErrors />
+      </Form.Field>
+
+      <Button
+        type="submit"
+        class="w-full"
+        disabled={!isFormValid || loginQuery.isPending}
+      >
+        {#if loginQuery.isPending}
+          <LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
+        {/if}
+        Login
+      </Button>
+    </form>
+  </Card.Content>
+  <Card.Footer class="flex flex-col space-y-2">
+    <div class="text-sm text-center text-muted-foreground">
+      Don't have an account? <a
+        href="/auth/register"
+        class="text-primary hover:underline"
+      >
+        Register
+      </a>
     </div>
     {#if loginQuery.isError}
-      <p class="text-red-500">Ошибка регистрации: {loginQuery.error.message}</p>
+      <p class="text-sm text-destructive text-center">
+        {loginQuery.error.message}
+      </p>
     {/if}
-  </form>
-</div>
+  </Card.Footer>
+</Card.Root>
 
 {#if import.meta.env.DEV}
-  <SuperDebug data={$formData} />
+  <div class="mt-8"><SuperDebug data={$formData} /></div>
 {/if}
