@@ -9,11 +9,9 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import type { User } from './interfaces/user.interface';
->>>>>>> 44c3127 (feat: user CRUD)
 
 @Controller("users")
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
