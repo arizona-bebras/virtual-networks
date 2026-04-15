@@ -1,4 +1,4 @@
-import { Inject, Injectable, Param } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { DRIZZLE } from '../../db/database.module';
 import { eq } from "drizzle-orm/sql/expressions/conditions";
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';

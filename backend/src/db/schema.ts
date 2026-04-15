@@ -8,7 +8,6 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-import { delayWhen } from "rxjs";
 
 export const users = pgTable("users", {
   id: uuid(`id`).primaryKey().defaultRandom(),
@@ -62,9 +61,9 @@ export const devicesTags = pgTable(
 
 export const rules = pgTable("rules", {
   id: uuid(`id`).primaryKey().defaultRandom(),
-  source: uuid().notNull().references(() => tags.id),
-  dest: uuid().notNull().references(() => tags.id),
-  protocol: varchar({ length: 32 }).notNull(),
+  source: uuid().references(() => tags.id),
+  dest: uuid().references(() => tags.id),
+  protocol: varchar({ length: 32 }),
   port: integer().notNull(),
   network_id: uuid()
     .notNull()
