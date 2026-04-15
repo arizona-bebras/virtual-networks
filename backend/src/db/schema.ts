@@ -40,7 +40,6 @@ export const devices = pgTable("devices", {
 export const tags = pgTable("tags", {
   id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull().unique(),
-  rules: jsonb(),
   network_id: uuid()
     .notNull()
     .references(() => networks.id),
