@@ -178,7 +178,7 @@ jobs:
         run: |
           reporter="github-check"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            reporter="github-pr-review"
+            reporter="github-pr-annotations"
           fi
 
           output_file="$(mktemp)"
