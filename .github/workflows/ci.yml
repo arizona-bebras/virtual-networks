@@ -42,7 +42,7 @@ jobs:
               - 'biome.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
-              - '.github/workflows/ci.yml',
+              - '.github/workflows/ci.yml'
             proto:
               - 'proto/**'
               - 'pnpm-lock.yaml'
@@ -198,16 +198,15 @@ jobs:
 
       - name: Type-check frontend
         id: frontend_check
-        continue-on-error: true 
+        continue-on-error: true
         shell: bash
-        env: 
-          PUBLIC_API_URL: ${{ secrets.PUBLIC_API_URL }} 
         run: |
           output_file="$RUNNER_TEMP/svelte-check.txt"
           status=0
 
           (
             cd frontend
+            cp .env.example .env
             pnpm exec svelte-kit sync
             pnpm exec svelte-check --tsconfig ./tsconfig.json --output machine
           ) >"$output_file" 2>&1 || status=$?
