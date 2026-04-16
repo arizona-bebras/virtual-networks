@@ -11,8 +11,8 @@ export class DevicesService {
     @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
-  async create(device: Device, network_id: string) {
-    device.network_id = network_id;
+  async create(device: Device, networkId: string) {
+    device.networkId = networkId;
     await this.db.insert(schema.devices).values(device);
   }
 

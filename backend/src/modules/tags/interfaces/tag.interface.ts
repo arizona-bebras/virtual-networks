@@ -1,4 +1,4 @@
 export interface Tag {
   name: string;
-  network_id: string;
+  networkId: string;
 }

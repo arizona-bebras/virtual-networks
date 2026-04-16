@@ -1,18 +1,99 @@
 import { defineRelations } from "drizzle-orm";
 import {
+  boolean,
+  index,
   integer,
   pgTable,
   primaryKey,
   text,
+  timestamp,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 
-export const users = pgTable("users", {
-  id: uuid(`id`).primaryKey().defaultRandom(),
-  name: varchar({ length: 255 }).unique().notNull(),
-  email: varchar({ length: 255 }).notNull().unique(),
+// Better Auth Tables
+
+export const user = pgTable("user", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  emailVerified: boolean("email_verified").default(false).notNull(),
+  image: text("image"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 });
+
+export const session = pgTable(
+  "session",
+  {
+    id: text("id").primaryKey(),
+    expiresAt: timestamp("expires_at").notNull(),
+    token: text("token").notNull().unique(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .$onUpdate(() => new Date())
+      .notNull(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+  },
+  (table) => [index("session_userId_idx").on(table.userId)],
+);
+
+export const account = pgTable(
+  "account",
+  {
+    id: text("id").primaryKey(),
+    accountId: text("account_id").notNull(),
+    providerId: text("provider_id").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    accessToken: text("access_token"),
+    refreshToken: text("refresh_token"),
+    idToken: text("id_token"),
+    accessTokenExpiresAt: timestamp("access_token_expires_at"),
+    refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+    scope: text("scope"),
+    password: text("password"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [index("account_userId_idx").on(table.userId)],
+);
+
+export const verification = pgTable(
+  "verification",
+  {
+    id: text("id").primaryKey(),
+    identifier: text("identifier").notNull(),
+    value: text("value").notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [index("verification_identifier_idx").on(table.identifier)],
+);
+
+export const jwks = pgTable("jwks", {
+  id: text("id").primaryKey(),
+  publicKey: text("public_key").notNull(),
+  privateKey: text("private_key").notNull(),
+  createdAt: timestamp("created_at").notNull(),
+  expiresAt: timestamp("expires_at"),
+});
+
+// App Tables
 
 export const networks = pgTable("networks", {
   id: uuid(`id`).primaryKey().defaultRandom(),
@@ -21,9 +102,9 @@ export const networks = pgTable("networks", {
   ip: varchar({ length: 15 }).notNull(),
   subnet: integer().notNull(),
   config: text().notNull(),
-  admin_id: uuid()
+  adminId: text("admin_id")
     .notNull()
-    .references(() => users.id),
+    .references(() => user.id),
 });
 
 export const devices = pgTable("devices", {
@@ -31,7 +112,7 @@ export const devices = pgTable("devices", {
   name: varchar({ length: 255 }).notNull(),
   ip: varchar({ length: 17 }).notNull().unique(),
   config: text().notNull(),
-  network_id: uuid()
+  networkId: uuid("network_id")
     .notNull()
     .references(() => networks.id),
 });
@@ -39,7 +120,7 @@ export const devices = pgTable("devices", {
 export const tags = pgTable("tags", {
   id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull().unique(),
-  network_id: uuid()
+  networkId: uuid("network_id")
     .notNull()
     .references(() => networks.id),
 });
@@ -47,14 +128,14 @@ export const tags = pgTable("tags", {
 export const devicesTags = pgTable(
   "devices_tags",
   {
-    device_id: uuid()
+    deviceId: uuid("device_id")
       .notNull()
       .references(() => devices.id),
-    tag_id: uuid()
+    tagId: uuid("tag_id")
       .notNull()
       .references(() => tags.id),
   },
-  (t) => [primaryKey({ columns: [t.device_id, t.tag_id] })],
+  (t) => [primaryKey({ columns: [t.deviceId, t.tagId] })],
 );
 
 export const rules = pgTable("rules", {
@@ -63,21 +144,37 @@ export const rules = pgTable("rules", {
   dest: uuid().references(() => tags.id),
   protocol: varchar({ length: 32 }),
   port: integer(),
-  network_id: uuid()
+  networkId: uuid("network_id")
     .notNull()
     .references(() => networks.id),
 });
 
+// Relations
+
 export const relations = defineRelations(
-  { users, networks, devices, tags, devicesTags, rules },
+  { user, session, account, networks, devices, tags, devicesTags, rules },
   (r) => ({
-    users: {
+    user: {
+      sessions: r.many.session(),
+      accounts: r.many.account(),
       networks: r.many.networks(),
     },
+    session: {
+      user: r.one.user({
+        from: r.session.userId,
+        to: r.user.id,
+      }),
+    },
+    account: {
+      user: r.one.user({
+        from: r.account.userId,
+        to: r.user.id,
+      }),
+    },
     networks: {
-      admin: r.one.users({
-        from: r.networks.admin_id,
-        to: r.users.id,
+      admin: r.one.user({
+        from: r.networks.adminId,
+        to: r.user.id,
       }),
       devices: r.many.devices(),
       tags: r.many.tags(),
@@ -85,39 +182,39 @@ export const relations = defineRelations(
     },
     devices: {
       network: r.one.networks({
-        from: r.devices.network_id,
+        from: r.devices.networkId,
         to: r.networks.id,
       }),
       tags: r.many.tags({
-        from: r.devices.id.through(r.devicesTags.device_id),
-        to: r.tags.id.through(r.devicesTags.tag_id),
+        from: r.devices.id.through(r.devicesTags.deviceId),
+        to: r.tags.id.through(r.devicesTags.tagId),
       }),
     },
     tags: {
       network: r.one.networks({
-        from: r.tags.network_id,
+        from: r.tags.networkId,
         to: r.networks.id,
       }),
       devices: r.many.devices(),
-      source_rules: r.many.rules({
+      sourceRules: r.many.rules({
         from: r.tags.id,
         to: r.rules.source,
       }),
-      dest_rules: r.many.rules({
+      destRules: r.many.rules({
         from: r.tags.id,
         to: r.rules.dest,
       }),
     },
     rules: {
       network: r.one.networks({
-        from: r.rules.network_id,
+        from: r.rules.networkId,
         to: r.networks.id,
       }),
-      source_tag: r.one.tags({
+      sourceTag: r.one.tags({
         from: r.rules.source,
         to: r.tags.id,
       }),
-      dest_tag: r.one.tags({
+      destTag: r.one.tags({
         from: r.rules.dest,
         to: r.tags.id,
       }),

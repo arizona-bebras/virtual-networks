@@ -11,8 +11,8 @@ export class RulesService {
     @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
-  async create(rule: Rule, network_id: string) {
-    rule.network_id = network_id;
+  async create(rule: Rule, networkId: string) {
+    rule.networkId = networkId;
     await this.db.insert(schema.rules).values(rule);
   }
 

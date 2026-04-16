@@ -10,8 +10,8 @@ export class TagsService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>,
   ) {}
-  async create(tag: Tag, network_id: string) {
-    tag.network_id = network_id;
+  async create(tag: Tag, networkId: string) {
+    tag.networkId = networkId;
     await this.db.insert(schema.tags).values(tag);
   }
 

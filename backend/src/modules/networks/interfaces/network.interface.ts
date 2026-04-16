@@ -4,5 +4,5 @@ export interface Network {
   ip: string;
   subnet: number;
   config: string;
-  admin_id: string;
+  adminId: string;
 }

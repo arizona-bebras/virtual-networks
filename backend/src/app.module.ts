@@ -1,6 +1,8 @@
 import { Module } from "@nestjs/common";
+import { AuthModule } from "@thallesp/nestjs-better-auth";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
+import { auth } from "./auth";
 import { DatabaseModule } from "./db/database.module";
 import { DevicesModule } from "./modules/devices/devices.module";
 import { NetworksModule } from "./modules/networks/networks.module";
@@ -16,6 +18,9 @@ import { UsersModule } from "./modules/users/users.module";
     DevicesModule,
     TagsModule,
     RulesModule,
+    AuthModule.forRoot({
+      auth,
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
