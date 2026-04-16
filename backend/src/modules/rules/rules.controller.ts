@@ -1,0 +1,78 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from "@nestjs/common";
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
+import { Rule as RuleDto } from "../../swaggerTypes";
+import type { Rule } from "./interfaces/rule.interface";
+import { RulesService } from "./rules.service";
+
+@ApiTags("Rules")
+@Controller()
+export class RulesController {
+  constructor(private readonly rulesService: RulesService) {}
+
+  @Post()
+  @ApiOperation({ summary: "Создать новое правило" })
+  @ApiParam({
+    name: "network_id",
+    description: "UUID сети",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  })
+  @ApiBody({ type: RuleDto })
+  @ApiResponse({ status: 201, description: "Правило успешно создано" })
+  async create(@Param("network_id") network_id: string, @Body() rule: Rule) {
+    await this.rulesService.create(rule, network_id);
+  }
+
+  @Get(":rule_id")
+  @ApiOperation({ summary: "Получить правило по ID" })
+  @ApiParam({
+    name: "rule_id",
+    description: "UUID правила",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  })
+  @ApiResponse({ status: 200, description: "Правило найдено", type: RuleDto })
+  @ApiResponse({ status: 404, description: "Правило не найдено" })
+  async get(@Param("rule_id") rule_id: string) {
+    return await this.rulesService.get(rule_id);
+  }
+
+  @Put(":rule_id")
+  @ApiOperation({ summary: "Обновить правило по ID" })
+  @ApiParam({
+    name: "rule_id",
+    description: "UUID правила",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  })
+  @ApiBody({ type: RuleDto })
+  @ApiResponse({ status: 200, description: "Правило успешно обновлено" })
+  @ApiResponse({ status: 404, description: "Правило не найдено" })
+  async update(@Param("rule_id") rule_id: string, @Body() rule: Rule) {
+    await this.rulesService.update(rule_id, rule);
+  }
+
+  @Delete(":rule_id")
+  @ApiOperation({ summary: "Удалить правило по ID" })
+  @ApiParam({
+    name: "rule_id",
+    description: "UUID правила",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  })
+  @ApiResponse({ status: 200, description: "Правило успешно удалено" })
+  @ApiResponse({ status: 404, description: "Правило не найдено" })
+  async delete(@Param("rule_id") rule_id: string) {
+    await this.rulesService.delete(rule_id);
+  }
+}

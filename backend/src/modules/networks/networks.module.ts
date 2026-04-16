@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { RouterModule } from "@nestjs/core";
 import { DevicesModule } from "../devices/devices.module";
+import { RulesModule } from "../rules/rules.module";
 import { TagsModule } from "../tags/tags.module";
 import { NetworksController } from "./networks.controller";
 import { NetworksService } from "./networks.service";
@@ -17,6 +18,10 @@ import { NetworksService } from "./networks.service";
       {
         path: "network/:network_id/tags",
         module: TagsModule,
+      },
+      {
+        path: "networks/:network_id/rules",
+        module: RulesModule,
       },
     ]),
   ],
