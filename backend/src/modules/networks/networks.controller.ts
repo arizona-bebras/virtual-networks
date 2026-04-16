@@ -19,7 +19,7 @@ import type { Network } from "./interfaces/network.interface";
 import { NetworksService } from "./networks.service";
 
 @ApiTags("Networks")
-@Controller("")
+@Controller("networks")
 export class NetworksController {
   constructor(private readonly networksService: NetworksService) {}
 

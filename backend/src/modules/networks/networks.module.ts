@@ -11,18 +11,12 @@ import { NetworksService } from "./networks.service";
     TagsModule,
     RouterModule.register([
       {
-        path: "networks",
-        module: NetworksModule,
-        children: [
-          {
-            path: ":network_id/devices",
-            module: DevicesModule,
-          },
-          {
-            path: ":network_id/tags",
-            module: TagsModule,
-          },
-        ],
+        path: "network/:network_id/devices",
+        module: DevicesModule,
+      },
+      {
+        path: "network/:network_id/tags",
+        module: TagsModule,
       },
     ]),
   ],
