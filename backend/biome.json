@@ -1,15 +1,19 @@
 {
   "extends": "//",
   "overrides": [
-        {
-            "includes": ["**/*.controller.ts", "**/*.service.ts", "**/*.repository.ts"],
-            "linter": {
-                "rules": {
-                    "style": {
-                        "useImportType": "off"
-                    }
-                }
-            }
+    {
+      "includes": [
+        "**/*.controller.ts",
+        "**/*.service.ts",
+        "**/*.repository.ts"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "useImportType": "off"
+          }
         }
-    ]
+      }
+    }
+  ]
 }

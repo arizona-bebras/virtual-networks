@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common';
-import { RouterModule } from '@nestjs/core';
-import { NetworksController } from './networks.controller';
-import { NetworksService } from './networks.service';
-import { DevicesModule } from '../devices/devices.module';
-import { TagsModule } from '../tags/tags.module';
+import { Module } from "@nestjs/common";
+import { RouterModule } from "@nestjs/core";
+import { DevicesModule } from "../devices/devices.module";
+import { TagsModule } from "../tags/tags.module";
+import { NetworksController } from "./networks.controller";
+import { NetworksService } from "./networks.service";
 
 @Module({
   imports: [
@@ -11,17 +11,17 @@ import { TagsModule } from '../tags/tags.module';
     TagsModule,
     RouterModule.register([
       {
-        path: 'networks',
+        path: "networks",
         module: NetworksModule,
         children: [
           {
-            path: ':network_id/devices',
+            path: ":network_id/devices",
             module: DevicesModule,
           },
           {
-            path: ':network_id/tags',
+            path: ":network_id/tags",
             module: TagsModule,
-          }
+          },
         ],
       },
     ]),

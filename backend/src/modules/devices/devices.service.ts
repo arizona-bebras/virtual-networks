@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import type { Device } from './interfaces/device.interface';
-import { db } from '../../db/connection';
-import { devices } from '../../db/schema';
-import { eq } from 'drizzle-orm/sql/expressions/conditions';
+import { Injectable } from "@nestjs/common";
+import { eq } from "drizzle-orm/sql/expressions/conditions";
+import { db } from "../../db/connection";
+import { devices } from "../../db/schema";
+import type { Device } from "./interfaces/device.interface";
 
 @Injectable()
 export class DevicesService {
