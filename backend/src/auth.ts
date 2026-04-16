@@ -4,7 +4,7 @@ import { jwt } from "better-auth/plugins";
 import { db } from "./db/connection";
 import * as schema from "./db/schema";
 
-export const auth = betterAuth({
+export const auth : any = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
@@ -16,5 +16,3 @@ export const auth = betterAuth({
   },
   plugins: [jwt()],
 });
-
-export type Auth = typeof auth;
