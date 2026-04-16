@@ -9,10 +9,8 @@ import (
 )
 
 const (
-	defaultListenPort = 51820
-	defaultMTU        = 1420
-	defaultPeerCount  = 3
-	statusPort        = 8080
+	defaultMTU = 1420
+	statusPort = 8080
 )
 
 func main() {
@@ -26,12 +24,12 @@ func main() {
 		log.Fatalf("start router runtime: %v", err)
 	}
 
-	printBootstrapInfo(runtime.cfg, runtime.serverID, runtime.peers)
+	printBootstrapInfo(runtime.cfg, runtime.protocols)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	<-ctx.Done()
-	log.Println("shutting down userspace wireguard router")
+	log.Printf("shutting down userspace router with %d protocol instances", len(runtime.protocols))
 }
 
 func init() {

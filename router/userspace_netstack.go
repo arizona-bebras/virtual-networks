@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/netip"
 	"os"
+	"sync"
 	"syscall"
 
 	"golang.zx2c4.com/wireguard/tun"
@@ -24,15 +25,26 @@ import (
 )
 
 type userspaceTun struct {
-	ep             *channel.Endpoint
-	stack          *stack.Stack
+	ep           *channel.Endpoint
+	stack        *stack.Stack
+	notifyHandle *channel.NotificationHandle
+	mtu          int
+	dnsServers   []netip.Addr
+	hasV4        bool
+	hasV6        bool
+
+	mu          sync.RWMutex
+	attachments map[*protocolTun]struct{}
+	routes      map[netip.Addr]*protocolTun
+	closed      bool
+}
+
+type protocolTun struct {
+	parent         *userspaceTun
+	name           string
+	routes         []netip.Addr
 	events         chan tun.Event
-	notifyHandle   *channel.NotificationHandle
-	incomingPacket chan *buffer.View
-	mtu            int
-	dnsServers     []netip.Addr
-	hasV4          bool
-	hasV6          bool
+	incomingPacket chan []byte
 }
 
 type userspaceNetstack struct {
@@ -42,7 +54,7 @@ type userspaceNetstack struct {
 	hasV6      bool
 }
 
-func createUserspaceNetstack(localAddresses, dnsServers []netip.Addr, mtu int) (tun.Device, *userspaceNetstack, error) {
+func createUserspaceNetstack(localAddresses, dnsServers []netip.Addr, mtu int) (*userspaceTun, *userspaceNetstack, error) {
 	opts := stack.Options{
 		NetworkProtocols:   []stack.NetworkProtocolFactory{ipv4.NewProtocol, ipv6.NewProtocol},
 		TransportProtocols: []stack.TransportProtocolFactory{tcp.NewProtocol, udp.NewProtocol, icmp.NewProtocol6, icmp.NewProtocol4},
@@ -50,12 +62,12 @@ func createUserspaceNetstack(localAddresses, dnsServers []netip.Addr, mtu int) (
 	}
 
 	dev := &userspaceTun{
-		ep:             channel.New(1024, uint32(mtu), ""),
-		stack:          stack.New(opts),
-		events:         make(chan tun.Event, 10),
-		incomingPacket: make(chan *buffer.View),
-		dnsServers:     append([]netip.Addr(nil), dnsServers...),
-		mtu:            mtu,
+		ep:          channel.New(1024, uint32(mtu), ""),
+		stack:       stack.New(opts),
+		dnsServers:  append([]netip.Addr(nil), dnsServers...),
+		mtu:         mtu,
+		attachments: make(map[*protocolTun]struct{}),
+		routes:      make(map[netip.Addr]*protocolTun),
 	}
 
 	sackEnabledOpt := tcpip.TCPSACKEnabled(true)
@@ -97,8 +109,6 @@ func createUserspaceNetstack(localAddresses, dnsServers []netip.Addr, mtu int) (
 		dev.stack.AddRoute(tcpip.Route{Destination: header.IPv6EmptySubnet, NIC: 1})
 	}
 
-	dev.events <- tun.EventUp
-
 	return dev, &userspaceNetstack{
 		stack:      dev.stack,
 		dnsServers: append([]netip.Addr(nil), dnsServers...),
@@ -107,88 +117,187 @@ func createUserspaceNetstack(localAddresses, dnsServers []netip.Addr, mtu int) (
 	}, nil
 }
 
-func (tunDev *userspaceTun) Name() (string, error) {
-	return "go", nil
+func (tunHub *userspaceTun) Attach(name string, routes []netip.Addr) *protocolTun {
+	attached := &protocolTun{
+		parent:         tunHub,
+		name:           name,
+		routes:         append([]netip.Addr(nil), routes...),
+		events:         make(chan tun.Event, 10),
+		incomingPacket: make(chan []byte, 128),
+	}
+
+	tunHub.mu.Lock()
+	defer tunHub.mu.Unlock()
+
+	if tunHub.closed {
+		close(attached.events)
+		close(attached.incomingPacket)
+		return attached
+	}
+
+	tunHub.attachments[attached] = struct{}{}
+	for _, route := range attached.routes {
+		tunHub.routes[route] = attached
+	}
+	attached.events <- tun.EventUp
+	return attached
 }
 
-func (tunDev *userspaceTun) File() *os.File {
+func (tunHub *userspaceTun) WritePacket(packet []byte) error {
+	if len(packet) == 0 {
+		return nil
+	}
+
+	pkb := stack.NewPacketBuffer(stack.PacketBufferOptions{
+		Payload: buffer.MakeWithData(packet),
+	})
+	switch packet[0] >> 4 {
+	case 4:
+		tunHub.ep.InjectInbound(header.IPv4ProtocolNumber, pkb)
+	case 6:
+		tunHub.ep.InjectInbound(header.IPv6ProtocolNumber, pkb)
+	default:
+		pkb.DecRef()
+		return syscall.EAFNOSUPPORT
+	}
+
 	return nil
 }
 
-func (tunDev *userspaceTun) Events() <-chan tun.Event {
+func (tunHub *userspaceTun) WriteNotify() {
+	for {
+		pkt := tunHub.ep.Read()
+		if pkt == nil {
+			return
+		}
+
+		view := pkt.ToView()
+		bytes := append([]byte(nil), view.AsSlice()...)
+		view.Release()
+		pkt.DecRef()
+
+		dst, ok := packetDestination(bytes)
+		if !ok {
+			continue
+		}
+
+		tunHub.mu.RLock()
+		attached := tunHub.routes[dst]
+		tunHub.mu.RUnlock()
+		if attached == nil {
+			continue
+		}
+
+		select {
+		case attached.incomingPacket <- bytes:
+		default:
+			// Drop when a protocol adapter falls behind to avoid stalling the shared packet plane.
+		}
+	}
+}
+
+func (tunHub *userspaceTun) Close() error {
+	tunHub.mu.Lock()
+	if tunHub.closed {
+		tunHub.mu.Unlock()
+		return nil
+	}
+	tunHub.closed = true
+	attachments := make([]*protocolTun, 0, len(tunHub.attachments))
+	for attached := range tunHub.attachments {
+		attachments = append(attachments, attached)
+		delete(tunHub.attachments, attached)
+	}
+	tunHub.mu.Unlock()
+
+	for _, attached := range attachments {
+		attached.closeChannels()
+	}
+
+	tunHub.stack.RemoveNIC(1)
+	tunHub.stack.Close()
+	tunHub.ep.RemoveNotify(tunHub.notifyHandle)
+	tunHub.ep.Close()
+	return nil
+}
+
+func (tunDev *protocolTun) Name() (string, error) {
+	return tunDev.name, nil
+}
+
+func (tunDev *protocolTun) File() *os.File {
+	return nil
+}
+
+func (tunDev *protocolTun) Events() <-chan tun.Event {
 	return tunDev.events
 }
 
-func (tunDev *userspaceTun) Read(buf [][]byte, sizes []int, offset int) (int, error) {
-	view, ok := <-tunDev.incomingPacket
+func (tunDev *protocolTun) Read(buf [][]byte, sizes []int, offset int) (int, error) {
+	packet, ok := <-tunDev.incomingPacket
 	if !ok {
 		return 0, os.ErrClosed
 	}
 
-	n, err := view.Read(buf[0][offset:])
-	if err != nil {
-		return 0, err
-	}
+	n := copy(buf[0][offset:], packet)
 	sizes[0] = n
 	return 1, nil
 }
 
-func (tunDev *userspaceTun) Write(buf [][]byte, offset int) (int, error) {
+func (tunDev *protocolTun) Write(buf [][]byte, offset int) (int, error) {
 	for _, packetBuffer := range buf {
 		packet := packetBuffer[offset:]
-		if len(packet) == 0 {
-			continue
-		}
-
-		pkb := stack.NewPacketBuffer(stack.PacketBufferOptions{
-			Payload: buffer.MakeWithData(packet),
-		})
-		switch packet[0] >> 4 {
-		case 4:
-			tunDev.ep.InjectInbound(header.IPv4ProtocolNumber, pkb)
-		case 6:
-			tunDev.ep.InjectInbound(header.IPv6ProtocolNumber, pkb)
-		default:
-			pkb.DecRef()
-			return 0, syscall.EAFNOSUPPORT
+		if err := tunDev.WritePacket(packet); err != nil {
+			return 0, err
 		}
 	}
 
 	return len(buf), nil
 }
 
-func (tunDev *userspaceTun) WriteNotify() {
-	pkt := tunDev.ep.Read()
-	if pkt == nil {
-		return
+func (tunDev *protocolTun) ReadPacket(ctx context.Context) ([]byte, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case packet, ok := <-tunDev.incomingPacket:
+		if !ok {
+			return nil, os.ErrClosed
+		}
+		return append([]byte(nil), packet...), nil
 	}
-
-	view := pkt.ToView()
-	pkt.DecRef()
-	tunDev.incomingPacket <- view
 }
 
-func (tunDev *userspaceTun) Close() error {
-	tunDev.stack.RemoveNIC(1)
-	tunDev.stack.Close()
-	tunDev.ep.RemoveNotify(tunDev.notifyHandle)
-	tunDev.ep.Close()
+func (tunDev *protocolTun) WritePacket(packet []byte) error {
+	return tunDev.parent.WritePacket(packet)
+}
 
-	if tunDev.events != nil {
-		close(tunDev.events)
+func (tunDev *protocolTun) Close() error {
+	tunDev.parent.mu.Lock()
+	delete(tunDev.parent.attachments, tunDev)
+	for _, route := range tunDev.routes {
+		delete(tunDev.parent.routes, route)
 	}
-	if tunDev.incomingPacket != nil {
-		close(tunDev.incomingPacket)
-	}
-
+	tunDev.parent.mu.Unlock()
+	tunDev.closeChannels()
 	return nil
 }
 
-func (tunDev *userspaceTun) MTU() (int, error) {
-	return tunDev.mtu, nil
+func (tunDev *protocolTun) closeChannels() {
+	if tunDev.events != nil {
+		close(tunDev.events)
+		tunDev.events = nil
+	}
+	if tunDev.incomingPacket != nil {
+		close(tunDev.incomingPacket)
+		tunDev.incomingPacket = nil
+	}
 }
 
-func (tunDev *userspaceTun) BatchSize() int {
+func (tunDev *protocolTun) MTU() (int, error) {
+	return tunDev.parent.mtu, nil
+}
+
+func (tunDev *protocolTun) BatchSize() int {
 	return 1
 }
 
@@ -227,4 +336,29 @@ func convertToFullAddr(endpoint netip.AddrPort) (tcpip.FullAddress, tcpip.Networ
 		Addr: tcpip.AddrFromSlice(endpoint.Addr().AsSlice()),
 		Port: endpoint.Port(),
 	}, proto
+}
+
+func packetDestination(packet []byte) (netip.Addr, bool) {
+	if len(packet) == 0 {
+		return netip.Addr{}, false
+	}
+
+	switch packet[0] >> 4 {
+	case 4:
+		if len(packet) < 20 {
+			return netip.Addr{}, false
+		}
+		var dst [4]byte
+		copy(dst[:], packet[16:20])
+		return netip.AddrFrom4(dst), true
+	case 6:
+		if len(packet) < 40 {
+			return netip.Addr{}, false
+		}
+		var dst [16]byte
+		copy(dst[:], packet[24:40])
+		return netip.AddrFrom16(dst), true
+	default:
+		return netip.Addr{}, false
+	}
 }

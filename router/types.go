@@ -1,87 +1,80 @@
 package main
 
-import (
-	"net/netip"
-	"sync"
-	"time"
+import "net/netip"
 
-	"golang.zx2c4.com/wireguard/conn"
-	"golang.zx2c4.com/wireguard/device"
-)
-
-type wireGuardIdentity struct {
-	Private [32]byte
-	Public  [32]byte
+type routerConfig struct {
+	Overlay   overlayConfig
+	Protocols []protocolConfig
 }
 
-type peer struct {
-	Name     string
-	Identity wireGuardIdentity
-	Addr     netip.Addr
+type overlayConfig struct {
+	MTU         int
+	ServerAddr  netip.Addr
+	OverlayCIDR netip.Prefix
+	StatusPort  int
 }
 
-type serverConfig struct {
+type protocolConfig struct {
+	Name         string
+	InstanceName string
 	ListenPort   uint16
-	MTU          int
-	PeerCount    int
-	ServerAddr   netip.Addr
-	OverlayCIDR  netip.Prefix
 	PublicHost   string
+	WireGuard    *wireGuardProtocolConfig
+}
+
+type wireGuardProtocolConfig struct {
+	PeerCount    int
 	KeepaliveSec int
 }
 
 type routerRuntime struct {
-	cfg      serverConfig
-	serverID wireGuardIdentity
-	peers    []peer
-
-	frontend *frontendBind
-	backend  *backendInstance
+	cfg       routerConfig
+	overlay   *overlayRuntime
+	protocols []protocolInstance
 }
 
-type backendInstance struct {
-	name   string
-	device *device.Device
-	tun    interface{ Close() error }
-	net    *userspaceNetstack
+type overlayRuntime struct {
+	tun *userspaceTun
+	net *userspaceNetstack
 }
 
-type frontendBind struct {
-	inner    conn.Bind
-	logger   *peerObservationLog
-	selector backendSelector
+type protocolBuild struct {
+	Overlay     overlayConfig
+	Config      protocolConfig
+	OverlayLink *overlayRuntime
+	ClientAddrs []netip.Addr
 }
 
-type backendSelector interface {
-	SelectInbound(packet []byte, ep conn.Endpoint, meta packetMetadata) string
+type tunnelProtocol interface {
+	Name() string
+	ClientCount(cfg protocolConfig) (int, error)
+	ClientSubnet(cfg protocolConfig, overlay overlayConfig) (netip.Prefix, error)
+	Build(build protocolBuild) (protocolInstance, error)
 }
 
-type singleBackendSelector struct {
-	backendName string
+type protocolInstance interface {
+	Name() string
+	InstanceName() string
+	Start() error
+	Close()
+	BootstrapInfo(overlay overlayConfig) protocolBootstrapInfo
+	StatusInfo(requesterAddr string) protocolStatusInfo
 }
 
-type peerObservationLog struct {
-	mu           sync.RWMutex
-	byEndpoint   map[string]*peerObservation
-	bySenderIdx  map[uint32]string
-	byReceiverIx map[uint32]string
+type protocolBootstrapInfo struct {
+	DisplayName    string
+	ListenEndpoint string
+	ServerDetails  []string
+	ClientProfiles []clientProfile
+	Postscript     string
 }
 
-type peerObservation struct {
-	Endpoint          string
-	FirstSeen         time.Time
-	LastSeen          time.Time
-	LastBackend       string
-	LastPacketType    string
-	LastSenderIndex   uint32
-	LastReceiverIndex uint32
-	Packets           uint64
+type clientProfile struct {
+	Name   string
+	Config string
 }
 
-type packetMetadata struct {
-	Type          uint32
-	TypeName      string
-	SenderIndex   uint32
-	ReceiverIndex uint32
-	Size          int
+type protocolStatusInfo struct {
+	DisplayName string
+	Lines       []string
 }
