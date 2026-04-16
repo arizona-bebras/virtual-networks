@@ -7,85 +7,67 @@ import {
   Post,
   Put,
 } from "@nestjs/common";
-import type { DevicesService } from "./devices/devices.service";
-import type { Device, Network, Tag } from "./interfaces/network.interface";
-import type { NetworksService } from "./networks.service";
-import type { TagsService } from "./tags/tags.service";
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
+import { Network as NetworkDto } from "../../swaggerTypes";
+import type { Network } from "./interfaces/network.interface";
+import { NetworksService } from "./networks.service";
 
+@ApiTags("Networks")
 @Controller("networks")
 export class NetworksController {
-  constructor(
-    private readonly networksService: NetworksService,
-    private readonly devicesService: DevicesService,
-    private readonly tagsService: TagsService,
-  ) {}
-
-  /**NETWORK */
+  constructor(private readonly networksService: NetworksService) {}
 
   @Post()
+  @ApiOperation({ summary: "Создать новую сеть" })
+  @ApiBody({ type: NetworkDto })
+  @ApiResponse({ status: 201, description: "Сеть успешно создана" })
   async create(@Body() network: Network) {
     await this.networksService.create(network);
   }
 
   @Get(":network_id")
+  @ApiOperation({ summary: "Получить сеть по ID" })
+  @ApiParam({
+    name: "network_id",
+    description: "UUID сети",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  })
+  @ApiResponse({ status: 200, description: "Сеть найдена", type: NetworkDto })
+  @ApiResponse({ status: 404, description: "Сеть не найдена" })
   async get(@Param("network_id") id: string) {
     return await this.networksService.read(id);
   }
 
   @Put(":network_id")
+  @ApiOperation({ summary: "Обновить сеть по ID" })
+  @ApiParam({
+    name: "network_id",
+    description: "UUID сети",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  })
+  @ApiBody({ type: NetworkDto })
+  @ApiResponse({ status: 200, description: "Сеть успешно обновлена" })
+  @ApiResponse({ status: 404, description: "Сеть не найдена" })
   async update(@Param("network_id") id: string, @Body() network: Network) {
     await this.networksService.update(id, network);
   }
 
   @Delete(":network_id")
+  @ApiOperation({ summary: "Удалить сеть по ID" })
+  @ApiParam({
+    name: "network_id",
+    description: "UUID сети",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  })
+  @ApiResponse({ status: 200, description: "Сеть успешно удалена" })
+  @ApiResponse({ status: 404, description: "Сеть не найдена" })
   async delete(@Param("network_id") id: string) {
     await this.networksService.delete(id);
-  }
-
-  /**DEVICES */
-
-  @Post(":network_id/devices")
-  async createDevice(
-    @Param("network_id") network_id: string,
-    @Body() device: Device,
-  ) {
-    await this.devicesService.create(device, network_id);
-  }
-
-  @Get(":network_id/devices/:device_id")
-  async getDevice(@Param("device_id") id: string) {
-    return await this.devicesService.read(id);
-  }
-
-  @Put(":network_id/devices/:device_id")
-  async updateDevice(@Param("device_id") id: string, @Body() device: Device) {
-    await this.devicesService.update(id, device);
-  }
-
-  @Delete(":network_id/devices/:device_id")
-  async deleteDevice(@Param("device_id") id: string) {
-    await this.devicesService.delete(id);
-  }
-
-  /**TAGS */
-
-  @Post(":network_id/tags")
-  async createTag(@Param("network_id") network_id: string, @Body() tag: Tag) {
-    await this.tagsService.create(tag, network_id);
-  }
-
-  @Get(":network_id/tags/:tag_id")
-  async getTag(@Param("tag_id") id: string) {
-    return await this.tagsService.read(id);
-  }
-
-  @Put(":network_id/tags/:tag_id")
-  async updateTag(@Param("tag_id") id: string, @Body() tag: Tag) {
-    await this.tagsService.update(id, tag);
-  }
-
-  @Delete(":network_id/tags/:tag_id")
-  async deleteTag(@Param("tag_id") id: string) {
-    await this.tagsService.delete(id);
   }
 }

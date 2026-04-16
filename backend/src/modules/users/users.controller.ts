@@ -8,7 +8,7 @@ import {
   Put,
 } from "@nestjs/common";
 import type { User } from "./interfaces/user.interface";
-import type { UsersService } from "./users.service";
+import { UsersService } from "./users.service";
 
 @Controller("users")
 export class UsersController {
