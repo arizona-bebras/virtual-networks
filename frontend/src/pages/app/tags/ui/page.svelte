@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Plus, Tag as TagIcon } from "lucide-svelte";
+import { Plus, Tag as TagIcon } from "@lucide/svelte";
 import { initialTags } from "$entities/tag/model/mock-tags.js";
 import type { Tag } from "$entities/tag/model/types.js";
 import { columns } from "$features/tag-management/model/tag-table-columns.js";

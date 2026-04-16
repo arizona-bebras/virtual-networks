@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Monitor } from "lucide-svelte";
+import { Monitor } from "@lucide/svelte";
 
 let { name } = $props();
 </script>

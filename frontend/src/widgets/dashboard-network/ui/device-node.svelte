@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Handle, Position } from "@xyflow/svelte";
-import { Monitor } from "lucide-svelte";
+import { Monitor } from "@lucide/svelte";
 import { Badge } from "$shared/ui/badge/index.js";
 import * as Card from "$shared/ui/card/index.js";
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Handle, Position } from "@xyflow/svelte";
-import { ShieldAlert, ShieldCheck } from "lucide-svelte";
+import { ShieldAlert, ShieldCheck } from "@lucide/svelte";
 import * as Card from "$shared/ui/card/index.js";
 
 let { data } = $props();

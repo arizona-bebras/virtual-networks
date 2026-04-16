@@ -1,5 +1,5 @@
 <script lang="ts">
-import { ArrowUpDown } from "lucide-svelte";
+import { ArrowUpDown } from "@lucide/svelte";
 import { Button } from "$shared/ui/button/index.js";
 
 let { label, onclick } = $props();

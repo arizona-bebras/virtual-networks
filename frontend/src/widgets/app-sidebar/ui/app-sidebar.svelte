@@ -7,7 +7,7 @@ import {
   Plus,
   Settings,
   Tag,
-} from "lucide-svelte";
+} from "@lucide/svelte";
 import { goto } from "$app/navigation";
 import * as DropdownMenu from "$shared/ui/dropdown-menu/index.js";
 import * as Sidebar from "$shared/ui/sidebar/index.js";

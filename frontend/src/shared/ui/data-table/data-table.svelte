@@ -15,7 +15,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Trash,
-} from "lucide-svelte";
+} from "@lucide/svelte";
 import { fade } from "svelte/transition";
 import { Button } from "$shared/ui/button/index.js";
 import { createSvelteTable, FlexRender } from "$shared/ui/data-table/index.js";

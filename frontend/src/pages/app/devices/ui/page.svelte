@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Plus } from "lucide-svelte";
+import { Plus } from "@lucide/svelte";
 import { initialDevices } from "$entities/device/model/mock-devices.js";
 import type { Device } from "$entities/device/model/types.js";
 import { columns } from "$features/device-management/model/device-table-columns.js";

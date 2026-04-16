@@ -1,5 +1,5 @@
 <script lang="ts">
-import { MoreHorizontal, Trash } from "lucide-svelte";
+import { MoreHorizontal, Trash } from "@lucide/svelte";
 import { Button } from "$shared/ui/button/index.js";
 import * as DropdownMenu from "$shared/ui/dropdown-menu/index.js";
 

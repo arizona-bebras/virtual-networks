@@ -5,7 +5,7 @@ import {
   Laptop,
   Server,
   Shield,
-} from "lucide-svelte";
+} from "@lucide/svelte";
 import type { Tag } from "./types.js";
 
 export const initialTags: Tag[] = [

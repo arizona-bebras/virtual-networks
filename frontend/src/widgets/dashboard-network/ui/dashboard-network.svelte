@@ -7,7 +7,7 @@ import {
   SvelteFlow,
 } from "@xyflow/svelte";
 import "@xyflow/svelte/dist/style.css";
-import { Activity, ArrowRight, ShieldCheck, Zap } from "lucide-svelte";
+import { Activity, ArrowRight, ShieldCheck, Zap } from "@lucide/svelte";
 import { Badge } from "$shared/ui/badge/index.js";
 import * as Dialog from "$shared/ui/dialog/index.js";
 import {
