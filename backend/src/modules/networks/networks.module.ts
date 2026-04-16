@@ -1,6 +1,8 @@
 import { Module } from "@nestjs/common";
 import { RouterModule } from "@nestjs/core";
+import { DevicesModule } from "../devices/devices.module";
 import { RulesModule } from "../rules/rules.module";
+import { TagsModule } from "../tags/tags.module";
 import { NetworksController } from "./networks.controller";
 import { NetworksService } from "./networks.service";
 
