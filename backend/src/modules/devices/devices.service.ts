@@ -1,25 +1,36 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
+import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { eq } from "drizzle-orm/sql/expressions/conditions";
-import { db } from "../../db/connection";
-import { devices } from "../../db/schema";
+import { DRIZZLE } from "../../db/database.module";
+import * as schema from "../../db/schema";
 import type { Device } from "./interfaces/device.interface";
 
 @Injectable()
 export class DevicesService {
+  constructor(
+    @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>,
+  ) {}
+
   async create(device: Device, network_id: string) {
     device.network_id = network_id;
-    await db.insert(devices).values(device);
+    await this.db.insert(schema.devices).values(device);
   }
 
   async read(id: string) {
-    return await db.select().from(devices).where(eq(devices.id, id));
+    return await this.db
+      .select()
+      .from(schema.devices)
+      .where(eq(schema.devices.id, id));
   }
 
   async update(id: string, device: Device) {
-    await db.update(devices).set(device).where(eq(devices.id, id));
+    await this.db
+      .update(schema.devices)
+      .set(device)
+      .where(eq(schema.devices.id, id));
   }
 
   async delete(id: string) {
-    await db.delete(devices).where(eq(devices.id, id));
+    await this.db.delete(schema.devices).where(eq(schema.devices.id, id));
   }
 }
