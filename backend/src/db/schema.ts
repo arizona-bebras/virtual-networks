@@ -63,7 +63,7 @@ export const rules = pgTable("rules", {
   source: uuid().references(() => tags.id),
   dest: uuid().references(() => tags.id),
   protocol: varchar({ length: 32 }),
-  port: integer().notNull(),
+  port: integer(),
   network_id: uuid()
     .notNull()
     .references(() => networks.id),
@@ -109,7 +109,7 @@ export const relations = defineRelations(
         to: r.rules.dest,
       }),
     },
-    rules : {
+    rules: {
       network: r.one.networks({
         from: r.rules.network_id,
         to: r.networks.id,
@@ -123,6 +123,5 @@ export const relations = defineRelations(
         to: r.tags.id,
       }),
     },
-
   }),
 );

@@ -2,9 +2,7 @@
   "version": "8",
   "dialect": "postgres",
   "id": "901c3469-e169-4224-829e-ef66367663f8",
-  "prevIds": [
-    "01d621b8-8a6e-4093-90d6-f20c23f11cfd"
-  ],
+  "prevIds": ["01d621b8-8a6e-4093-90d6-f20c23f11cfd"],
   "ddl": [
     {
       "isRlsEnabled": false,
@@ -395,14 +393,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "network_id"
-      ],
+      "columns": ["network_id"],
       "schemaTo": "public",
       "tableTo": "networks",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "devices_network_id_networks_id_fkey",
@@ -412,14 +406,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "device_id"
-      ],
+      "columns": ["device_id"],
       "schemaTo": "public",
       "tableTo": "devices",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "devices_tags_device_id_devices_id_fkey",
@@ -429,14 +419,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "tag_id"
-      ],
+      "columns": ["tag_id"],
       "schemaTo": "public",
       "tableTo": "tags",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "devices_tags_tag_id_tags_id_fkey",
@@ -446,14 +432,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "admin_id"
-      ],
+      "columns": ["admin_id"],
       "schemaTo": "public",
       "tableTo": "users",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "networks_admin_id_users_id_fkey",
@@ -463,14 +445,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "source"
-      ],
+      "columns": ["source"],
       "schemaTo": "public",
       "tableTo": "tags",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "rules_source_tags_id_fkey",
@@ -480,14 +458,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "dest"
-      ],
+      "columns": ["dest"],
       "schemaTo": "public",
       "tableTo": "tags",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "rules_dest_tags_id_fkey",
@@ -497,14 +471,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "network_id"
-      ],
+      "columns": ["network_id"],
       "schemaTo": "public",
       "tableTo": "networks",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "rules_network_id_networks_id_fkey",
@@ -514,14 +484,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "network_id"
-      ],
+      "columns": ["network_id"],
       "schemaTo": "public",
       "tableTo": "networks",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "tags_network_id_networks_id_fkey",
@@ -530,10 +496,7 @@
       "table": "tags"
     },
     {
-      "columns": [
-        "device_id",
-        "tag_id"
-      ],
+      "columns": ["device_id", "tag_id"],
       "nameExplicit": false,
       "name": "devices_tags_pkey",
       "entityType": "pks",
@@ -541,9 +504,7 @@
       "table": "devices_tags"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "devices_pkey",
       "schema": "public",
@@ -551,9 +512,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "networks_pkey",
       "schema": "public",
@@ -561,9 +520,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "rules_pkey",
       "schema": "public",
@@ -571,9 +528,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "tags_pkey",
       "schema": "public",
@@ -581,9 +536,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "users_pkey",
       "schema": "public",
@@ -592,9 +545,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "ip"
-      ],
+      "columns": ["ip"],
       "nullsNotDistinct": false,
       "name": "devices_ip_key",
       "schema": "public",
@@ -603,9 +554,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "name"
-      ],
+      "columns": ["name"],
       "nullsNotDistinct": false,
       "name": "tags_name_key",
       "schema": "public",
@@ -614,9 +563,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "name"
-      ],
+      "columns": ["name"],
       "nullsNotDistinct": false,
       "name": "users_name_key",
       "schema": "public",
@@ -625,9 +572,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "email"
-      ],
+      "columns": ["email"],
       "nullsNotDistinct": false,
       "name": "users_email_key",
       "schema": "public",
