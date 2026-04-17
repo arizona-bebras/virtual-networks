@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const formSchema = z.object({
-  mail: z.string().min(2).max(50),
-  password: z.string().min(2).max(50),
+  mail: z.email(),
+  password: z.string().min(8).max(64),
 });
 
 export type FormSchema = typeof formSchema;
