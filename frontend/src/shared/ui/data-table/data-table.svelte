@@ -1,5 +1,12 @@
 <script lang="ts" generics="TData extends { id: string }, TValue">
 import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Trash,
+} from "@lucide/svelte";
+import {
   type ColumnDef,
   type ColumnFiltersState,
   getCoreRowModel,
@@ -9,13 +16,6 @@ import {
   type RowSelectionState,
   type SortingState,
 } from "@tanstack/table-core";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  Trash,
-} from "@lucide/svelte";
 import { fade } from "svelte/transition";
 import { Button } from "$shared/ui/button/index.js";
 import { createSvelteTable, FlexRender } from "$shared/ui/data-table/index.js";

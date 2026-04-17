@@ -34,9 +34,9 @@ export function useForm<TSchema extends ZodObject>(
   >;
   const form = superForm(initialData, {
     SPA: true,
-    onSubmit: async ({ formData, cancel }) => {
-      const data = Object.fromEntries(formData);
-      const response = await tanstackQuery?.mutateAsync(data as any);
+    onSubmit: async ({ formData }) => {
+      const data = schema.parse(Object.fromEntries(formData));
+      const response = await tanstackQuery?.mutateAsync(data);
 
       if (response?.token) {
         localStorage.setItem("token", response.token);
