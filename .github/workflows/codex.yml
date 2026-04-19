@@ -179,11 +179,11 @@ jobs:
             echo "Base SHA: ${BASE_SHA}"
             echo "Head SHA: ${HEAD_SHA}"
             echo "Changed files:"
-            git --no-pager diff --name-status "${BASE_SHA}" "${HEAD_SHA}"
+            git --no-pager diff --name-status "${BASE_SHA}" "${HEAD_SHA}" -- . ':(exclude)**/pnpm-lock*.yaml'
             echo ""
             echo "Unified diff (context=5):"
-            git --no-pager diff --unified=5 --stat=200 "${BASE_SHA}" "${HEAD_SHA}" > /tmp/diffstat.txt
-            git --no-pager diff --unified=5 "${BASE_SHA}" "${HEAD_SHA}" > /tmp/full.diff
+            git --no-pager diff --unified=5 --stat=200 "${BASE_SHA}" "${HEAD_SHA}" -- . ':(exclude)**/pnpm-lock*.yaml' > /tmp/diffstat.txt
+            git --no-pager diff --unified=5 "${BASE_SHA}" "${HEAD_SHA}" -- . ':(exclude)**/pnpm-lock*.yaml' > /tmp/full.diff
             cat /tmp/diffstat.txt
             echo ""
             cat /tmp/full.diff
