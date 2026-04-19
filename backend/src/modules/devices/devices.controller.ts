@@ -19,7 +19,7 @@ import { DevicesService } from "./devices.service";
 import type { Device } from "./interfaces/device.interface";
 
 @ApiTags("Devices")
-@Controller()
+@Controller("networks/:network_id/devices")
 export class DevicesController {
   constructor(private readonly devicesService: DevicesService) {}
 

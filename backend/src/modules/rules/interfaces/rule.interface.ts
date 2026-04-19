@@ -3,5 +3,5 @@ export interface Rule {
   dest: string;
   protocol: string;
   port: number;
-  network_id: string;
+  networkId: string;
 }

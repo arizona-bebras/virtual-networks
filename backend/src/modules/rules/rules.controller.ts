@@ -19,7 +19,7 @@ import type { Rule } from "./interfaces/rule.interface";
 import { RulesService } from "./rules.service";
 
 @ApiTags("Rules")
-@Controller()
+@Controller("networks/:network_id/rules")
 export class RulesController {
   constructor(private readonly rulesService: RulesService) {}
 

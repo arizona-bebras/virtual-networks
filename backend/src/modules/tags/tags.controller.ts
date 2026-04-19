@@ -19,7 +19,7 @@ import type { Tag } from "./interfaces/tag.interface";
 import { TagsService } from "./tags.service";
 
 @ApiTags("Tags")
-@Controller()
+@Controller("network/:network_id/tags")
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
