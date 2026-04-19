@@ -1,87 +1,110 @@
-package main
+package router
 
 import (
 	"net/netip"
-	"sync"
-	"time"
+
+	"router/internal/netstack"
 
 	"golang.zx2c4.com/wireguard/conn"
-	"golang.zx2c4.com/wireguard/device"
+	"golang.zx2c4.com/wireguard/tun"
 )
 
-type wireGuardIdentity struct {
-	Private [32]byte
-	Public  [32]byte
+type Config struct {
+	Overlays  []NamedOverlayConfig
+	Protocols []ProtocolConfig
 }
 
-type peer struct {
-	Name     string
-	Identity wireGuardIdentity
-	Addr     netip.Addr
+type NamedOverlayConfig struct {
+	Name   string
+	Config OverlayConfig
 }
 
-type serverConfig struct {
+type OverlayConfig struct {
+	MTU         int
+	ServerAddr  netip.Addr
+	OverlayCIDR netip.Prefix
+	StatusPort  int
+}
+
+type ProtocolConfig struct {
+	Name         string
+	InstanceName string
+	OverlayName  string
 	ListenPort   uint16
-	MTU          int
-	PeerCount    int
-	ServerAddr   netip.Addr
-	OverlayCIDR  netip.Prefix
 	PublicHost   string
+	WireGuard    *WireGuardProtocolConfig
+}
+
+type WireGuardProtocolConfig struct {
+	PeerCount    int
 	KeepaliveSec int
 }
 
-type routerRuntime struct {
-	cfg      serverConfig
-	serverID wireGuardIdentity
-	peers    []peer
-
-	frontend *frontendBind
-	backend  *backendInstance
+type Runtime struct {
+	cfg       Config
+	overlays  map[string]*overlayRuntime
+	protocols []ProtocolInstance
 }
 
-type backendInstance struct {
-	name   string
-	device *device.Device
-	tun    interface{ Close() error }
-	net    *userspaceNetstack
+type overlayRuntime struct {
+	name      string
+	cfg       OverlayConfig
+	tun       *netstack.Hub
+	net       *netstack.Network
+	protocols []ProtocolInstance
 }
 
-type frontendBind struct {
-	inner    conn.Bind
-	logger   *peerObservationLog
-	selector backendSelector
+type ProtocolBuild struct {
+	OverlayName       string
+	Overlay           OverlayConfig
+	Config            ProtocolConfig
+	AttachTUN         func(name string, routes []netip.Addr) tun.Device
+	ClientAddrs       []netip.Addr
+	WireGuardBind     conn.Bind
+	WireGuardServerID *WireGuardIdentity
+	PeerObservations  func(backend string) []PeerObservation
 }
 
-type backendSelector interface {
-	SelectInbound(packet []byte, ep conn.Endpoint, meta packetMetadata) string
+type TunnelProtocol interface {
+	Name() string
+	ClientCount(cfg ProtocolConfig) (int, error)
+	ClientSubnet(cfg ProtocolConfig, overlay OverlayConfig) (netip.Prefix, error)
+	Build(build ProtocolBuild) (ProtocolInstance, error)
 }
 
-type singleBackendSelector struct {
-	backendName string
+type ProtocolInstance interface {
+	Name() string
+	InstanceName() string
+	OverlayName() string
+	Start() error
+	Close()
+	BootstrapInfo() ProtocolBootstrapInfo
+	StatusInfo(requesterAddr string) ProtocolStatusInfo
 }
 
-type peerObservationLog struct {
-	mu           sync.RWMutex
-	byEndpoint   map[string]*peerObservation
-	bySenderIdx  map[uint32]string
-	byReceiverIx map[uint32]string
+type ProtocolBootstrapInfo struct {
+	DisplayName    string
+	ListenEndpoint string
+	ServerDetails  []string
+	ClientProfiles []ClientProfile
+	Postscript     string
 }
 
-type peerObservation struct {
+type ClientProfile struct {
+	Name   string
+	Config string
+}
+
+type ProtocolStatusInfo struct {
+	DisplayName string
+	Lines       []string
+}
+
+type PeerObservation struct {
 	Endpoint          string
-	FirstSeen         time.Time
-	LastSeen          time.Time
 	LastBackend       string
 	LastPacketType    string
 	LastSenderIndex   uint32
 	LastReceiverIndex uint32
 	Packets           uint64
-}
-
-type packetMetadata struct {
-	Type          uint32
-	TypeName      string
-	SenderIndex   uint32
-	ReceiverIndex uint32
-	Size          int
 }

@@ -1,22 +1,21 @@
-package main
+package router
 
 import (
 	"fmt"
 	"net"
 	"net/http"
+	"router/internal/netstack"
 	"strings"
 )
 
 func startStatusServer(
-	tnet *userspaceNetstack,
-	cfg serverConfig,
-	serverID wireGuardIdentity,
-	peers []peer,
-	observations *peerObservationLog,
+	tnet *netstack.Network,
+	cfg OverlayConfig,
+	protocols []ProtocolInstance,
 ) error {
 	listener, err := tnet.ListenTCP(&net.TCPAddr{
 		IP:   net.IP(cfg.ServerAddr.AsSlice()),
-		Port: statusPort,
+		Port: cfg.StatusPort,
 	})
 	if err != nil {
 		return err
@@ -25,7 +24,7 @@ func startStatusServer(
 	go func() {
 		_ = http.Serve(listener, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-			_, _ = w.Write([]byte(renderStatusBody(cfg, serverID, peers, observations, r.RemoteAddr)))
+			_, _ = w.Write([]byte(renderStatusBody(cfg, protocols, r.RemoteAddr)))
 		}))
 	}()
 
@@ -33,58 +32,74 @@ func startStatusServer(
 }
 
 func renderStatusBody(
-	cfg serverConfig,
-	serverID wireGuardIdentity,
-	peers []peer,
-	observations *peerObservationLog,
+	cfg OverlayConfig,
+	protocols []ProtocolInstance,
 	requesterAddr string,
 ) string {
 	var b strings.Builder
-	fmt.Fprintf(&b, "userspace wireguard router\n")
+
+	fmt.Fprintf(&b, "userspace router\n")
 	fmt.Fprintf(&b, "server_ip=%s\n", cfg.ServerAddr)
-	fmt.Fprintf(&b, "listen_port=%d\n", cfg.ListenPort)
 	fmt.Fprintf(&b, "overlay=%s\n", cfg.OverlayCIDR)
-	fmt.Fprintf(&b, "server_public_key=%s\n", encodeBase64(serverID.Public[:]))
-	for _, p := range peers {
-		fmt.Fprintf(&b, "%s=%s", p.Name, p.Addr)
-		if p.Addr.String() == strings.Split(requesterAddr, ":")[0] {
-			fmt.Fprintf(&b, " (you)")
+
+	for _, protocol := range protocols {
+		info := protocol.StatusInfo(requesterAddr)
+		fmt.Fprintf(&b, "\n[%s]\n", protocol.InstanceName())
+		fmt.Fprintf(&b, "protocol=%s\n", protocol.Name())
+		for _, line := range info.Lines {
+			fmt.Fprintf(&b, "%s\n", line)
 		}
-		fmt.Fprintf(&b, "\n")
 	}
-	for _, obs := range observations.Snapshot() {
-		fmt.Fprintf(
-			&b,
-			"observed endpoint=%s packets=%d last_type=%s backend=%s sender_idx=%d receiver_idx=%d\n",
-			obs.Endpoint,
-			obs.Packets,
-			obs.LastPacketType,
-			obs.LastBackend,
-			obs.LastSenderIndex,
-			obs.LastReceiverIndex,
-		)
-	}
+
 	return b.String()
 }
 
-func printBootstrapInfo(cfg serverConfig, serverID wireGuardIdentity, peers []peer) {
-	endpoint := fmt.Sprintf("%s:%d", cfg.PublicHost, cfg.ListenPort)
+func (r *Runtime) PrintBootstrapInfo() {
+	printBootstrapInfo(r.cfg, r.protocols)
+}
 
-	fmt.Println("=== Userspace WireGuard Router ===")
-	fmt.Printf("Server listen UDP endpoint: %s\n", endpoint)
-	fmt.Printf("Server tunnel address: %s/%d\n", cfg.ServerAddr, cfg.OverlayCIDR.Bits())
-	fmt.Printf("Server public key: %s\n", encodeBase64(serverID.Public[:]))
-	fmt.Printf("Status endpoint inside tunnel: http://%s:%d/\n", cfg.ServerAddr, statusPort)
-	fmt.Println()
-	fmt.Println("Peer configs:")
+func printBootstrapInfo(cfg Config, protocols []ProtocolInstance) {
+	fmt.Println("=== Userspace Router ===")
 
-	for _, p := range peers {
-		fmt.Printf("\n# %s\n", p.Name)
-		fmt.Println(renderPeerConfig(cfg, endpoint, serverID, p))
+	for _, overlay := range cfg.Overlays {
+		fmt.Printf(
+			"Overlay [%s]: %s/%d\n",
+			overlay.Name,
+			overlay.Config.ServerAddr,
+			overlay.Config.OverlayCIDR.Bits(),
+		)
+		fmt.Printf(
+			"Status endpoint inside tunnel [%s]: http://%s:%d/\n",
+			overlay.Name,
+			overlay.Config.ServerAddr,
+			overlay.Config.StatusPort,
+		)
 	}
 
-	fmt.Println()
-	if cfg.PublicHost == "127.0.0.1" {
-		fmt.Println("Set WG_PUBLIC_HOST to your reachable server IP or DNS name before distributing these configs.")
+	for _, protocol := range protocols {
+		info := protocol.BootstrapInfo()
+		fmt.Println()
+		fmt.Printf("[%s]\n", protocol.InstanceName())
+		fmt.Printf("Overlay: %s\n", protocol.OverlayName())
+		fmt.Printf("Display: %s\n", info.DisplayName)
+		fmt.Printf("Protocol: %s\n", protocol.Name())
+		fmt.Printf("Listen endpoint: %s\n", info.ListenEndpoint)
+		for _, line := range info.ServerDetails {
+			fmt.Println(line)
+		}
+
+		if len(info.ClientProfiles) > 0 {
+			fmt.Println()
+			fmt.Println("Client configs:")
+			for _, profile := range info.ClientProfiles {
+				fmt.Printf("\n# %s\n", profile.Name)
+				fmt.Println(profile.Config)
+			}
+		}
+
+		if info.Postscript != "" {
+			fmt.Println()
+			fmt.Println(info.Postscript)
+		}
 	}
 }

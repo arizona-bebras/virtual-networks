@@ -1,67 +1,61 @@
-package main
+package wgshared
 
 import (
 	"encoding/binary"
 	"fmt"
 	"log"
+	"strings"
+	"sync"
 	"time"
 
 	"golang.zx2c4.com/wireguard/conn"
 	"golang.zx2c4.com/wireguard/device"
 )
 
-func (s singleBackendSelector) SelectInbound(_ []byte, _ conn.Endpoint, _ packetMetadata) string {
-	return s.backendName
+type Observation struct {
+	Endpoint          string
+	LastBackend       string
+	LastPacketType    string
+	LastSenderIndex   uint32
+	LastReceiverIndex uint32
+	Packets           uint64
 }
 
-func (b *frontendBind) Open(port uint16) ([]conn.ReceiveFunc, uint16, error) {
-	receiveFns, actualPort, err := b.inner.Open(port)
-	if err != nil {
-		return nil, 0, err
+type packetMetadata struct {
+	Type          uint32
+	TypeName      string
+	SenderIndex   uint32
+	ReceiverIndex uint32
+	Size          int
+}
+
+type observerLog struct {
+	mu           sync.RWMutex
+	byEndpoint   map[string]*endpointObservation
+	bySenderIdx  map[uint32]string
+	byReceiverIx map[uint32]string
+}
+
+type endpointObservation struct {
+	Endpoint          string
+	FirstSeen         time.Time
+	LastSeen          time.Time
+	LastBackend       string
+	LastPacketType    string
+	LastSenderIndex   uint32
+	LastReceiverIndex uint32
+	Packets           uint64
+}
+
+func newObserverLog() *observerLog {
+	return &observerLog{
+		byEndpoint:   make(map[string]*endpointObservation),
+		bySenderIdx:  make(map[uint32]string),
+		byReceiverIx: make(map[uint32]string),
 	}
-
-	wrapped := make([]conn.ReceiveFunc, 0, len(receiveFns))
-	for _, receiveFn := range receiveFns {
-		current := receiveFn
-		wrapped = append(wrapped, func(packets [][]byte, sizes []int, eps []conn.Endpoint) (int, error) {
-			n, err := current(packets, sizes, eps)
-			for i := 0; i < n; i++ {
-				if sizes[i] <= 0 || sizes[i] > len(packets[i]) || eps[i] == nil {
-					continue
-				}
-				packet := packets[i][:sizes[i]]
-				meta := parsePacketMetadata(packet)
-				backend := b.selector.SelectInbound(packet, eps[i], meta)
-				b.logger.Record(eps[i], backend, meta)
-			}
-			return n, err
-		})
-	}
-
-	return wrapped, actualPort, nil
 }
 
-func (b *frontendBind) Close() error {
-	return b.inner.Close()
-}
-
-func (b *frontendBind) SetMark(mark uint32) error {
-	return b.inner.SetMark(mark)
-}
-
-func (b *frontendBind) Send(bufs [][]byte, ep conn.Endpoint) error {
-	return b.inner.Send(bufs, ep)
-}
-
-func (b *frontendBind) ParseEndpoint(s string) (conn.Endpoint, error) {
-	return b.inner.ParseEndpoint(s)
-}
-
-func (b *frontendBind) BatchSize() int {
-	return b.inner.BatchSize()
-}
-
-func (l *peerObservationLog) Record(ep conn.Endpoint, backend string, meta packetMetadata) {
+func (l *observerLog) record(ep conn.Endpoint, backend string, meta packetMetadata) {
 	key := ep.DstToString()
 	now := time.Now().UTC()
 
@@ -70,10 +64,7 @@ func (l *peerObservationLog) Record(ep conn.Endpoint, backend string, meta packe
 
 	entry, ok := l.byEndpoint[key]
 	if !ok {
-		entry = &peerObservation{
-			Endpoint:  key,
-			FirstSeen: now,
-		}
+		entry = &endpointObservation{Endpoint: key, FirstSeen: now}
 		l.byEndpoint[key] = entry
 	}
 
@@ -93,31 +84,33 @@ func (l *peerObservationLog) Record(ep conn.Endpoint, backend string, meta packe
 
 	log.Printf(
 		"frontend: endpoint=%s backend=%s packet_type=%s size=%d sender_idx=%d receiver_idx=%d",
-		key,
-		backend,
-		meta.TypeName,
-		meta.Size,
-		meta.SenderIndex,
-		meta.ReceiverIndex,
+		key, backend, meta.TypeName, meta.Size, meta.SenderIndex, meta.ReceiverIndex,
 	)
 }
 
-func (l *peerObservationLog) Snapshot() []peerObservation {
+func (l *observerLog) SnapshotForBackend(backend string) []Observation {
 	l.mu.RLock()
 	defer l.mu.RUnlock()
 
-	out := make([]peerObservation, 0, len(l.byEndpoint))
+	out := make([]Observation, 0, len(l.byEndpoint))
 	for _, entry := range l.byEndpoint {
-		out = append(out, *entry)
+		if backend != "" && entry.LastBackend != backend && !strings.Contains(entry.LastBackend, backend) {
+			continue
+		}
+		out = append(out, Observation{
+			Endpoint:          entry.Endpoint,
+			LastBackend:       entry.LastBackend,
+			LastPacketType:    entry.LastPacketType,
+			LastSenderIndex:   entry.LastSenderIndex,
+			LastReceiverIndex: entry.LastReceiverIndex,
+			Packets:           entry.Packets,
+		})
 	}
 	return out
 }
 
 func parsePacketMetadata(packet []byte) packetMetadata {
-	meta := packetMetadata{
-		TypeName: "unknown",
-		Size:     len(packet),
-	}
+	meta := packetMetadata{TypeName: "unknown", Size: len(packet)}
 	if len(packet) < 4 {
 		return meta
 	}
