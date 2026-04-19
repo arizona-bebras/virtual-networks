@@ -1,16 +1,16 @@
-package main
+package router
 
 import (
 	"fmt"
 	"net/netip"
 )
 
-func loadConfig() (routerConfig, error) {
-	cfg := routerConfig{
-		Overlays: []namedOverlayConfig{
+func loadConfig() (Config, error) {
+	cfg := Config{
+		Overlays: []NamedOverlayConfig{
 			{
 				Name: "primary",
-				Config: overlayConfig{
+				Config: OverlayConfig{
 					MTU:         defaultMTU,
 					ServerAddr:  netip.MustParseAddr("10.44.0.1"),
 					OverlayCIDR: netip.MustParsePrefix("10.44.0.0/24"),
@@ -19,7 +19,7 @@ func loadConfig() (routerConfig, error) {
 			},
 			{
 				Name: "secondary",
-				Config: overlayConfig{
+				Config: OverlayConfig{
 					MTU:         defaultMTU,
 					ServerAddr:  netip.MustParseAddr("10.44.0.1"),
 					OverlayCIDR: netip.MustParsePrefix("10.44.0.0/24"),
@@ -27,14 +27,14 @@ func loadConfig() (routerConfig, error) {
 				},
 			},
 		},
-		Protocols: []protocolConfig{
+		Protocols: []ProtocolConfig{
 			{
 				Name:         "wireguard",
 				InstanceName: "wg-primary",
 				OverlayName:  "primary",
 				ListenPort:   51820,
 				PublicHost:   "127.0.0.1",
-				WireGuard: &wireGuardProtocolConfig{
+				WireGuard: &WireGuardProtocolConfig{
 					PeerCount:    2,
 					KeepaliveSec: 25,
 				},
@@ -45,7 +45,7 @@ func loadConfig() (routerConfig, error) {
 				OverlayName:  "secondary",
 				ListenPort:   51820,
 				PublicHost:   "127.0.0.1",
-				WireGuard: &wireGuardProtocolConfig{
+				WireGuard: &WireGuardProtocolConfig{
 					PeerCount:    2,
 					KeepaliveSec: 25,
 				},
@@ -54,13 +54,13 @@ func loadConfig() (routerConfig, error) {
 	}
 
 	if err := validateConfig(cfg); err != nil {
-		return routerConfig{}, err
+		return Config{}, err
 	}
 
 	return cfg, nil
 }
 
-func validateConfig(cfg routerConfig) error {
+func validateConfig(cfg Config) error {
 	if len(cfg.Overlays) == 0 {
 		return fmt.Errorf("at least one overlay entry is required")
 	}

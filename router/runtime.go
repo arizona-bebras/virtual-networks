@@ -1,11 +1,17 @@
-package main
+package router
 
 import (
 	"fmt"
 	"net/netip"
+
+	"router/internal/netstack"
+	"router/internal/runtimeutil"
+	"router/internal/wgshared"
+
+	"golang.zx2c4.com/wireguard/tun"
 )
 
-func newRouterRuntime() (*routerRuntime, error) {
+func NewRuntime() (*Runtime, error) {
 	cfg, err := loadConfig()
 	if err != nil {
 		return nil, fmt.Errorf("load config: %w", err)
@@ -23,17 +29,17 @@ func newRouterRuntime() (*routerRuntime, error) {
 		return nil, err
 	}
 
-	return &routerRuntime{
+	return &Runtime{
 		cfg:       cfg,
 		overlays:  overlays,
 		protocols: protocols,
 	}, nil
 }
 
-func buildOverlayRuntimes(overlays []namedOverlayConfig) (map[string]*overlayRuntime, error) {
+func buildOverlayRuntimes(overlays []NamedOverlayConfig) (map[string]*overlayRuntime, error) {
 	runtimes := make(map[string]*overlayRuntime, len(overlays))
 	for _, overlay := range overlays {
-		tun, tnet, err := createUserspaceNetstack([]netip.Addr{overlay.Config.ServerAddr}, nil, overlay.Config.MTU)
+		tun, tnet, err := netstack.Create([]netip.Addr{overlay.Config.ServerAddr}, nil, overlay.Config.MTU)
 		if err != nil {
 			closeOverlayRuntimes(runtimes)
 			return nil, fmt.Errorf("create userspace netstack TUN for overlay %q: %w", overlay.Name, err)
@@ -58,11 +64,11 @@ func closeOverlayRuntimes(overlays map[string]*overlayRuntime) {
 	}
 }
 
-func buildProtocols(cfg routerConfig, overlays map[string]*overlayRuntime) ([]protocolInstance, error) {
+func buildProtocols(cfg Config, overlays map[string]*overlayRuntime) ([]ProtocolInstance, error) {
 	nextHostBySubnet := make(map[string]int)
-	instances := make([]protocolInstance, 0, len(cfg.Protocols))
-	wireGuardEndpoints := make(map[string]*sharedWireGuardEndpoint)
-	wireGuardServerIDs := make(map[string]wireGuardIdentity)
+	instances := make([]ProtocolInstance, 0, len(cfg.Protocols))
+	wireGuardEndpoints := make(map[string]*wgshared.Endpoint)
+	wireGuardServerIDs := make(map[string]WireGuardIdentity)
 
 	for _, protocolCfg := range cfg.Protocols {
 		overlay := overlays[protocolCfg.OverlayName]
@@ -85,44 +91,36 @@ func buildProtocols(cfg routerConfig, overlays map[string]*overlayRuntime) ([]pr
 			return nil, fmt.Errorf("select client subnet for %q: %w", protocolCfg.InstanceName, err)
 		}
 
-		clientAddrs := make([]netip.Addr, 0, clientCount)
 		subnetKey := fmt.Sprintf("%s|%s", overlay.name, clientSubnet.String())
-		nextHost := nextHostBySubnet[subnetKey]
-		if nextHost == 0 {
-			nextHost = 2
-		}
-		networkBase := clientSubnet.Addr().As4()
-		for len(clientAddrs) < clientCount {
-			candidate := netip.AddrFrom4([4]byte{networkBase[0], networkBase[1], networkBase[2], byte(nextHost)})
-			nextHost++
-
-			if !clientSubnet.Contains(candidate) {
-				return nil, fmt.Errorf("subnet %s does not have enough addresses for configured protocol clients", clientSubnet)
-			}
-			if clientSubnet == overlay.cfg.OverlayCIDR && candidate == overlay.cfg.ServerAddr {
-				continue
-			}
-
-			clientAddrs = append(clientAddrs, candidate)
+		clientAddrs, nextHost, err := runtimeutil.AllocateClientAddrs(
+			clientSubnet,
+			overlay.cfg.ServerAddr,
+			clientCount,
+			nextHostBySubnet[subnetKey],
+		)
+		if err != nil {
+			return nil, fmt.Errorf("allocate client addresses for %q: %w", protocolCfg.InstanceName, err)
 		}
 		nextHostBySubnet[subnetKey] = nextHost
 
-		build := protocolBuild{
+		build := ProtocolBuild{
 			OverlayName: protocolCfg.OverlayName,
 			Overlay:     overlay.cfg,
 			Config:      protocolCfg,
-			OverlayLink: overlay,
+			AttachTUN: func(name string, routes []netip.Addr) tun.Device {
+				return overlay.tun.Attach(name, routes)
+			},
 			ClientAddrs: clientAddrs,
 		}
 
 		if normalizeProtocolName(protocolCfg.Name) == "wireguard" {
-			endpointKey := sharedWireGuardEndpointKey(protocolCfg)
+			endpointKey := wgshared.Key(protocolCfg.Name, protocolCfg.ListenPort)
 			endpoint := wireGuardEndpoints[endpointKey]
 			if endpoint == nil {
-				endpoint = newSharedWireGuardEndpoint(protocolCfg.ListenPort)
+				endpoint = wgshared.NewEndpoint(protocolCfg.ListenPort)
 				wireGuardEndpoints[endpointKey] = endpoint
 
-				serverID, err := generateWireGuardIdentity()
+				serverID, err := GenerateWireGuardIdentity()
 				if err != nil {
 					return nil, fmt.Errorf("generate shared wireguard identity for %q: %w", protocolCfg.InstanceName, err)
 				}
@@ -132,6 +130,21 @@ func buildProtocols(cfg routerConfig, overlays map[string]*overlayRuntime) ([]pr
 			serverID := wireGuardServerIDs[endpointKey]
 			build.WireGuardBind = endpoint.NewBind(protocolCfg.InstanceName)
 			build.WireGuardServerID = &serverID
+			build.PeerObservations = func(backend string) []PeerObservation {
+				observations := endpoint.SnapshotForBackend(backend)
+				out := make([]PeerObservation, 0, len(observations))
+				for _, obs := range observations {
+					out = append(out, PeerObservation{
+						Endpoint:          obs.Endpoint,
+						LastBackend:       obs.LastBackend,
+						LastPacketType:    obs.LastPacketType,
+						LastSenderIndex:   obs.LastSenderIndex,
+						LastReceiverIndex: obs.LastReceiverIndex,
+						Packets:           obs.Packets,
+					})
+				}
+				return out
+			}
 		}
 
 		instance, err := factory.Build(build)
@@ -145,13 +158,17 @@ func buildProtocols(cfg routerConfig, overlays map[string]*overlayRuntime) ([]pr
 	return instances, nil
 }
 
-func (r *routerRuntime) start() error {
+func (r *Runtime) Start() error {
 	for _, protocol := range r.protocols {
 		if err := protocol.Start(); err != nil {
 			return fmt.Errorf("start %s: %w", protocol.InstanceName(), err)
 		}
 	}
-	for _, overlay := range r.overlays {
+	for _, overlayCfg := range r.cfg.Overlays {
+		overlay := r.overlays[overlayCfg.Name]
+		if overlay == nil {
+			return fmt.Errorf("overlay runtime %q is missing", overlayCfg.Name)
+		}
 		if err := startStatusServer(overlay.net, overlay.cfg, overlay.protocols); err != nil {
 			return fmt.Errorf("start userspace netstack status server for overlay %q: %w", overlay.name, err)
 		}
@@ -159,11 +176,12 @@ func (r *routerRuntime) start() error {
 	return nil
 }
 
-func (r *routerRuntime) close() {
+func (r *Runtime) Close() {
 	for i := len(r.protocols) - 1; i >= 0; i-- {
 		r.protocols[i].Close()
 	}
-	for _, overlay := range r.overlays {
+	for _, overlayCfg := range r.cfg.Overlays {
+		overlay := r.overlays[overlayCfg.Name]
 		if overlay != nil && overlay.tun != nil {
 			_ = overlay.tun.Close()
 		}

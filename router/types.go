@@ -1,97 +1,110 @@
-package main
+package router
 
 import (
 	"net/netip"
 
+	"router/internal/netstack"
+
 	"golang.zx2c4.com/wireguard/conn"
+	"golang.zx2c4.com/wireguard/tun"
 )
 
-type routerConfig struct {
-	Overlays  []namedOverlayConfig
-	Protocols []protocolConfig
+type Config struct {
+	Overlays  []NamedOverlayConfig
+	Protocols []ProtocolConfig
 }
 
-type namedOverlayConfig struct {
+type NamedOverlayConfig struct {
 	Name   string
-	Config overlayConfig
+	Config OverlayConfig
 }
 
-type overlayConfig struct {
+type OverlayConfig struct {
 	MTU         int
 	ServerAddr  netip.Addr
 	OverlayCIDR netip.Prefix
 	StatusPort  int
 }
 
-type protocolConfig struct {
+type ProtocolConfig struct {
 	Name         string
 	InstanceName string
 	OverlayName  string
 	ListenPort   uint16
 	PublicHost   string
-	WireGuard    *wireGuardProtocolConfig
+	WireGuard    *WireGuardProtocolConfig
 }
 
-type wireGuardProtocolConfig struct {
+type WireGuardProtocolConfig struct {
 	PeerCount    int
 	KeepaliveSec int
 }
 
-type routerRuntime struct {
-	cfg       routerConfig
+type Runtime struct {
+	cfg       Config
 	overlays  map[string]*overlayRuntime
-	protocols []protocolInstance
+	protocols []ProtocolInstance
 }
 
 type overlayRuntime struct {
 	name      string
-	cfg       overlayConfig
-	tun       *userspaceTun
-	net       *userspaceNetstack
-	protocols []protocolInstance
+	cfg       OverlayConfig
+	tun       *netstack.Hub
+	net       *netstack.Network
+	protocols []ProtocolInstance
 }
 
-type protocolBuild struct {
+type ProtocolBuild struct {
 	OverlayName       string
-	Overlay           overlayConfig
-	Config            protocolConfig
-	OverlayLink       *overlayRuntime
+	Overlay           OverlayConfig
+	Config            ProtocolConfig
+	AttachTUN         func(name string, routes []netip.Addr) tun.Device
 	ClientAddrs       []netip.Addr
 	WireGuardBind     conn.Bind
-	WireGuardServerID *wireGuardIdentity
+	WireGuardServerID *WireGuardIdentity
+	PeerObservations  func(backend string) []PeerObservation
 }
 
-type tunnelProtocol interface {
+type TunnelProtocol interface {
 	Name() string
-	ClientCount(cfg protocolConfig) (int, error)
-	ClientSubnet(cfg protocolConfig, overlay overlayConfig) (netip.Prefix, error)
-	Build(build protocolBuild) (protocolInstance, error)
+	ClientCount(cfg ProtocolConfig) (int, error)
+	ClientSubnet(cfg ProtocolConfig, overlay OverlayConfig) (netip.Prefix, error)
+	Build(build ProtocolBuild) (ProtocolInstance, error)
 }
 
-type protocolInstance interface {
+type ProtocolInstance interface {
 	Name() string
 	InstanceName() string
 	OverlayName() string
 	Start() error
 	Close()
-	BootstrapInfo() protocolBootstrapInfo
-	StatusInfo(requesterAddr string) protocolStatusInfo
+	BootstrapInfo() ProtocolBootstrapInfo
+	StatusInfo(requesterAddr string) ProtocolStatusInfo
 }
 
-type protocolBootstrapInfo struct {
+type ProtocolBootstrapInfo struct {
 	DisplayName    string
 	ListenEndpoint string
 	ServerDetails  []string
-	ClientProfiles []clientProfile
+	ClientProfiles []ClientProfile
 	Postscript     string
 }
 
-type clientProfile struct {
+type ClientProfile struct {
 	Name   string
 	Config string
 }
 
-type protocolStatusInfo struct {
+type ProtocolStatusInfo struct {
 	DisplayName string
 	Lines       []string
+}
+
+type PeerObservation struct {
+	Endpoint          string
+	LastBackend       string
+	LastPacketType    string
+	LastSenderIndex   uint32
+	LastReceiverIndex uint32
+	Packets           uint64
 }

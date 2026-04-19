@@ -1,4 +1,4 @@
-package main
+package netstack
 
 import (
 	"context"
@@ -24,7 +24,7 @@ import (
 	"gvisor.dev/gvisor/pkg/tcpip/transport/udp"
 )
 
-type userspaceTun struct {
+type Hub struct {
 	ep           *channel.Endpoint
 	stack        *stack.Stack
 	notifyHandle *channel.NotificationHandle
@@ -34,40 +34,40 @@ type userspaceTun struct {
 	hasV6        bool
 
 	mu          sync.RWMutex
-	attachments map[*protocolTun]struct{}
-	routes      map[netip.Addr]*protocolTun
+	attachments map[*deviceTun]struct{}
+	routes      map[netip.Addr]*deviceTun
 	closed      bool
 }
 
-type protocolTun struct {
-	parent         *userspaceTun
+type deviceTun struct {
+	parent         *Hub
 	name           string
 	routes         []netip.Addr
 	events         chan tun.Event
 	incomingPacket chan []byte
 }
 
-type userspaceNetstack struct {
+type Network struct {
 	stack      *stack.Stack
 	dnsServers []netip.Addr
 	hasV4      bool
 	hasV6      bool
 }
 
-func createUserspaceNetstack(localAddresses, dnsServers []netip.Addr, mtu int) (*userspaceTun, *userspaceNetstack, error) {
+func Create(localAddresses, dnsServers []netip.Addr, mtu int) (*Hub, *Network, error) {
 	opts := stack.Options{
 		NetworkProtocols:   []stack.NetworkProtocolFactory{ipv4.NewProtocol, ipv6.NewProtocol},
 		TransportProtocols: []stack.TransportProtocolFactory{tcp.NewProtocol, udp.NewProtocol, icmp.NewProtocol6, icmp.NewProtocol4},
 		HandleLocal:        true,
 	}
 
-	dev := &userspaceTun{
+	dev := &Hub{
 		ep:          channel.New(1024, uint32(mtu), ""),
 		stack:       stack.New(opts),
 		dnsServers:  append([]netip.Addr(nil), dnsServers...),
 		mtu:         mtu,
-		attachments: make(map[*protocolTun]struct{}),
-		routes:      make(map[netip.Addr]*protocolTun),
+		attachments: make(map[*deviceTun]struct{}),
+		routes:      make(map[netip.Addr]*deviceTun),
 	}
 
 	sackEnabledOpt := tcpip.TCPSACKEnabled(true)
@@ -115,7 +115,7 @@ func createUserspaceNetstack(localAddresses, dnsServers []netip.Addr, mtu int) (
 		dev.stack.AddRoute(tcpip.Route{Destination: header.IPv6EmptySubnet, NIC: 1})
 	}
 
-	return dev, &userspaceNetstack{
+	return dev, &Network{
 		stack:      dev.stack,
 		dnsServers: append([]netip.Addr(nil), dnsServers...),
 		hasV4:      dev.hasV4,
@@ -123,33 +123,33 @@ func createUserspaceNetstack(localAddresses, dnsServers []netip.Addr, mtu int) (
 	}, nil
 }
 
-func (tunHub *userspaceTun) Attach(name string, routes []netip.Addr) *protocolTun {
-	attached := &protocolTun{
-		parent:         tunHub,
+func (hub *Hub) Attach(name string, routes []netip.Addr) tun.Device {
+	attached := &deviceTun{
+		parent:         hub,
 		name:           name,
 		routes:         append([]netip.Addr(nil), routes...),
 		events:         make(chan tun.Event, 10),
 		incomingPacket: make(chan []byte, 128),
 	}
 
-	tunHub.mu.Lock()
-	defer tunHub.mu.Unlock()
+	hub.mu.Lock()
+	defer hub.mu.Unlock()
 
-	if tunHub.closed {
+	if hub.closed {
 		close(attached.events)
 		close(attached.incomingPacket)
 		return attached
 	}
 
-	tunHub.attachments[attached] = struct{}{}
+	hub.attachments[attached] = struct{}{}
 	for _, route := range attached.routes {
-		tunHub.routes[route] = attached
+		hub.routes[route] = attached
 	}
 	attached.events <- tun.EventUp
 	return attached
 }
 
-func (tunHub *userspaceTun) WritePacket(packet []byte) error {
+func (hub *Hub) WritePacket(packet []byte) error {
 	if len(packet) == 0 {
 		return nil
 	}
@@ -159,9 +159,9 @@ func (tunHub *userspaceTun) WritePacket(packet []byte) error {
 	})
 	switch packet[0] >> 4 {
 	case 4:
-		tunHub.ep.InjectInbound(header.IPv4ProtocolNumber, pkb)
+		hub.ep.InjectInbound(header.IPv4ProtocolNumber, pkb)
 	case 6:
-		tunHub.ep.InjectInbound(header.IPv6ProtocolNumber, pkb)
+		hub.ep.InjectInbound(header.IPv6ProtocolNumber, pkb)
 	default:
 		pkb.DecRef()
 		return syscall.EAFNOSUPPORT
@@ -170,9 +170,9 @@ func (tunHub *userspaceTun) WritePacket(packet []byte) error {
 	return nil
 }
 
-func (tunHub *userspaceTun) WriteNotify() {
+func (hub *Hub) WriteNotify() {
 	for {
-		pkt := tunHub.ep.Read()
+		pkt := hub.ep.Read()
 		if pkt == nil {
 			return
 		}
@@ -187,9 +187,9 @@ func (tunHub *userspaceTun) WriteNotify() {
 			continue
 		}
 
-		tunHub.mu.RLock()
-		attached := tunHub.routes[dst]
-		tunHub.mu.RUnlock()
+		hub.mu.RLock()
+		attached := hub.routes[dst]
+		hub.mu.RUnlock()
 		if attached == nil {
 			continue
 		}
@@ -197,71 +197,62 @@ func (tunHub *userspaceTun) WriteNotify() {
 		select {
 		case attached.incomingPacket <- bytes:
 		default:
-			// Drop when a protocol adapter falls behind to avoid stalling the shared packet plane.
 		}
 	}
 }
 
-func (tunHub *userspaceTun) Close() error {
-	tunHub.mu.Lock()
-	if tunHub.closed {
-		tunHub.mu.Unlock()
+func (hub *Hub) Close() error {
+	hub.mu.Lock()
+	if hub.closed {
+		hub.mu.Unlock()
 		return nil
 	}
-	tunHub.closed = true
-	attachments := make([]*protocolTun, 0, len(tunHub.attachments))
-	for attached := range tunHub.attachments {
+	hub.closed = true
+	attachments := make([]*deviceTun, 0, len(hub.attachments))
+	for attached := range hub.attachments {
 		attachments = append(attachments, attached)
-		delete(tunHub.attachments, attached)
+		delete(hub.attachments, attached)
 	}
-	tunHub.mu.Unlock()
+	hub.mu.Unlock()
 
 	for _, attached := range attachments {
 		attached.closeChannels()
 	}
 
-	tunHub.stack.RemoveNIC(1)
-	tunHub.stack.Close()
-	tunHub.ep.RemoveNotify(tunHub.notifyHandle)
-	tunHub.ep.Close()
+	hub.stack.RemoveNIC(1)
+	hub.stack.Close()
+	hub.ep.RemoveNotify(hub.notifyHandle)
+	hub.ep.Close()
 	return nil
 }
 
-func (tunDev *protocolTun) Name() (string, error) {
-	return tunDev.name, nil
-}
-
-func (tunDev *protocolTun) File() *os.File {
-	return nil
-}
-
-func (tunDev *protocolTun) Events() <-chan tun.Event {
+func (tunDev *deviceTun) Name() (string, error) { return tunDev.name, nil }
+func (tunDev *deviceTun) File() *os.File        { return nil }
+func (tunDev *deviceTun) Events() <-chan tun.Event {
 	return tunDev.events
 }
 
-func (tunDev *protocolTun) Read(buf [][]byte, sizes []int, offset int) (int, error) {
+func (tunDev *deviceTun) Read(buf [][]byte, sizes []int, offset int) (int, error) {
 	packet, ok := <-tunDev.incomingPacket
 	if !ok {
 		return 0, os.ErrClosed
 	}
-
 	n := copy(buf[0][offset:], packet)
 	sizes[0] = n
 	return 1, nil
 }
 
-func (tunDev *protocolTun) Write(buf [][]byte, offset int) (int, error) {
+func (tunDev *deviceTun) Write(buf [][]byte, offset int) (int, error) {
 	for _, packetBuffer := range buf {
 		packet := packetBuffer[offset:]
 		if err := tunDev.WritePacket(packet); err != nil {
 			return 0, err
 		}
 	}
-
 	return len(buf), nil
 }
 
-func (tunDev *protocolTun) ReadPacket(ctx context.Context) ([]byte, error) {
+func (tunDev *deviceTun) ReadPacket(ctx context.Context) ([]byte, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -273,11 +264,9 @@ func (tunDev *protocolTun) ReadPacket(ctx context.Context) ([]byte, error) {
 	}
 }
 
-func (tunDev *protocolTun) WritePacket(packet []byte) error {
-	return tunDev.parent.WritePacket(packet)
-}
+func (tunDev *deviceTun) WritePacket(packet []byte) error { return tunDev.parent.WritePacket(packet) }
 
-func (tunDev *protocolTun) Close() error {
+func (tunDev *deviceTun) Close() error {
 	tunDev.parent.mu.Lock()
 	delete(tunDev.parent.attachments, tunDev)
 	for _, route := range tunDev.routes {
@@ -288,7 +277,7 @@ func (tunDev *protocolTun) Close() error {
 	return nil
 }
 
-func (tunDev *protocolTun) closeChannels() {
+func (tunDev *deviceTun) closeChannels() {
 	if tunDev.events != nil {
 		close(tunDev.events)
 		tunDev.events = nil
@@ -299,19 +288,10 @@ func (tunDev *protocolTun) closeChannels() {
 	}
 }
 
-func (tunDev *protocolTun) MTU() (int, error) {
-	return tunDev.parent.mtu, nil
-}
+func (tunDev *deviceTun) MTU() (int, error) { return tunDev.parent.mtu, nil }
+func (tunDev *deviceTun) BatchSize() int    { return 1 }
 
-func (tunDev *protocolTun) BatchSize() int {
-	return 1
-}
-
-func (ns *userspaceNetstack) Stack() *stack.Stack {
-	return ns.stack
-}
-
-func (ns *userspaceNetstack) ListenTCP(addr *net.TCPAddr) (*gonet.TCPListener, error) {
+func (ns *Network) ListenTCP(addr *net.TCPAddr) (*gonet.TCPListener, error) {
 	if addr == nil {
 		return ns.ListenTCPAddrPort(netip.AddrPort{})
 	}
@@ -319,14 +299,9 @@ func (ns *userspaceNetstack) ListenTCP(addr *net.TCPAddr) (*gonet.TCPListener, e
 	return ns.ListenTCPAddrPort(netip.AddrPortFrom(ip, uint16(addr.Port)))
 }
 
-func (ns *userspaceNetstack) ListenTCPAddrPort(addr netip.AddrPort) (*gonet.TCPListener, error) {
+func (ns *Network) ListenTCPAddrPort(addr netip.AddrPort) (*gonet.TCPListener, error) {
 	fullAddr, proto := convertToFullAddr(addr)
 	return gonet.ListenTCP(ns.stack, fullAddr, proto)
-}
-
-func (ns *userspaceNetstack) DialContextTCPAddrPort(ctx context.Context, addr netip.AddrPort) (*gonet.TCPConn, error) {
-	fullAddr, proto := convertToFullAddr(addr)
-	return gonet.DialContextTCP(ctx, ns.stack, fullAddr, proto)
 }
 
 func convertToFullAddr(endpoint netip.AddrPort) (tcpip.FullAddress, tcpip.NetworkProtocolNumber) {
@@ -348,7 +323,6 @@ func packetDestination(packet []byte) (netip.Addr, bool) {
 	if len(packet) == 0 {
 		return netip.Addr{}, false
 	}
-
 	switch packet[0] >> 4 {
 	case 4:
 		if len(packet) < 20 {

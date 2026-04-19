@@ -1,16 +1,17 @@
-package main
+package router
 
 import (
 	"fmt"
 	"net"
 	"net/http"
+	"router/internal/netstack"
 	"strings"
 )
 
 func startStatusServer(
-	tnet *userspaceNetstack,
-	cfg overlayConfig,
-	protocols []protocolInstance,
+	tnet *netstack.Network,
+	cfg OverlayConfig,
+	protocols []ProtocolInstance,
 ) error {
 	listener, err := tnet.ListenTCP(&net.TCPAddr{
 		IP:   net.IP(cfg.ServerAddr.AsSlice()),
@@ -31,8 +32,8 @@ func startStatusServer(
 }
 
 func renderStatusBody(
-	cfg overlayConfig,
-	protocols []protocolInstance,
+	cfg OverlayConfig,
+	protocols []ProtocolInstance,
 	requesterAddr string,
 ) string {
 	var b strings.Builder
@@ -53,7 +54,11 @@ func renderStatusBody(
 	return b.String()
 }
 
-func printBootstrapInfo(cfg routerConfig, protocols []protocolInstance) {
+func (r *Runtime) PrintBootstrapInfo() {
+	printBootstrapInfo(r.cfg, r.protocols)
+}
+
+func printBootstrapInfo(cfg Config, protocols []ProtocolInstance) {
 	fmt.Println("=== Userspace Router ===")
 
 	for _, overlay := range cfg.Overlays {

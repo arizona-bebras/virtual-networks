@@ -6,30 +6,28 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-)
 
-const (
-	defaultMTU = 1420
-	statusPort = 8080
+	router "router"
+	_ "router/internal/wireguard"
 )
 
 func main() {
-	runtime, err := newRouterRuntime()
+	runtime, err := router.NewRuntime()
 	if err != nil {
 		log.Fatalf("create router runtime: %v", err)
 	}
-	defer runtime.close()
+	defer runtime.Close()
 
-	if err := runtime.start(); err != nil {
+	if err := runtime.Start(); err != nil {
 		log.Fatalf("start router runtime: %v", err)
 	}
 
-	printBootstrapInfo(runtime.cfg, runtime.protocols)
+	runtime.PrintBootstrapInfo()
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	<-ctx.Done()
-	log.Printf("shutting down userspace router with %d protocol instances", len(runtime.protocols))
+	log.Printf("shutting down userspace router")
 }
 
 func init() {
