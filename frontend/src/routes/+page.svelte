@@ -1,12 +1,5 @@
 <script lang="ts">
+import RootPage from "$pages/root/ui/page.svelte";
 </script>
 
-<div class="flex flex-col">
-  <a href="/app">dashboard</a>
-  {#if !localStorage.getItem('token')}
-    <a href="/auth/register">Регистрация</a>
-    <a href="/auth/login">Войти</a>
-  {:else}
-    <p>Вы уже в системе</p>
-  {/if}
-</div>
+<RootPage />

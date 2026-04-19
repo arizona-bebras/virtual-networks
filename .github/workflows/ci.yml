@@ -33,19 +33,19 @@ jobs:
               - 'backend/**'
               - 'proto/**'
               - 'biome.json'
-              - 'pnpm-lock.yaml'
+              - 'pnpm-lock*.yaml'
               - 'pnpm-workspace.yaml'
               - '.github/workflows/ci.yml'
             frontend:
               - 'frontend/**'
               - 'proto/**'
               - 'biome.json'
-              - 'pnpm-lock.yaml'
+              - 'pnpm-lock*.yaml'
               - 'pnpm-workspace.yaml'
               - '.github/workflows/ci.yml'
             proto:
               - 'proto/**'
-              - 'pnpm-lock.yaml'
+              - 'pnpm-lock*.yaml'
               - 'pnpm-workspace.yaml'
               - '.github/workflows/ci.yml'
             router:
@@ -78,6 +78,19 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+
+      - name: Prepare pnpm lockfile for pull requests
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          branch_lockfile="pnpm-lock.${GITHUB_HEAD_REF//\//!}.yaml"
+
+          if [ ! -f "$branch_lockfile" ]; then
+            echo "Expected branch lockfile '$branch_lockfile' was not found."
+            exit 1
+          fi
+
+          cp "$branch_lockfile" pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
@@ -163,6 +176,19 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      - name: Prepare pnpm lockfile for pull requests
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          branch_lockfile="pnpm-lock.${GITHUB_HEAD_REF//\//!}.yaml"
+
+          if [ ! -f "$branch_lockfile" ]; then
+            echo "Expected branch lockfile '$branch_lockfile' was not found."
+            exit 1
+          fi
+
+          cp "$branch_lockfile" pnpm-lock.yaml
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
@@ -206,6 +232,7 @@ jobs:
 
           (
             cd frontend
+            cp .env.example .env
             pnpm exec svelte-kit sync
             pnpm exec svelte-check --tsconfig ./tsconfig.json --output machine
           ) >"$output_file" 2>&1 || status=$?
@@ -294,6 +321,19 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+
+      - name: Prepare pnpm lockfile for pull requests
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          branch_lockfile="pnpm-lock.${GITHUB_HEAD_REF//\//!}.yaml"
+
+          if [ ! -f "$branch_lockfile" ]; then
+            echo "Expected branch lockfile '$branch_lockfile' was not found."
+            exit 1
+          fi
+
+          cp "$branch_lockfile" pnpm-lock.yaml
 
       - name: Install Node dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts

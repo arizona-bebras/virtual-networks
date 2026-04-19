@@ -31,10 +31,10 @@ jobs:
     outputs:
       codex-output: ${{ steps.run-codex.outputs.final-message }}
     steps:
-      - name: Checkout pull request merge commit
+      - name: Checkout pull request head commit
         uses: actions/checkout@v5
         with:
-          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Fetch base and head refs
         run: |

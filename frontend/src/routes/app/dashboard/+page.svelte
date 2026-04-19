@@ -1,6 +1,5 @@
 <script lang="ts">
-import LineChart from "$lib/components/charts/LineChart.svelte";
+import DashboardPage from "$pages/app/dashboard/ui/page.svelte";
 </script>
 
-<p>Страница с гарфиками</p>
-<div class="size-100"><LineChart /></div>
+<DashboardPage />

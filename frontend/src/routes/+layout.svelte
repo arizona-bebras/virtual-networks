@@ -1,18 +1,23 @@
 <script lang="ts">
-import "./layout.css";
-import { QueryClient, QueryClientProvider } from "@tanstack/svelte-query";
-import { SvelteQueryDevtools } from "@tanstack/svelte-query-devtools";
-import favicon from "$lib/assets/favicon.svg";
-
-const queryClient = new QueryClient();
+import { onMount } from "svelte";
+import QueryProvider from "../app/providers/query-provider.svelte";
+import "../app/styles/global.css";
+import favicon from "$shared/assets/favicon.svg";
 
 let { children } = $props();
+
+onMount(() => {
+  document.documentElement.classList.add("dark");
+});
 </script>
 
-<svelte:head><link rel="icon" href={favicon}></svelte:head>
-<QueryClientProvider client={queryClient}>
-  {@render children()}
-  {#if import.meta.env.DEV}
-    <SvelteQueryDevtools />
-  {/if}
-</QueryClientProvider>
+<svelte:head>
+  <link rel="icon" href={favicon}>
+  <script>
+  document.documentElement.classList.add("dark");
+  </script>
+</svelte:head>
+
+<div class="min-h-screen bg-background text-foreground">
+  <QueryProvider>{@render children()}</QueryProvider>
+</div>
