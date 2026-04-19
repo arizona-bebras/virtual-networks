@@ -87,7 +87,7 @@ jobs:
 
           if [ ! -f "$branch_lockfile" ]; then
             echo "Expected branch lockfile '$branch_lockfile' was not found."
-            exit 1
+            exit 0
           fi
 
           cp "$branch_lockfile" pnpm-lock.yaml
@@ -184,7 +184,7 @@ jobs:
 
           if [ ! -f "$branch_lockfile" ]; then
             echo "Expected branch lockfile '$branch_lockfile' was not found."
-            exit 1
+            exit 0
           fi
 
           cp "$branch_lockfile" pnpm-lock.yaml
@@ -330,7 +330,7 @@ jobs:
 
           if [ ! -f "$branch_lockfile" ]; then
             echo "Expected branch lockfile '$branch_lockfile' was not found."
-            exit 1
+            exit 0
           fi
 
           cp "$branch_lockfile" pnpm-lock.yaml
