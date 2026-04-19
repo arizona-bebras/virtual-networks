@@ -5,8 +5,10 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/netip"
 	"strings"
 	"sync"
@@ -31,26 +33,40 @@ type wireGuardPeer struct {
 }
 
 type wireGuardInstance struct {
-	cfg      protocolConfig
-	overlay  overlayConfig
-	serverID wireGuardIdentity
-	peers    []wireGuardPeer
-	frontend *frontendBind
-	device   *device.Device
+	cfg         protocolConfig
+	overlayName string
+	overlay     overlayConfig
+	serverID    wireGuardIdentity
+	peers       []wireGuardPeer
+	frontend    conn.Bind
+	logger      *peerObservationLog
+	device      *device.Device
 }
 
-type frontendBind struct {
-	inner    conn.Bind
-	logger   *peerObservationLog
-	selector backendSelector
+type sharedWireGuardEndpoint struct {
+	mu                  sync.Mutex
+	port                uint16
+	inner               conn.Bind
+	logger              *peerObservationLog
+	receivers           map[*sharedWireGuardBind]struct{}
+	receiverByIndex     map[uint32]*sharedWireGuardBind
+	dispatchers         []conn.ReceiveFunc
+	dispatcherCompleted sync.WaitGroup
 }
 
-type backendSelector interface {
-	SelectInbound(packet []byte, ep conn.Endpoint, meta packetMetadata) string
-}
-
-type singleBackendSelector struct {
+type sharedWireGuardBind struct {
+	parent      *sharedWireGuardEndpoint
 	backendName string
+
+	mu        sync.RWMutex
+	queues    []chan sharedInboundPacket
+	opened    bool
+	batchSize int
+}
+
+type sharedInboundPacket struct {
+	data []byte
+	ep   conn.Endpoint
 }
 
 type peerObservationLog struct {
@@ -95,9 +111,11 @@ func (wireGuardProtocol) ClientSubnet(_ protocolConfig, overlay overlayConfig) (
 }
 
 func (wireGuardProtocol) Build(build protocolBuild) (protocolInstance, error) {
-	serverID, err := generateWireGuardIdentity()
-	if err != nil {
-		return nil, fmt.Errorf("generate server identity: %w", err)
+	if build.WireGuardBind == nil {
+		return nil, fmt.Errorf("wireguard bind is required")
+	}
+	if build.WireGuardServerID == nil {
+		return nil, fmt.Errorf("wireguard server identity is required")
 	}
 
 	peers, err := generateWireGuardPeers(build.Config.InstanceName, build.ClientAddrs)
@@ -105,26 +123,21 @@ func (wireGuardProtocol) Build(build protocolBuild) (protocolInstance, error) {
 		return nil, fmt.Errorf("generate peers: %w", err)
 	}
 
-	frontend := &frontendBind{
-		inner: conn.NewDefaultBind(),
-		logger: &peerObservationLog{
-			byEndpoint:   make(map[string]*peerObservation),
-			bySenderIdx:  make(map[uint32]string),
-			byReceiverIx: make(map[uint32]string),
-		},
-		selector: singleBackendSelector{backendName: build.Config.InstanceName},
-	}
-
 	logger := device.NewLogger(device.LogLevelVerbose, fmt.Sprintf("userspace-wg[%s]: ", build.Config.InstanceName))
-	wgDevice := device.NewDevice(build.OverlayLink.tun.Attach(build.Config.InstanceName, build.ClientAddrs), frontend, logger)
+	wgDevice := device.NewDevice(build.OverlayLink.tun.Attach(build.Config.InstanceName, build.ClientAddrs), build.WireGuardBind, logger)
+
+	serverID := *build.WireGuardServerID
+	sharedBind := build.WireGuardBind.(*sharedWireGuardBind)
 
 	return &wireGuardInstance{
-		cfg:      build.Config,
-		overlay:  build.Overlay,
-		serverID: serverID,
-		peers:    peers,
-		frontend: frontend,
-		device:   wgDevice,
+		cfg:         build.Config,
+		overlayName: build.OverlayName,
+		overlay:     build.Overlay,
+		serverID:    serverID,
+		peers:       peers,
+		frontend:    build.WireGuardBind,
+		logger:      sharedBind.parent.logger,
+		device:      wgDevice,
 	}, nil
 }
 
@@ -134,6 +147,10 @@ func (i *wireGuardInstance) Name() string {
 
 func (i *wireGuardInstance) InstanceName() string {
 	return i.cfg.InstanceName
+}
+
+func (i *wireGuardInstance) OverlayName() string {
+	return i.overlayName
 }
 
 func (i *wireGuardInstance) Start() error {
@@ -155,7 +172,7 @@ func (i *wireGuardInstance) Close() {
 	}
 }
 
-func (i *wireGuardInstance) BootstrapInfo(_ overlayConfig) protocolBootstrapInfo {
+func (i *wireGuardInstance) BootstrapInfo() protocolBootstrapInfo {
 	endpoint := fmt.Sprintf("%s:%d", i.cfg.PublicHost, i.cfg.ListenPort)
 	profiles := make([]clientProfile, 0, len(i.peers))
 	for _, peer := range i.peers {
@@ -190,7 +207,7 @@ func (i *wireGuardInstance) StatusInfo(requesterAddr string) protocolStatusInfo 
 		}
 		lines = append(lines, line)
 	}
-	for _, obs := range i.frontend.logger.Snapshot() {
+	for _, obs := range i.logger.SnapshotForBackend(i.cfg.InstanceName) {
 		lines = append(lines, fmt.Sprintf(
 			"observed endpoint=%s packets=%d last_type=%s backend=%s sender_idx=%d receiver_idx=%d",
 			obs.Endpoint,
@@ -288,55 +305,300 @@ func encodeBase64(key []byte) string {
 	return base64.StdEncoding.EncodeToString(key)
 }
 
-func (s singleBackendSelector) SelectInbound(_ []byte, _ conn.Endpoint, _ packetMetadata) string {
-	return s.backendName
+func sharedWireGuardEndpointKey(cfg protocolConfig) string {
+	return fmt.Sprintf("%s|%d", normalizeProtocolName(cfg.Name), cfg.ListenPort)
 }
 
-func (b *frontendBind) Open(port uint16) ([]conn.ReceiveFunc, uint16, error) {
-	receiveFns, actualPort, err := b.inner.Open(port)
+func newSharedWireGuardEndpoint(port uint16) *sharedWireGuardEndpoint {
+	return &sharedWireGuardEndpoint{
+		port:  port,
+		inner: conn.NewDefaultBind(),
+		logger: &peerObservationLog{
+			byEndpoint:   make(map[string]*peerObservation),
+			bySenderIdx:  make(map[uint32]string),
+			byReceiverIx: make(map[uint32]string),
+		},
+		receivers:       make(map[*sharedWireGuardBind]struct{}),
+		receiverByIndex: make(map[uint32]*sharedWireGuardBind),
+	}
+}
+
+func (e *sharedWireGuardEndpoint) NewBind(backendName string) conn.Bind {
+	return &sharedWireGuardBind{
+		parent:      e,
+		backendName: backendName,
+	}
+}
+
+func (e *sharedWireGuardEndpoint) ensureListeningLocked(port uint16) (uint16, error) {
+	if len(e.dispatchers) > 0 {
+		return e.port, nil
+	}
+	if port != 0 && port != e.port {
+		return 0, fmt.Errorf("wireguard bind requested port %d but shared endpoint uses %d", port, e.port)
+	}
+
+	dispatchers, actualPort, err := e.inner.Open(e.port)
+	if err != nil {
+		return 0, err
+	}
+	e.port = actualPort
+	e.dispatchers = dispatchers
+
+	for idx, receiveFn := range dispatchers {
+		e.dispatcherCompleted.Add(1)
+		go e.runDispatcher(idx, receiveFn)
+	}
+
+	return actualPort, nil
+}
+
+func (e *sharedWireGuardEndpoint) runDispatcher(queueIdx int, receiveFn conn.ReceiveFunc) {
+	defer e.dispatcherCompleted.Done()
+
+	maxBatchSize := e.inner.BatchSize()
+	if maxBatchSize < 1 {
+		maxBatchSize = 1
+	}
+
+	buffers := make([][]byte, maxBatchSize)
+	for i := range buffers {
+		buffers[i] = make([]byte, device.MaxMessageSize)
+	}
+	sizes := make([]int, maxBatchSize)
+	endpoints := make([]conn.Endpoint, maxBatchSize)
+
+	for {
+		n, err := receiveFn(buffers, sizes, endpoints)
+		if err != nil {
+			if errors.Is(err, net.ErrClosed) {
+				return
+			}
+			if netErr, ok := err.(net.Error); ok && !netErr.Temporary() {
+				return
+			}
+			log.Printf("shared wireguard dispatcher[%d]: receive error: %v", queueIdx, err)
+			continue
+		}
+
+		for i := 0; i < n; i++ {
+			if sizes[i] <= 0 || sizes[i] > len(buffers[i]) || endpoints[i] == nil {
+				continue
+			}
+
+			packet := append([]byte(nil), buffers[i][:sizes[i]]...)
+			meta := parsePacketMetadata(packet)
+			e.dispatchInbound(queueIdx, packet, endpoints[i], meta)
+		}
+	}
+}
+
+func (e *sharedWireGuardEndpoint) dispatchInbound(queueIdx int, packet []byte, ep conn.Endpoint, meta packetMetadata) {
+	targets, backendLabel := e.selectReceivers(meta)
+	e.logger.Record(ep, backendLabel, meta)
+
+	for _, target := range targets {
+		target.enqueue(queueIdx, sharedInboundPacket{
+			data: packet,
+			ep:   ep,
+		})
+	}
+}
+
+func (e *sharedWireGuardEndpoint) selectReceivers(meta packetMetadata) ([]*sharedWireGuardBind, string) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	if meta.ReceiverIndex != 0 {
+		if target := e.receiverByIndex[meta.ReceiverIndex]; target != nil && target.isOpen() {
+			return []*sharedWireGuardBind{target}, target.backendName
+		}
+	}
+
+	targets := make([]*sharedWireGuardBind, 0, len(e.receivers))
+	names := make([]string, 0, len(e.receivers))
+	for target := range e.receivers {
+		if !target.isOpen() {
+			continue
+		}
+		targets = append(targets, target)
+		names = append(names, target.backendName)
+	}
+
+	return targets, strings.Join(names, ",")
+}
+
+func (e *sharedWireGuardEndpoint) trackOutbound(sender *sharedWireGuardBind, bufs [][]byte) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	for _, packet := range bufs {
+		meta := parsePacketMetadata(packet)
+		if meta.SenderIndex == 0 {
+			continue
+		}
+		e.receiverByIndex[meta.SenderIndex] = sender
+	}
+}
+
+func (b *sharedWireGuardBind) Open(port uint16) ([]conn.ReceiveFunc, uint16, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	if b.opened {
+		return nil, 0, conn.ErrBindAlreadyOpen
+	}
+
+	b.parent.mu.Lock()
+	actualPort, err := b.parent.ensureListeningLocked(port)
+	if err == nil {
+		b.parent.receivers[b] = struct{}{}
+	}
+	queueCount := len(b.parent.dispatchers)
+	b.batchSize = b.parent.inner.BatchSize()
+	b.parent.mu.Unlock()
 	if err != nil {
 		return nil, 0, err
 	}
-
-	wrapped := make([]conn.ReceiveFunc, 0, len(receiveFns))
-	for _, receiveFn := range receiveFns {
-		current := receiveFn
-		wrapped = append(wrapped, func(packets [][]byte, sizes []int, eps []conn.Endpoint) (int, error) {
-			n, err := current(packets, sizes, eps)
-			for i := 0; i < n; i++ {
-				if sizes[i] <= 0 || sizes[i] > len(packets[i]) || eps[i] == nil {
-					continue
-				}
-				packet := packets[i][:sizes[i]]
-				meta := parsePacketMetadata(packet)
-				backend := b.selector.SelectInbound(packet, eps[i], meta)
-				b.logger.Record(eps[i], backend, meta)
-			}
-			return n, err
-		})
+	if queueCount == 0 {
+		queueCount = 1
+	}
+	if b.batchSize < 1 {
+		b.batchSize = 1
 	}
 
-	return wrapped, actualPort, nil
+	b.queues = make([]chan sharedInboundPacket, queueCount)
+	for i := range b.queues {
+		b.queues[i] = make(chan sharedInboundPacket, b.batchSize*2)
+	}
+	b.opened = true
+
+	receiveFns := make([]conn.ReceiveFunc, 0, len(b.queues))
+	for idx := range b.queues {
+		receiveFns = append(receiveFns, b.makeReceiveFunc(idx))
+	}
+
+	return receiveFns, actualPort, nil
 }
 
-func (b *frontendBind) Close() error {
-	return b.inner.Close()
+func (b *sharedWireGuardBind) makeReceiveFunc(queueIdx int) conn.ReceiveFunc {
+	return func(packets [][]byte, sizes []int, eps []conn.Endpoint) (int, error) {
+		b.mu.RLock()
+		if !b.opened || queueIdx >= len(b.queues) {
+			b.mu.RUnlock()
+			return 0, net.ErrClosed
+		}
+		queue := b.queues[queueIdx]
+		b.mu.RUnlock()
+
+		first, ok := <-queue
+		if !ok {
+			return 0, net.ErrClosed
+		}
+
+		n := 0
+		deliver := func(pkt sharedInboundPacket) {
+			copy(packets[n], pkt.data)
+			sizes[n] = len(pkt.data)
+			eps[n] = pkt.ep
+			n++
+		}
+		deliver(first)
+
+		for n < len(packets) {
+			select {
+			case pkt, ok := <-queue:
+				if !ok {
+					return n, nil
+				}
+				deliver(pkt)
+			default:
+				return n, nil
+			}
+		}
+
+		return n, nil
+	}
 }
 
-func (b *frontendBind) SetMark(mark uint32) error {
-	return b.inner.SetMark(mark)
+func (b *sharedWireGuardBind) Close() error {
+	b.mu.Lock()
+	if !b.opened {
+		b.mu.Unlock()
+		return nil
+	}
+	b.opened = false
+	queues := b.queues
+	b.queues = nil
+	b.mu.Unlock()
+
+	b.parent.mu.Lock()
+	delete(b.parent.receivers, b)
+	for idx, owner := range b.parent.receiverByIndex {
+		if owner == b {
+			delete(b.parent.receiverByIndex, idx)
+		}
+	}
+	lastReceiver := len(b.parent.receivers) == 0
+	b.parent.mu.Unlock()
+
+	for _, queue := range queues {
+		close(queue)
+	}
+
+	if lastReceiver {
+		if err := b.parent.inner.Close(); err != nil {
+			return err
+		}
+		b.parent.dispatcherCompleted.Wait()
+
+		b.parent.mu.Lock()
+		b.parent.dispatchers = nil
+		b.parent.receiverByIndex = make(map[uint32]*sharedWireGuardBind)
+		b.parent.mu.Unlock()
+	}
+
+	return nil
 }
 
-func (b *frontendBind) Send(bufs [][]byte, ep conn.Endpoint) error {
-	return b.inner.Send(bufs, ep)
+func (b *sharedWireGuardBind) SetMark(mark uint32) error {
+	return b.parent.inner.SetMark(mark)
 }
 
-func (b *frontendBind) ParseEndpoint(s string) (conn.Endpoint, error) {
-	return b.inner.ParseEndpoint(s)
+func (b *sharedWireGuardBind) Send(bufs [][]byte, ep conn.Endpoint) error {
+	b.parent.trackOutbound(b, bufs)
+	return b.parent.inner.Send(bufs, ep)
 }
 
-func (b *frontendBind) BatchSize() int {
-	return b.inner.BatchSize()
+func (b *sharedWireGuardBind) ParseEndpoint(s string) (conn.Endpoint, error) {
+	return b.parent.inner.ParseEndpoint(s)
+}
+
+func (b *sharedWireGuardBind) BatchSize() int {
+	if b.batchSize > 0 {
+		return b.batchSize
+	}
+	return b.parent.inner.BatchSize()
+}
+
+func (b *sharedWireGuardBind) enqueue(queueIdx int, packet sharedInboundPacket) {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+
+	if !b.opened || queueIdx >= len(b.queues) {
+		return
+	}
+
+	select {
+	case b.queues[queueIdx] <- packet:
+	default:
+	}
+}
+
+func (b *sharedWireGuardBind) isOpen() bool {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+	return b.opened
 }
 
 func (l *peerObservationLog) Record(ep conn.Endpoint, backend string, meta packetMetadata) {
@@ -380,12 +642,15 @@ func (l *peerObservationLog) Record(ep conn.Endpoint, backend string, meta packe
 	)
 }
 
-func (l *peerObservationLog) Snapshot() []peerObservation {
+func (l *peerObservationLog) SnapshotForBackend(backend string) []peerObservation {
 	l.mu.RLock()
 	defer l.mu.RUnlock()
 
 	out := make([]peerObservation, 0, len(l.byEndpoint))
 	for _, entry := range l.byEndpoint {
+		if backend != "" && entry.LastBackend != backend && !strings.Contains(entry.LastBackend, backend) {
+			continue
+		}
 		out = append(out, *entry)
 	}
 	return out

@@ -55,13 +55,27 @@ func renderStatusBody(
 
 func printBootstrapInfo(cfg routerConfig, protocols []protocolInstance) {
 	fmt.Println("=== Userspace Router ===")
-	fmt.Printf("Overlay address: %s/%d\n", cfg.Overlay.ServerAddr, cfg.Overlay.OverlayCIDR.Bits())
-	fmt.Printf("Status endpoint inside tunnel: http://%s:%d/\n", cfg.Overlay.ServerAddr, cfg.Overlay.StatusPort)
+
+	for _, overlay := range cfg.Overlays {
+		fmt.Printf(
+			"Overlay [%s]: %s/%d\n",
+			overlay.Name,
+			overlay.Config.ServerAddr,
+			overlay.Config.OverlayCIDR.Bits(),
+		)
+		fmt.Printf(
+			"Status endpoint inside tunnel [%s]: http://%s:%d/\n",
+			overlay.Name,
+			overlay.Config.ServerAddr,
+			overlay.Config.StatusPort,
+		)
+	}
 
 	for _, protocol := range protocols {
-		info := protocol.BootstrapInfo(cfg.Overlay)
+		info := protocol.BootstrapInfo()
 		fmt.Println()
 		fmt.Printf("[%s]\n", protocol.InstanceName())
+		fmt.Printf("Overlay: %s\n", protocol.OverlayName())
 		fmt.Printf("Display: %s\n", info.DisplayName)
 		fmt.Printf("Protocol: %s\n", protocol.Name())
 		fmt.Printf("Listen endpoint: %s\n", info.ListenEndpoint)

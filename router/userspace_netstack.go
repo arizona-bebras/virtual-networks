@@ -103,9 +103,15 @@ func createUserspaceNetstack(localAddresses, dnsServers []netip.Addr, mtu int) (
 	}
 
 	if dev.hasV4 {
+		if err := dev.stack.SetForwardingDefaultAndAllNICs(ipv4.ProtocolNumber, true); err != nil {
+			return nil, nil, fmt.Errorf("enable IPv4 forwarding: %v", err)
+		}
 		dev.stack.AddRoute(tcpip.Route{Destination: header.IPv4EmptySubnet, NIC: 1})
 	}
 	if dev.hasV6 {
+		if err := dev.stack.SetForwardingDefaultAndAllNICs(ipv6.ProtocolNumber, true); err != nil {
+			return nil, nil, fmt.Errorf("enable IPv6 forwarding: %v", err)
+		}
 		dev.stack.AddRoute(tcpip.Route{Destination: header.IPv6EmptySubnet, NIC: 1})
 	}
 
