@@ -3,7 +3,7 @@ import { LoaderCircle } from "@lucide/svelte";
 import { createMutation } from "@tanstack/svelte-query";
 import SuperDebug from "sveltekit-superforms";
 import type { z } from "zod/v4";
-import { PUBLIC_API_URL } from "$env/static/public";
+import { goto } from "$app/navigation";
 import { authClient } from "$shared/api/auth-client.js";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { Button } from "$shared/ui/button/index.js";
@@ -14,17 +14,15 @@ import { formSchema } from "../model/schema.js";
 
 const registerQuery = createMutation(() => ({
   mutationKey: ["register"],
-  mutationFn: async (
-    data: z.infer<typeof formSchema>,
-  ): Promise<Record<string, any>> => {
+  mutationFn: async (data: z.infer<typeof formSchema>) => {
     const { data: requestData, error } = await authClient.signUp.email({
       name: data.username,
       email: data.mail,
       password: data.password,
-      callbackURL: `/app/dashboard`,
     });
 
     if (!error) {
+      goto("/app/dashboard");
       return requestData;
     }
 

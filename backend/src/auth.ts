@@ -23,7 +23,7 @@ const authOptions: BetterAuthOptions = {
   plugins: [
     jwt(),
     localization({
-      defaultLocale: "ru-RU", 
+      defaultLocale: "ru-RU",
       fallbackLocale: "default",
     }),
   ],
