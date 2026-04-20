@@ -3,7 +3,10 @@ import { LoaderCircle } from "@lucide/svelte";
 import { createMutation } from "@tanstack/svelte-query";
 import SuperDebug from "sveltekit-superforms";
 import type { z } from "zod/v4";
+import { goto } from "$app/navigation";
+import { page } from "$app/state";
 import { PUBLIC_API_URL } from "$env/static/public";
+import { authClient } from "$shared/api/auth-client.js";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { Button } from "$shared/ui/button/index.js";
 import * as Card from "$shared/ui/card/index.js";
@@ -15,24 +18,19 @@ const loginQuery = createMutation(() => ({
   mutationKey: ["login"],
   mutationFn: async (
     data: z.infer<typeof formSchema>,
-  ): Promise<Record<string, string>> => {
-    const response = await fetch(`${PUBLIC_API_URL}/auth`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: data.mail,
-        password: data.password,
-      }),
+  ): Promise<Record<string, any>> => {
+    const { data: responseData, error } = await authClient.signIn.email({
+      email: data.mail,
+      password: data.password,
+      rememberMe: true,
+      callbackURL: `/app/dashboard`,
     });
-    const responseData = await response.json();
 
-    if (response.ok) {
+    if (!error) {
       return responseData;
     }
 
-    throw new Error(responseData?.error);
+    throw new Error(error.message || "Ошибка входа");
   },
 }));
 

@@ -4,6 +4,7 @@ import { createMutation } from "@tanstack/svelte-query";
 import SuperDebug from "sveltekit-superforms";
 import type { z } from "zod/v4";
 import { PUBLIC_API_URL } from "$env/static/public";
+import { authClient } from "$shared/api/auth-client.js";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { Button } from "$shared/ui/button/index.js";
 import * as Card from "$shared/ui/card/index.js";
@@ -15,24 +16,19 @@ const registerQuery = createMutation(() => ({
   mutationKey: ["register"],
   mutationFn: async (
     data: z.infer<typeof formSchema>,
-  ): Promise<Record<string, string>> => {
-    const response = await fetch(`${PUBLIC_API_URL}/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: data.mail,
-        password: data.password,
-      }),
+  ): Promise<Record<string, any>> => {
+    const { data: requestData, error } = await authClient.signUp.email({
+      name: data.username,
+      email: data.mail,
+      password: data.password,
+      callbackURL: `/app/dashboard`,
     });
-    const responseData = await response.json();
 
-    if (response.ok) {
-      return responseData;
+    if (!error) {
+      return requestData;
     }
 
-    throw new Error(responseData?.error);
+    throw new Error(error.message || "Ошибка регистрации");
   },
 }));
 
@@ -53,6 +49,19 @@ const {
   </Card.Header>
   <Card.Content>
     <form method="POST" use:enhance class="space-y-4">
+      <Form.Field {form} name="username">
+        <Form.Control>
+          {#snippet children({ props })}
+            <Form.Label>Username</Form.Label>
+            <Input
+              {...props}
+              bind:value={$formData.username}
+              placeholder="Username"
+            />
+          {/snippet}
+        </Form.Control>
+        <Form.FieldErrors />
+      </Form.Field>
       <Form.Field {form} name="mail">
         <Form.Control>
           {#snippet children({ props })}
@@ -70,7 +79,12 @@ const {
         <Form.Control>
           {#snippet children({ props })}
             <Form.Label>Password</Form.Label>
-            <Input {...props} type="password" bind:value={$formData.password} />
+            <Input
+              {...props}
+              type="password"
+              bind:value={$formData.password}
+              placeholder="********"
+            />
           {/snippet}
         </Form.Control>
         <Form.FieldErrors />

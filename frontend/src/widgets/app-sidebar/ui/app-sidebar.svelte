@@ -9,6 +9,7 @@ import {
   Tag,
 } from "@lucide/svelte";
 import { goto } from "$app/navigation";
+import { authClient } from "$shared/api/auth-client";
 import * as DropdownMenu from "$shared/ui/dropdown-menu/index.js";
 import * as Sidebar from "$shared/ui/sidebar/index.js";
 
@@ -44,9 +45,14 @@ const navItems = $derived([
   },
 ]);
 
-function handleLogout() {
-  localStorage.removeItem("token");
-  goto("/auth/login");
+async function handleLogout() {
+  await authClient.signOut({
+    fetchOptions: {
+      onSuccess: () => {
+        goto("/auth/login");
+      },
+    },
+  });
 }
 </script>
 
