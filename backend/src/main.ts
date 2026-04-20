@@ -5,6 +5,7 @@ import { AppModule } from "./app.module";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
+    // Better Auth will re-add the default body parsers for non-auth routes.
     bodyParser: false,
   });
   const config = new DocumentBuilder()
