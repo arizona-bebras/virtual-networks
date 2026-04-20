@@ -4,8 +4,6 @@ import { createMutation } from "@tanstack/svelte-query";
 import SuperDebug from "sveltekit-superforms";
 import type { z } from "zod/v4";
 import { goto } from "$app/navigation";
-import { page } from "$app/state";
-import { PUBLIC_API_URL } from "$env/static/public";
 import { authClient } from "$shared/api/auth-client.js";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { Button } from "$shared/ui/button/index.js";
@@ -16,17 +14,15 @@ import { formSchema } from "../model/schema.js";
 
 const loginQuery = createMutation(() => ({
   mutationKey: ["login"],
-  mutationFn: async (
-    data: z.infer<typeof formSchema>,
-  ): Promise<Record<string, any>> => {
+  mutationFn: async (data: z.infer<typeof formSchema>) => {
     const { data: responseData, error } = await authClient.signIn.email({
       email: data.mail,
       password: data.password,
       rememberMe: true,
-      callbackURL: `/app/dashboard`,
     });
 
     if (!error) {
+      goto("/app/dashboard");
       return responseData;
     }
 
