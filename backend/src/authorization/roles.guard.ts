@@ -25,35 +25,26 @@ export class RolesGuard implements CanActivate {
     const req = context.switchToHttp().getRequest();
     const session: UserSession = req.session;
 
-    console.log(session);
-
     if (!session?.user) {
       throw new ForbiddenException("Not authorized");
     }
 
     const userId = session.user.id;
     const networkId = req.params.network_id;
-    console.log(networkId);
 
-    let role: "admin" | "user" | null;
+    const [membership] = await this.db
+      .select()
+      .from(schema.networkUsers)
+      .where(
+        and(
+          eq(schema.networkUsers.userId, userId),
+          eq(schema.networkUsers.networkId, networkId),
+        ),
+      )
+      .limit(1);
 
-    if (networkId) {
-      const [membership] = await this.db
-        .select()
-        .from(schema.networkUsers)
-        .where(
-          and(
-            eq(schema.networkUsers.userId, userId),
-            eq(schema.networkUsers.networkId, networkId),
-          ),
-        )
-        .limit(1);
-
-      if (!membership) {
-        throw new ForbiddenException("You are not in network");
-      }
-
-      role = membership.role;
+    if (!membership) {
+      throw new ForbiddenException("You are not in network");
     }
 
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
@@ -67,6 +58,6 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    return requiredRoles.some((r) => r === role);
+    return requiredRoles.some((r) => r === membership.role);
   }
 }

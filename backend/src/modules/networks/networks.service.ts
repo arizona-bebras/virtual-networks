@@ -3,7 +3,7 @@ import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { eq } from "drizzle-orm/sql/expressions/conditions";
 import { DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
-import type { Network } from "./interfaces/network.interface";
+import type { EnterCredentials, Network } from "./interfaces/network.interface";
 
 @Injectable()
 export class NetworksService {
@@ -21,6 +21,18 @@ export class NetworksService {
         userId: userId,
         role: "admin",
       });
+    });
+  }
+
+  async enter(
+    _credentials: EnterCredentials,
+    networkId: string,
+    userId: string,
+  ) {
+    await this.db.insert(schema.networkUsers).values({
+      userId: userId,
+      networkId: networkId,
+      role: "user",
     });
   }
 

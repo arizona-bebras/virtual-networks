@@ -6,12 +6,14 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from "@nestjs/common";
 import {
   ApiBody,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
@@ -44,6 +46,32 @@ export class DevicesController {
     @Body() device: Device,
   ) {
     await this.devicesService.create(device, network_id);
+  }
+
+  @Get("")
+  @ApiOperation({ summary: "Получить устройства по фильтрам" })
+  @ApiQuery({
+    name: "tags",
+    description: "Названия тэгов, повешенных на устройство",
+    example: "Бухгалтерия, разработка",
+  })
+  @ApiQuery({
+    name: "owner",
+    description: "UUID владельца устройства",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Устройства найдены",
+    type: DeviceDto,
+    isArray: true,
+  })
+  @ApiResponse({ status: 404, description: "Устройства не найдены" })
+  async getDevicesWithFilters(
+    @Query("tags") tags: string,
+    @Query("owner_id") ownerId: string,
+  ) {
+    return await this.devicesService.read(undefined, tags, ownerId);
   }
 
   @Get(":device_id")

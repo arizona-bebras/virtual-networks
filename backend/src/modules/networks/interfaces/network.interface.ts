@@ -4,3 +4,7 @@ export interface Network {
   ip: string;
   config: string;
 }
+
+export interface EnterCredentials {
+  key: string;
+}
