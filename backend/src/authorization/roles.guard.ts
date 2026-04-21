@@ -5,7 +5,7 @@ import {
   Inject,
   Injectable,
 } from "@nestjs/common";
-import type { Reflector } from "@nestjs/core";
+import { Reflector } from "@nestjs/core";
 import type { UserSession } from "@thallesp/nestjs-better-auth";
 import { and, eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -27,12 +27,12 @@ export class RolesGuard implements CanActivate {
 
     console.log(session);
 
-    if (!session || !session.user) {
+    if (!session?.user) {
       throw new ForbiddenException("Not authorized");
     }
 
     const userId = session.user.id;
-    const networkId = req.params.id;
+    const networkId = req.params.network_id;
     console.log(networkId);
 
     let role: "admin" | "user" | null;
@@ -67,6 +67,6 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    return requiredRoles.some((role) => role == role);
+    return requiredRoles.some((r) => r === role);
   }
 }
