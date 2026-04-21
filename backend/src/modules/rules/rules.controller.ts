@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from "@nestjs/common";
 import {
   ApiBody,
@@ -14,16 +15,22 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
+import { AuthGuard } from "@thallesp/nestjs-better-auth";
+import { Role } from "../../authorization/role.enum";
+import { Roles } from "../../authorization/roles.decorator";
+import { RolesGuard } from "../../authorization/roles.guard";
 import { Rule as RuleDto } from "../../swaggerTypes";
 import type { Rule } from "./interfaces/rule.interface";
 import { RulesService } from "./rules.service";
 
 @ApiTags("Rules")
 @Controller("networks/:network_id/rules")
+@UseGuards(AuthGuard, RolesGuard)
 export class RulesController {
   constructor(private readonly rulesService: RulesService) {}
 
   @Post()
+  @Roles(Role.Admin)
   @ApiOperation({ summary: "Создать новое правило" })
   @ApiParam({
     name: "network_id",
@@ -50,6 +57,7 @@ export class RulesController {
   }
 
   @Put(":rule_id")
+  @Roles(Role.Admin)
   @ApiOperation({ summary: "Обновить правило по ID" })
   @ApiParam({
     name: "rule_id",
@@ -64,6 +72,7 @@ export class RulesController {
   }
 
   @Delete(":rule_id")
+  @Roles(Role.Admin)
   @ApiOperation({ summary: "Удалить правило по ID" })
   @ApiParam({
     name: "rule_id",

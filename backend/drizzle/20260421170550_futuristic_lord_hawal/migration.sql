@@ -1,0 +1,9 @@
+ALTER TABLE "network_users" ADD PRIMARY KEY ("network_id","user_id");--> statement-breakpoint
+ALTER TABLE "devices" DROP CONSTRAINT "devices_network_id_networks_id_fkey", ADD CONSTRAINT "devices_network_id_networks_id_fkey" FOREIGN KEY ("network_id") REFERENCES "networks"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "devices" DROP CONSTRAINT "devices_owner_id_user_id_fkey", ADD CONSTRAINT "devices_owner_id_user_id_fkey" FOREIGN KEY ("owner_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "devices_tags" DROP CONSTRAINT "devices_tags_device_id_devices_id_fkey", ADD CONSTRAINT "devices_tags_device_id_devices_id_fkey" FOREIGN KEY ("device_id") REFERENCES "devices"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "devices_tags" DROP CONSTRAINT "devices_tags_tag_id_tags_id_fkey", ADD CONSTRAINT "devices_tags_tag_id_tags_id_fkey" FOREIGN KEY ("tag_id") REFERENCES "tags"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "network_users" DROP CONSTRAINT "network_users_network_id_networks_id_fkey", ADD CONSTRAINT "network_users_network_id_networks_id_fkey" FOREIGN KEY ("network_id") REFERENCES "networks"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "network_users" DROP CONSTRAINT "network_users_user_id_user_id_fkey", ADD CONSTRAINT "network_users_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "rules" DROP CONSTRAINT "rules_network_id_networks_id_fkey", ADD CONSTRAINT "rules_network_id_networks_id_fkey" FOREIGN KEY ("network_id") REFERENCES "networks"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "tags" DROP CONSTRAINT "tags_network_id_networks_id_fkey", ADD CONSTRAINT "tags_network_id_networks_id_fkey" FOREIGN KEY ("network_id") REFERENCES "networks"("id") ON DELETE CASCADE;

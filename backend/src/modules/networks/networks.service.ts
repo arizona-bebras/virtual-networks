@@ -3,15 +3,25 @@ import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { eq } from "drizzle-orm/sql/expressions/conditions";
 import { DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
-import { Network } from "./interfaces/network.interface";
+import type { Network } from "./interfaces/network.interface";
 
 @Injectable()
 export class NetworksService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>,
   ) {}
-  async create(network: Network) {
-    await this.db.insert(schema.networks).values(network);
+  async create(networkData: Network, userId: string) {
+    await this.db.transaction(async (tx) => {
+      const [network] = await tx
+        .insert(schema.networks)
+        .values(networkData)
+        .returning();
+      await tx.insert(schema.networkUsers).values({
+        networkId: network.id,
+        userId: userId,
+        role: "admin",
+      });
+    });
   }
 
   async read(id: string) {

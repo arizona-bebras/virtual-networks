@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from "@nestjs/common";
 import {
   ApiBody,
@@ -14,16 +15,22 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
+import { AuthGuard } from "@thallesp/nestjs-better-auth";
+import { Role } from "../../authorization/role.enum";
+import { Roles } from "../../authorization/roles.decorator";
+import { RolesGuard } from "../../authorization/roles.guard";
 import { Device as DeviceDto } from "../../swaggerTypes";
 import { DevicesService } from "./devices.service";
 import type { Device } from "./interfaces/device.interface";
 
 @ApiTags("Devices")
 @Controller("networks/:network_id/devices")
+@UseGuards(AuthGuard, RolesGuard)
 export class DevicesController {
   constructor(private readonly devicesService: DevicesService) {}
 
   @Post("")
+  @Roles(Role.Admin)
   @ApiOperation({ summary: "Создать новое устройство" })
   @ApiParam({
     name: "network_id",
@@ -57,6 +64,7 @@ export class DevicesController {
   }
 
   @Put(":device_id")
+  @Roles(Role.Admin)
   @ApiOperation({ summary: "Обновить устройство по ID" })
   @ApiParam({
     name: "device_id",
@@ -71,6 +79,7 @@ export class DevicesController {
   }
 
   @Delete(":device_id")
+  @Roles(Role.Admin)
   @ApiOperation({ summary: "Удалить устройство по ID" })
   @ApiParam({
     name: "device_id",

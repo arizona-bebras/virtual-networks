@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from "@nestjs/common";
 import {
   ApiBody,
@@ -14,16 +15,22 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
+import { AuthGuard } from "@thallesp/nestjs-better-auth";
+import { Role } from "../../authorization/role.enum";
+import { Roles } from "../../authorization/roles.decorator";
+import { RolesGuard } from "../../authorization/roles.guard";
 import { Tag as TagDto } from "../../swaggerTypes";
 import type { Tag } from "./interfaces/tag.interface";
 import { TagsService } from "./tags.service";
 
 @ApiTags("Tags")
-@Controller("network/:network_id/tags")
+@Controller("networks/:network_id/tags")
+@UseGuards(AuthGuard, RolesGuard)
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
   @Post()
+  @Roles(Role.Admin)
   @ApiOperation({ summary: "Создать новый тег" })
   @ApiParam({
     name: "network_id",
@@ -50,6 +57,7 @@ export class TagsController {
   }
 
   @Put(":tag_id")
+  @Roles(Role.Admin)
   @ApiOperation({ summary: "Обновить тег по ID" })
   @ApiParam({
     name: "tag_id",
@@ -64,6 +72,7 @@ export class TagsController {
   }
 
   @Delete(":tag_id")
+  @Roles(Role.Admin)
   @ApiOperation({ summary: "Удалить тег по ID" })
   @ApiParam({
     name: "tag_id",
