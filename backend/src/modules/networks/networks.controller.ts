@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Post,
   Put,
@@ -70,7 +71,11 @@ export class NetworksController {
   @ApiResponse({ status: 200, description: "Сеть найдена", type: NetworkDto })
   @ApiResponse({ status: 404, description: "Сеть не найдена" })
   async get(@Param("network_id") id: string) {
-    return await this.networksService.read(id);
+    const network = await this.networksService.read(id);
+    if (!network) {
+      throw new NotFoundException(`Network with ID ${id} not found`);
+    }
+    return network;
   }
 
   @Post(":network_id")

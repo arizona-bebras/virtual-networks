@@ -39,10 +39,12 @@ export class NetworksService {
   }
 
   async read(id: string) {
-    return await this.db
+    const networks = await this.db
       .select()
       .from(schema.networks)
-      .where(eq(schema.networks.id, id));
+      .where(eq(schema.networks.id, id))
+      .limit(1);
+    return networks[0];
   }
 
   async getMyNetworks(userId: string) {
