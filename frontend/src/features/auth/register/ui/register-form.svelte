@@ -35,7 +35,9 @@ const {
   valid,
   enhance,
   formData,
-} = useForm(formSchema, registerQuery);
+} = useForm(formSchema, {onSubmit: async () => {
+    await registerQuery?.mutateAsync($formData);
+  }});
 </script>
 
 <Card.Root class="w-full max-w-md">

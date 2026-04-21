@@ -8,10 +8,13 @@ import {
   Settings,
   Tag,
 } from "@lucide/svelte";
+import { createQuery } from "@tanstack/svelte-query";
 import { goto } from "$app/navigation";
+import AddNetworkBtn from "$features/sidebar/header/ui/new-network-dialog.svelte";
 import { authClient } from "$shared/api/auth-client";
 import * as DropdownMenu from "$shared/ui/dropdown-menu/index.js";
 import * as Sidebar from "$shared/ui/sidebar/index.js";
+import { sidebarQuerys } from "../api/index.svelte";
 
 // Mock networks.
 const networks = [
@@ -21,6 +24,7 @@ const networks = [
 ];
 
 let selectedNetwork = $state(networks[0]);
+let isDialogOpen = $state(false);
 
 const navItems = $derived([
   {
@@ -40,7 +44,7 @@ const navItems = $derived([
   },
   {
     title: "Configuration",
-    url: `/app/networks/${selectedNetwork.id}/config`,
+    url: `/app/networks/${selectedNetwork?.id}/config`,
     icon: Settings,
   },
 ]);
@@ -54,6 +58,10 @@ async function handleLogout() {
     },
   });
 }
+
+const networkQuery = createQuery(() =>
+  sidebarQuerys.networkDetails("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
+);
 </script>
 
 <Sidebar.Root>
@@ -84,17 +92,23 @@ async function handleLogout() {
           <DropdownMenu.Content class="w-56" align="start">
             <DropdownMenu.Label>Networks</DropdownMenu.Label>
             {#each networks as network}
-              <DropdownMenu.Item onSelect={() => selectedNetwork = network}>
+              <DropdownMenu.Item onSelect={() => (selectedNetwork = network)}>
                 {network.name}
               </DropdownMenu.Item>
             {/each}
             <DropdownMenu.Separator />
-            <DropdownMenu.Item>
+            <DropdownMenu.Item
+              onSelect={(e) => {
+                e.preventDefault();
+                isDialogOpen = true;
+              }}
+            >
               <Plus class="mr-2 size-4" />
-              New Network
+              <span>New Network</span>
             </DropdownMenu.Item>
           </DropdownMenu.Content>
         </DropdownMenu.Root>
+        <AddNetworkBtn bind:isDialogOpen />
       </Sidebar.MenuItem>
     </Sidebar.Menu>
   </Sidebar.Header>

@@ -35,7 +35,11 @@ const {
   valid,
   enhance,
   formData,
-} = useForm(formSchema, loginQuery);
+} = useForm(formSchema, {
+  onSubmit: async () => {
+    await loginQuery?.mutateAsync($formData);
+  },
+});
 </script>
 
 <Card.Root class="w-full max-w-md">

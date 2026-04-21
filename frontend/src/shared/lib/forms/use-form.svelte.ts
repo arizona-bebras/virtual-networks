@@ -19,7 +19,6 @@ type MutationResult<Result, TSchema extends ZodObject> = CreateMutationResult<
 
 export function useForm<Result, TSchema extends ZodObject>(
   schema: TSchema,
-  tanstackQuery?: MutationResult<Result, TSchema>,
   option?: FormOptions<z.infer<TSchema>>,
   onResponse?: (response: Result) => void,
 ): SuperForm<z.infer<TSchema>> & {
@@ -35,9 +34,9 @@ export function useForm<Result, TSchema extends ZodObject>(
   const form = superForm(initialData, {
     SPA: true,
     onSubmit: async ({ formData }) => {
-      const data = schema.parse(Object.fromEntries(formData));
-      const response = await tanstackQuery?.mutateAsync(data);
-      if (response) onResponse?.(response);
+      // const data = schema.parse(Object.fromEntries(formData));
+      // const response = await tanstackQuery?.mutateAsync(data);
+      // if (response) onResponse?.(response);
     },
     onChange: async () => {
       const result = await validateForm();
