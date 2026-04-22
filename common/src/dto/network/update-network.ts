@@ -1,6 +1,4 @@
 import { createZodDto } from "nestjs-zod";
-import { NetworkSchema } from "./index.js";
-
-export const UpdateNetworkSchema = NetworkSchema.omit({ id: true }).partial();
+import { UpdateNetworkSchema } from "../../schemas/network/update-network.js";
 
 export class UpdateNetworkDto extends createZodDto(UpdateNetworkSchema) {}

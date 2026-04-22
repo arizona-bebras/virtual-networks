@@ -1,7 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { CreateNetworkDto } from "common/dto/network/create-network";
-import { NetworkEnterCredentialsDto } from "common/dto/network/enter-credentials";
-import { UpdateNetworkDto } from "common/dto/network/update-network";
+import type { CreateNetworkDto } from "common/dto/network/create-network";
+import type { NetworkEnterCredentialsDto } from "common/dto/network/enter-credentials";
+import type { UpdateNetworkDto } from "common/dto/network/update-network";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { eq } from "drizzle-orm/sql/expressions/conditions";
 import { DRIZZLE } from "../../db/database.module";

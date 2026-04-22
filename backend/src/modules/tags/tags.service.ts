@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { CreateTagDto } from "common/dto/tag/create-tag";
-import { UpdateTagDto } from "common/dto/tag/update-tag";
+import type { CreateTagDto } from "common/dto/tag/create-tag";
+import type { UpdateTagDto } from "common/dto/tag/update-tag";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { sql } from "drizzle-orm/sql";
 import { and, eq } from "drizzle-orm/sql/expressions/conditions";

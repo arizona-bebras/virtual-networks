@@ -1,6 +1,4 @@
 import { createZodDto } from "nestjs-zod";
-import { TagSchema } from "./index.js";
-
-export const CreateTagSchema = TagSchema.omit({ id: true });
+import { CreateTagSchema } from "../../schemas/tag/create-tag.js";
 
 export class CreateTagDto extends createZodDto(CreateTagSchema) {}

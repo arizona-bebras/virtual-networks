@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Plus } from "@lucide/svelte";
 import { createMutation } from "@tanstack/svelte-query";
+import { CreateDeviceSchema } from "common/schemas/device/create-device";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { Button } from "$shared/ui/button/index.js";
 import * as Dialog from "$shared/ui/dialog/index.js";
@@ -8,7 +9,6 @@ import * as Form from "$shared/ui/form/index.js";
 import { Input } from "$shared/ui/input/index.js";
 import { Label } from "$shared/ui/label/index.js";
 import { deviceСreationQuery } from "../api/query";
-import { formSchema } from "../model/add-device-btn";
 
 let { open = $bindable() }: { open: boolean } = $props();
 const query = createMutation(() => deviceСreationQuery());
@@ -17,7 +17,7 @@ let {
   formData,
   valid,
   enhance,
-} = useForm(formSchema, {
+} = useForm(CreateDeviceSchema, {
   onSubmit: async () => {
     query.mutate({
       networkId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",

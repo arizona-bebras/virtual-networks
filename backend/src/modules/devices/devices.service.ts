@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { CreateDeviceDto } from "common/dto/device/create-device";
-import { UpdateDeviceDto } from "common/dto/device/update-device";
+import type { CreateDeviceDto } from "common/dto/device/create-device";
+import type { UpdateDeviceDto } from "common/dto/device/update-device";
 import { AnyColumn, SQLWrapper } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { sql } from "drizzle-orm/sql";

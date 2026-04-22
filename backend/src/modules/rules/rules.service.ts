@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { CreateRuleDto } from "common/dto/rule/create-rule";
-import { UpdateRuleDto } from "common/dto/rule/update-rule";
+import type { CreateRuleDto } from "common/dto/rule/create-rule";
+import type { UpdateRuleDto } from "common/dto/rule/update-rule";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { eq } from "drizzle-orm/sql/expressions/conditions";
 import { DRIZZLE } from "../../db/database.module";

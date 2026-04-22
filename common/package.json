@@ -2,15 +2,19 @@
   "name": "common",
   "version": "1.0.0",
   "type": "module",
+  "types": "./dist/dto/index.d.ts",
   "exports": {
-    "./*": {
-      "types": "./src/*.ts",
-      "default": "./dist/*.js"
+    "./dto/*": {
+      "types": "./dist/dto/*.d.ts",
+      "import": "./dist/dto/*.js"
+    },
+    "./schemas/*": {
+      "types": "./dist/schemas/*.d.ts",
+      "import": "./dist/schemas/*.js"
     }
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "description": "",
   "scripts": {
