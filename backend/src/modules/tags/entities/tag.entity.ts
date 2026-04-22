@@ -9,14 +9,10 @@ export enum Color {
   Orande = "orange",
 }
 
-export class Tag {
-  @ApiProperty({ description: "Название тега", example: "Разраб" })
+export class TagEntity {
+  @ApiProperty({ description: "Название тега", example: "Office" })
   name!: string;
 
-  @ApiProperty({
-    description: "Цвет тега",
-    enum: Color,
-    example: Color.Blue,
-  })
+  @ApiProperty({ description: "Цвет тега", example: "red" })
   color!: Color;
 }

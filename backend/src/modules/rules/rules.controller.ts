@@ -19,8 +19,8 @@ import { AuthGuard } from "@thallesp/nestjs-better-auth";
 import { Role } from "../../authorization/role.enum";
 import { Roles } from "../../authorization/roles.decorator";
 import { RolesGuard } from "../../authorization/roles.guard";
-import { Rule as RuleDto } from "../../swaggerTypes";
-import type { Rule } from "./interfaces/rule.interface";
+import { RuleEntity } from "./entities/rule.entity";
+import { Rule as RuleDto } from "./interfaces/rule.interface";
 import { RulesService } from "./rules.service";
 
 @ApiTags("Rules")
@@ -34,7 +34,7 @@ export class RulesController {
   @ApiOperation({ summary: "Создать новое правило" })
   @ApiBody({ type: RuleDto })
   @ApiResponse({ status: 201, description: "Правило успешно создано" })
-  async create(@Param("network_id") network_id: string, @Body() rule: Rule) {
+  async create(@Param("network_id") network_id: string, @Body() rule: RuleDto) {
     await this.rulesService.create(rule, network_id);
   }
 
@@ -44,7 +44,7 @@ export class RulesController {
   @ApiResponse({
     status: 200,
     description: "Правила получены",
-    type: RuleDto,
+    type: RuleEntity,
     isArray: true,
   })
   async getAllRules(@Param("network_id") networkId: string) {
@@ -58,7 +58,11 @@ export class RulesController {
     description: "UUID правила",
     example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   })
-  @ApiResponse({ status: 200, description: "Правило найдено", type: RuleDto })
+  @ApiResponse({
+    status: 200,
+    description: "Правило найдено",
+    type: RuleEntity,
+  })
   @ApiResponse({ status: 404, description: "Правило не найдено" })
   async get(@Param("rule_id") rule_id: string) {
     return await this.rulesService.get(rule_id);
@@ -75,7 +79,7 @@ export class RulesController {
   @ApiBody({ type: RuleDto })
   @ApiResponse({ status: 200, description: "Правило успешно обновлено" })
   @ApiResponse({ status: 404, description: "Правило не найдено" })
-  async update(@Param("rule_id") rule_id: string, @Body() rule: Rule) {
+  async update(@Param("rule_id") rule_id: string, @Body() rule: RuleDto) {
     await this.rulesService.update(rule_id, rule);
   }
 

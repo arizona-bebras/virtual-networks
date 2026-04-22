@@ -12,8 +12,9 @@ export class RulesService {
   ) {}
 
   async create(rule: Rule, networkId: string) {
-    rule.networkId = networkId;
-    await this.db.insert(schema.rules).values(rule);
+    await this.db
+      .insert(schema.rules)
+      .values({ ...rule, networkId: networkId });
   }
 
   async get(ruleId: string) {
