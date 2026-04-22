@@ -1,7 +1,7 @@
 import { Global, Module } from "@nestjs/common";
 import "dotenv/config";
+import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
 import { postgresUrl } from "./connection";
 import * as schema from "./schema";
 
@@ -12,11 +12,15 @@ export const DRIZZLE = "DRIZZLE";
   providers: [
     {
       provide: DRIZZLE,
-      useFactory: () => {
-        const pool = new Pool({
-          connectionString: postgresUrl,
+      useFactory: async () => {
+        const db = drizzle(postgresUrl, {
+          schema: schema,
+          logger: true,
         });
-        return drizzle({ client: pool, schema: schema });
+
+        await db.execute(sql`CREATE EXTENSION IF NOT EXISTS pg_trgm;`);
+
+        return db;
       },
     },
   ],

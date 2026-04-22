@@ -6,24 +6,33 @@ import {
   Param,
   Post,
   Put,
+  Query,
+  UseGuards,
 } from "@nestjs/common";
 import {
   ApiBody,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
+import { AuthGuard } from "@thallesp/nestjs-better-auth";
+import { Role } from "../../authorization/role.enum";
+import { Roles } from "../../authorization/roles.decorator";
+import { RolesGuard } from "../../authorization/roles.guard";
 import { Tag as TagDto } from "../../swaggerTypes";
 import type { Tag } from "./interfaces/tag.interface";
 import { TagsService } from "./tags.service";
 
 @ApiTags("Tags")
-@Controller("network/:network_id/tags")
+@Controller("networks/:network_id/tags")
+@UseGuards(AuthGuard, RolesGuard)
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
   @Post()
+  @Roles(Role.Admin)
   @ApiOperation({ summary: "Создать новый тег" })
   @ApiParam({
     name: "network_id",
@@ -34,6 +43,28 @@ export class TagsController {
   @ApiResponse({ status: 201, description: "Тег успешно создан" })
   async createTag(@Param("network_id") network_id: string, @Body() tag: Tag) {
     await this.tagsService.create(tag, network_id);
+  }
+
+  @Get()
+  @Roles(Role.Admin)
+  @ApiOperation({ summary: "Получить теги сети" })
+  @ApiQuery({
+    name: "q",
+    description: "Пойсковой запрос по названию",
+    example: "Разраб",
+    required: false,
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Теги получены",
+    type: TagDto,
+    isArray: true,
+  })
+  async getAllTags(
+    @Param("network_id") network_id: string,
+    @Query("q") q: string,
+  ) {
+    return await this.tagsService.getAllTags(network_id, q);
   }
 
   @Get(":tag_id")
@@ -50,6 +81,7 @@ export class TagsController {
   }
 
   @Put(":tag_id")
+  @Roles(Role.Admin)
   @ApiOperation({ summary: "Обновить тег по ID" })
   @ApiParam({
     name: "tag_id",
@@ -64,6 +96,7 @@ export class TagsController {
   }
 
   @Delete(":tag_id")
+  @Roles(Role.Admin)
   @ApiOperation({ summary: "Удалить тег по ID" })
   @ApiParam({
     name: "tag_id",

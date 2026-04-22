@@ -1,12 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class Network {
-  @ApiProperty({
-    description: "UUID сети",
-    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-  })
-  id!: string;
-
   @ApiProperty({ description: "Название VPN сети", example: "Office Network" })
   name!: string;
 
@@ -35,12 +29,6 @@ export class Network {
 }
 
 export class Device {
-  @ApiProperty({
-    description: "UUID устройства",
-    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-  })
-  id!: string;
-
   @ApiProperty({ description: "Название устройства", example: "Office-PC-01" })
   name!: string;
 
@@ -55,12 +43,6 @@ export class Device {
     example: "client\nremote vpn.example.com 1194\n...",
   })
   config!: string;
-
-  @ApiProperty({
-    description: "UUID сети, к которой подключается устройство",
-    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-  })
-  network_id!: string;
 }
 
 export class Rule {
@@ -91,21 +73,20 @@ export class Rule {
     maximum: 65535,
   })
   port!: number;
-
-  @ApiProperty({
-    description: "UUID сети, к которой относится правило",
-    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-  })
-  network_id!: string;
 }
 
 export class Tag {
   @ApiProperty({ description: "Название тега", example: "Office" })
   name!: string;
 
+  @ApiProperty({ description: "Цвет тега", example: "red" })
+  color!: "red" | "blue" | "green" | "yellow" | "purple" | "orange";
+}
+
+export class NetworkEnterCredentials {
   @ApiProperty({
-    description: "UUID сети",
-    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+    description: "Ключ для подключения к сети",
+    example: "2gW0ceanyvOMhhscLY+svQ==",
   })
-  network_id!: string;
+  key!: string;
 }

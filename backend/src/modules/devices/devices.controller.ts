@@ -6,30 +6,34 @@ import {
   Param,
   Post,
   Put,
+  Query,
+  UseGuards,
 } from "@nestjs/common";
 import {
   ApiBody,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
+import { AuthGuard } from "@thallesp/nestjs-better-auth";
+import { Role } from "../../authorization/role.enum";
+import { Roles } from "../../authorization/roles.decorator";
+import { RolesGuard } from "../../authorization/roles.guard";
 import { Device as DeviceDto } from "../../swaggerTypes";
 import { DevicesService } from "./devices.service";
 import type { Device } from "./interfaces/device.interface";
 
 @ApiTags("Devices")
 @Controller("networks/:network_id/devices")
+@UseGuards(AuthGuard, RolesGuard)
 export class DevicesController {
   constructor(private readonly devicesService: DevicesService) {}
 
   @Post("")
+  @Roles(Role.Admin)
   @ApiOperation({ summary: "Создать новое устройство" })
-  @ApiParam({
-    name: "network_id",
-    description: "UUID сети",
-    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-  })
   @ApiBody({ type: DeviceDto })
   @ApiResponse({ status: 201, description: "Устройство успешно создано" })
   async createDevice(
@@ -37,6 +41,48 @@ export class DevicesController {
     @Body() device: Device,
   ) {
     await this.devicesService.create(device, network_id);
+  }
+
+  @Get("")
+  @ApiOperation({ summary: "Получить устройства по фильтрам" })
+  @ApiQuery({
+    name: "q",
+    description: "Пойсковой запрос по названию",
+    example: "PC",
+    required: false,
+  })
+  @ApiQuery({
+    name: "tags",
+    description: "Названия тэгов, повешенных на устройство",
+    example: "Бухгалтерия,разработка",
+    required: false,
+  })
+  @ApiQuery({
+    name: "owner_id",
+    description: "UUID владельца устройства",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+    required: false,
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Устройства найдены",
+    type: DeviceDto,
+    isArray: true,
+  })
+  @ApiResponse({ status: 404, description: "Устройства не найдены" })
+  async getDevicesWithFilters(
+    @Param("network_id") networkId: string,
+    @Query("q") q: string,
+    @Query("tags") tags: string,
+    @Query("owner_id") ownerId: string,
+  ) {
+    return await this.devicesService.read(
+      networkId,
+      undefined,
+      tags,
+      ownerId,
+      q,
+    );
   }
 
   @Get(":device_id")
@@ -57,6 +103,7 @@ export class DevicesController {
   }
 
   @Put(":device_id")
+  @Roles(Role.Admin)
   @ApiOperation({ summary: "Обновить устройство по ID" })
   @ApiParam({
     name: "device_id",
@@ -71,6 +118,7 @@ export class DevicesController {
   }
 
   @Delete(":device_id")
+  @Roles(Role.Admin)
   @ApiOperation({ summary: "Удалить устройство по ID" })
   @ApiParam({
     name: "device_id",

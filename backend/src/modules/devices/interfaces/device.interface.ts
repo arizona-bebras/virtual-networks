@@ -3,4 +3,5 @@ export interface Device {
   ip: string;
   config: string;
   networkId: string;
+  ownerId: string;
 }

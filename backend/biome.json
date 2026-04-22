@@ -5,7 +5,9 @@
       "includes": [
         "**/*.controller.ts",
         "**/*.service.ts",
-        "**/*.repository.ts"
+        "**/*.repository.ts",
+        "**/*.decorator.ts",
+        "**/*.guard.ts"
       ],
       "linter": {
         "rules": {

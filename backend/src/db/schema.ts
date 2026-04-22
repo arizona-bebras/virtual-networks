@@ -2,7 +2,9 @@ import { defineRelations } from "drizzle-orm";
 import {
   boolean,
   index,
+  inet,
   integer,
+  pgEnum,
   pgTable,
   primaryKey,
   text,
@@ -99,30 +101,39 @@ export const networks = pgTable("networks", {
   id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
   description: varchar({ length: 255 }).notNull(),
-  ip: varchar({ length: 15 }).notNull(),
-  subnet: integer().notNull(),
+  ip: inet().notNull(),
   config: text().notNull(),
-  adminId: text("admin_id")
-    .notNull()
-    .references(() => user.id),
 });
 
 export const devices = pgTable("devices", {
   id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
-  ip: varchar({ length: 17 }).notNull().unique(),
+  ip: inet().notNull(),
   config: text().notNull(),
   networkId: uuid("network_id")
     .notNull()
-    .references(() => networks.id),
+    .references(() => networks.id, { onDelete: "cascade" }),
+  ownerId: text("owner_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
 });
+
+export const colorEnum = pgEnum("color", [
+  "red",
+  "green",
+  "blue",
+  "yellow",
+  "purple",
+  "orange",
+]);
 
 export const tags = pgTable("tags", {
   id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull().unique(),
+  color: colorEnum("color"),
   networkId: uuid("network_id")
     .notNull()
-    .references(() => networks.id),
+    .references(() => networks.id, { onDelete: "cascade" }),
 });
 
 export const devicesTags = pgTable(
@@ -130,12 +141,28 @@ export const devicesTags = pgTable(
   {
     deviceId: uuid("device_id")
       .notNull()
-      .references(() => devices.id),
+      .references(() => devices.id, { onDelete: "cascade" }),
     tagId: uuid("tag_id")
       .notNull()
-      .references(() => tags.id),
+      .references(() => tags.id, { onDelete: "cascade" }),
   },
   (t) => [primaryKey({ columns: [t.deviceId, t.tagId] })],
+);
+
+export const roleEnum = pgEnum("user_role", ["admin", "user"]);
+
+export const networkUsers = pgTable(
+  "network_users",
+  {
+    networkId: uuid("network_id")
+      .notNull()
+      .references(() => networks.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    role: roleEnum("role").default("user"),
+  },
+  (t) => [primaryKey({ columns: [t.networkId, t.userId] })],
 );
 
 export const rules = pgTable("rules", {
@@ -146,40 +173,55 @@ export const rules = pgTable("rules", {
   port: integer(),
   networkId: uuid("network_id")
     .notNull()
-    .references(() => networks.id),
+    .references(() => networks.id, { onDelete: "cascade" }),
 });
 
-// Relations
-
 export const relations = defineRelations(
-  { user, session, account, networks, devices, tags, devicesTags, rules },
+  {
+    user,
+    session,
+    account,
+    networks,
+    devices,
+    tags,
+    devicesTags,
+    rules,
+    networkUsers,
+  },
   (r) => ({
     user: {
       sessions: r.many.session(),
       accounts: r.many.account(),
-      networks: r.many.networks(),
+      networks: r.many.networks({
+        from: r.user.id.through(r.networkUsers.userId),
+        to: r.networks.id.through(r.networkUsers.networkId),
+      }),
     },
+
     session: {
       user: r.one.user({
         from: r.session.userId,
         to: r.user.id,
       }),
     },
+
     account: {
       user: r.one.user({
         from: r.account.userId,
         to: r.user.id,
       }),
     },
+
     networks: {
-      admin: r.one.user({
-        from: r.networks.adminId,
-        to: r.user.id,
+      users: r.many.user({
+        from: r.networks.id.through(r.networkUsers.networkId),
+        to: r.user.id.through(r.networkUsers.userId),
       }),
       devices: r.many.devices(),
       tags: r.many.tags(),
       rules: r.many.rules(),
     },
+
     devices: {
       network: r.one.networks({
         from: r.devices.networkId,
@@ -189,7 +231,12 @@ export const relations = defineRelations(
         from: r.devices.id.through(r.devicesTags.deviceId),
         to: r.tags.id.through(r.devicesTags.tagId),
       }),
+      owner: r.one.user({
+        from: r.devices.ownerId,
+        to: r.user.id,
+      }),
     },
+
     tags: {
       network: r.one.networks({
         from: r.tags.networkId,
@@ -205,6 +252,7 @@ export const relations = defineRelations(
         to: r.rules.dest,
       }),
     },
+
     rules: {
       network: r.one.networks({
         from: r.rules.networkId,

@@ -8,11 +8,9 @@ import { DevicesModule } from "./modules/devices/devices.module";
 import { NetworksModule } from "./modules/networks/networks.module";
 import { RulesModule } from "./modules/rules/rules.module";
 import { TagsModule } from "./modules/tags/tags.module";
-import { UsersModule } from "./modules/users/users.module";
 
 @Module({
   imports: [
-    UsersModule,
     NetworksModule,
     DatabaseModule,
     DevicesModule,

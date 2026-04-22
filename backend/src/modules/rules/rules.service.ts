@@ -16,21 +16,28 @@ export class RulesService {
     await this.db.insert(schema.rules).values(rule);
   }
 
-  async get(rule_id: string) {
+  async get(ruleId: string) {
     return await this.db
       .select()
       .from(schema.rules)
-      .where(eq(schema.rules.id, rule_id));
+      .where(eq(schema.rules.id, ruleId));
   }
 
-  async update(rule_id: string, rule: Rule) {
+  async getAllRules(networkId: string) {
+    return await this.db
+      .select()
+      .from(schema.rules)
+      .where(eq(schema.rules.networkId, networkId));
+  }
+
+  async update(ruleId: string, rule: Rule) {
     await this.db
       .update(schema.rules)
       .set(rule)
-      .where(eq(schema.rules.id, rule_id));
+      .where(eq(schema.rules.id, ruleId));
   }
 
-  async delete(rule_id: string) {
-    await this.db.delete(schema.rules).where(eq(schema.rules.id, rule_id));
+  async delete(ruleId: string) {
+    await this.db.delete(schema.rules).where(eq(schema.rules.id, ruleId));
   }
 }
