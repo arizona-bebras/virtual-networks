@@ -21,11 +21,11 @@ import { AuthGuard } from "@thallesp/nestjs-better-auth";
 import { Role } from "../../authorization/role.enum";
 import { Roles } from "../../authorization/roles.decorator";
 import { RolesGuard } from "../../authorization/roles.guard";
+import { NetworkEntity } from "./entities/network.entity";
 import {
+  EnterCredentials,
   Network as NetworkDto,
-  NetworkEnterCredentials,
-} from "../../swaggerTypes";
-import type { EnterCredentials, Network } from "./interfaces/network.interface";
+} from "./interfaces/network.interface";
 import { NetworksService } from "./networks.service";
 
 @ApiTags("Networks")
@@ -37,7 +37,7 @@ export class NetworksController {
   @ApiOperation({ summary: "Создать новую сеть" })
   @ApiBody({ type: NetworkDto })
   @ApiResponse({ status: 201, description: "Сеть успешно создана" })
-  async create(@Body() network: Network, @Session() session: UserSession) {
+  async create(@Body() network: NetworkDto, @Session() session: UserSession) {
     await this.networksService.create(network, session.user.id);
   }
 
@@ -51,7 +51,7 @@ export class NetworksController {
   @ApiResponse({
     status: 201,
     description: "Сети получены",
-    type: NetworkDto,
+    type: NetworkEntity,
     isArray: true,
   })
   async getMyNetworks(@Session() session: UserSession) {
@@ -66,7 +66,11 @@ export class NetworksController {
     description: "UUID сети",
     example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   })
-  @ApiResponse({ status: 200, description: "Сеть найдена", type: NetworkDto })
+  @ApiResponse({
+    status: 200,
+    description: "Сеть найдена",
+    type: NetworkEntity,
+  })
   @ApiResponse({ status: 404, description: "Сеть не найдена" })
   async get(@Param("network_id") id: string) {
     return await this.networksService.read(id);
@@ -74,7 +78,7 @@ export class NetworksController {
 
   @Post(":network_id")
   @ApiOperation({ summary: "Войти в сеть" })
-  @ApiBody({ type: NetworkEnterCredentials })
+  @ApiBody({ type: EnterCredentials })
   @ApiParam({
     name: "network_id",
     description: "UUID сети",
@@ -102,7 +106,7 @@ export class NetworksController {
   @ApiBody({ type: NetworkDto })
   @ApiResponse({ status: 200, description: "Сеть успешно обновлена" })
   @ApiResponse({ status: 404, description: "Сеть не найдена" })
-  async update(@Param("network_id") id: string, @Body() network: Network) {
+  async update(@Param("network_id") id: string, @Body() network: NetworkDto) {
     await this.networksService.update(id, network);
   }
 

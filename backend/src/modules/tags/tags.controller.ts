@@ -21,8 +21,8 @@ import { AuthGuard } from "@thallesp/nestjs-better-auth";
 import { Role } from "../../authorization/role.enum";
 import { Roles } from "../../authorization/roles.decorator";
 import { RolesGuard } from "../../authorization/roles.guard";
-import { Tag as TagDto } from "../../swaggerTypes";
-import type { Tag } from "./interfaces/tag.interface";
+import { TagEntity } from "./entities/tag.entity";
+import { Tag as TagDto } from "./interfaces/tag.interface";
 import { TagsService } from "./tags.service";
 
 @ApiTags("Tags")
@@ -41,7 +41,10 @@ export class TagsController {
   })
   @ApiBody({ type: TagDto })
   @ApiResponse({ status: 201, description: "Тег успешно создан" })
-  async createTag(@Param("network_id") network_id: string, @Body() tag: Tag) {
+  async createTag(
+    @Param("network_id") network_id: string,
+    @Body() tag: TagDto,
+  ) {
     await this.tagsService.create(tag, network_id);
   }
 
@@ -57,7 +60,7 @@ export class TagsController {
   @ApiResponse({
     status: 200,
     description: "Теги получены",
-    type: TagDto,
+    type: TagEntity,
     isArray: true,
   })
   async getAllTags(
@@ -74,7 +77,7 @@ export class TagsController {
     description: "UUID тега",
     example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   })
-  @ApiResponse({ status: 200, description: "Тег найден", type: TagDto })
+  @ApiResponse({ status: 200, description: "Тег найден", type: TagEntity })
   @ApiResponse({ status: 404, description: "Тег не найден" })
   async getTag(@Param("tag_id") id: string) {
     return await this.tagsService.read(id);
@@ -91,7 +94,7 @@ export class TagsController {
   @ApiBody({ type: TagDto })
   @ApiResponse({ status: 200, description: "Тег успешно обновлён" })
   @ApiResponse({ status: 404, description: "Тег не найден" })
-  async updateTag(@Param("tag_id") id: string, @Body() tag: Tag) {
+  async updateTag(@Param("tag_id") id: string, @Body() tag: TagDto) {
     await this.tagsService.update(id, tag);
   }
 

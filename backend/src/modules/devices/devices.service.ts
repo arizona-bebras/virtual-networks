@@ -14,8 +14,9 @@ export class DevicesService {
   ) {}
 
   async create(device: Device, networkId: string) {
-    device.networkId = networkId;
-    await this.db.insert(schema.devices).values(device);
+    await this.db
+      .insert(schema.devices)
+      .values({ ...device, networkId: networkId });
   }
 
   async read(
