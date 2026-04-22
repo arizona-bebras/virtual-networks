@@ -1,19 +1,19 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { CreateTagDto } from "common/dto/tag/create-tag";
+import { UpdateTagDto } from "common/dto/tag/update-tag";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { sql } from "drizzle-orm/sql";
 import { and, eq } from "drizzle-orm/sql/expressions/conditions";
 import { DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
-import type { Tag } from "./interfaces/tag.interface";
 
 @Injectable()
 export class TagsService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>,
   ) {}
-  async create(tag: Tag, networkId: string) {
-    tag.networkId = networkId;
-    await this.db.insert(schema.tags).values(tag);
+  async create(tag: CreateTagDto, networkId: string) {
+    await this.db.insert(schema.tags).values({ ...tag, networkId });
   }
 
   async read(id: string) {
@@ -36,7 +36,7 @@ export class TagsService {
       .orderBy(sql`similarity(${schema.tags.name}, ${q}) DESC`);
   }
 
-  async update(id: string, tag: Tag) {
+  async update(id: string, tag: UpdateTagDto) {
     await this.db.update(schema.tags).set(tag).where(eq(schema.tags.id, id));
   }
 

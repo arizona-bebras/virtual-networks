@@ -18,12 +18,13 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { AuthGuard } from "@thallesp/nestjs-better-auth";
+import { CreateDeviceDto } from "common/dto/device/create-device";
+import { DeviceDto } from "common/dto/device/index";
+import { UpdateDeviceDto } from "common/dto/device/update-device";
 import { Role } from "../../authorization/role.enum";
 import { Roles } from "../../authorization/roles.decorator";
 import { RolesGuard } from "../../authorization/roles.guard";
-import { Device as DeviceDto } from "../../swaggerTypes";
 import { DevicesService } from "./devices.service";
-import type { Device } from "./interfaces/device.interface";
 
 @ApiTags("Devices")
 @Controller("networks/:network_id/devices")
@@ -38,7 +39,7 @@ export class DevicesController {
   @ApiResponse({ status: 201, description: "Устройство успешно создано" })
   async createDevice(
     @Param("network_id") network_id: string,
-    @Body() device: Device,
+    @Body() device: CreateDeviceDto,
   ) {
     await this.devicesService.create(device, network_id);
   }
@@ -113,7 +114,10 @@ export class DevicesController {
   @ApiBody({ type: DeviceDto })
   @ApiResponse({ status: 200, description: "Устройство успешно обновлено" })
   @ApiResponse({ status: 404, description: "Устройство не найдено" })
-  async updateDevice(@Param("device_id") id: string, @Body() device: Device) {
+  async updateDevice(
+    @Param("device_id") id: string,
+    @Body() device: UpdateDeviceDto,
+  ) {
     await this.devicesService.update(id, device);
   }
 

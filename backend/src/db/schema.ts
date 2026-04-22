@@ -102,14 +102,12 @@ export const networks = pgTable("networks", {
   name: varchar({ length: 255 }).notNull(),
   description: varchar({ length: 255 }).notNull(),
   ip: inet().notNull(),
-  config: text().notNull(),
 });
 
 export const devices = pgTable("devices", {
   id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
   ip: inet().notNull(),
-  config: text().notNull(),
   networkId: uuid("network_id")
     .notNull()
     .references(() => networks.id, { onDelete: "cascade" }),

@@ -4,6 +4,7 @@
 
 - `frontend/`: SvelteKit 2, Svelte 5, Tailwind CSS 4, Bits UI, TanStack Table, Biome
 - `backend/`: NestJS 11, Drizzle ORM, PostgreSQL driver, Jest, Biome
+- `common/`: shared TypeScript DTO package built with `tsc` and consumed through package exports
 - `proto/`: shared protobuf schema and generated TypeScript/Go code
 - `router/`: Go userspace WireGuard router
 
@@ -21,12 +22,14 @@ Always run `pnpm check`, `pnpm lint`, `pnpm format` and fix all issues after imp
 
 ## Monorepo Structure
 
-- `frontend/`, `backend/`, and `proto/` are `pnpm` workspace packages
+- `frontend/`, `backend/`, `common/`, and `proto/` are `pnpm` workspace packages
 - `router/` is a separate Go module, not a `pnpm` workspace package
 - `frontend/src/routes`: route tree
 - `frontend/src/lib`: reusable app code and UI components
 - `backend/src/modules`: Nest feature modules
 - `backend/src/db`: database connection and schema
+- `common/src`: shared DTO source files
+- `common/dist`: built package output used by `common` package exports
 - `proto/gen/ts`: generated TypeScript protobuf output
 - `proto/gen/go`: generated Go protobuf output
 
