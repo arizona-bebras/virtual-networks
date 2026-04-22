@@ -1,6 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { eq } from "drizzle-orm/sql/expressions/conditions";
+import { sql } from "drizzle-orm/sql";
+import { and, eq } from "drizzle-orm/sql/expressions/conditions";
 import { DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
 import type { Tag } from "./interfaces/tag.interface";
@@ -20,6 +21,19 @@ export class TagsService {
       .select()
       .from(schema.tags)
       .where(eq(schema.tags.id, id));
+  }
+
+  async getAllTags(networkId: string, q: string) {
+    return await this.db
+      .select()
+      .from(schema.tags)
+      .where(
+        and(
+          eq(schema.tags.networkId, networkId),
+          sql`${schema.tags.name} % ${q}`,
+        ),
+      )
+      .orderBy(sql`similarity(${schema.tags.name}, ${q}) DESC`);
   }
 
   async update(id: string, tag: Tag) {

@@ -41,6 +41,18 @@ export class NetworksController {
     await this.networksService.create(network, session.user.id);
   }
 
+  @Get()
+  @ApiOperation({ summary: "Получить сети, в которых состоит пользователь" })
+  @ApiResponse({
+    status: 201,
+    description: "Сети получены",
+    type: NetworkDto,
+    isArray: true,
+  })
+  async getMyNetworks(@Session() session: UserSession) {
+    await this.networksService.getMyNetworks(session.user.id);
+  }
+
   @Get(":network_id")
   @UseGuards(AuthGuard, RolesGuard)
   @ApiOperation({ summary: "Получить сеть по ID" })
@@ -63,7 +75,7 @@ export class NetworksController {
     description: "UUID сети",
     example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   })
-  @ApiResponse({ status: 200, description: "Сеть найдена", type: NetworkDto })
+  @ApiResponse({ status: 200, description: "Успешный вход" })
   @ApiResponse({ status: 404, description: "Сеть не найдена" })
   async enter(
     @Body() credentials: EnterCredentials,

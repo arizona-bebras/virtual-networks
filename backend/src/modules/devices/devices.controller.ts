@@ -46,14 +46,22 @@ export class DevicesController {
   @Get("")
   @ApiOperation({ summary: "Получить устройства по фильтрам" })
   @ApiQuery({
+    name: "q",
+    description: "Пойсковой запрос по названию",
+    example: "PC",
+    required: false
+  })
+  @ApiQuery({
     name: "tags",
     description: "Названия тэгов, повешенных на устройство",
-    example: "Бухгалтерия, разработка",
+    example: "Бухгалтерия,разработка",
+    required: false
   })
   @ApiQuery({
     name: "owner_id",
     description: "UUID владельца устройства",
     example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+    required: false
   })
   @ApiResponse({
     status: 200,
@@ -64,10 +72,17 @@ export class DevicesController {
   @ApiResponse({ status: 404, description: "Устройства не найдены" })
   async getDevicesWithFilters(
     @Param("network_id") networkId: string,
+    @Query("q") q: string,
     @Query("tags") tags: string,
     @Query("owner_id") ownerId: string,
   ) {
-    return await this.devicesService.read(networkId, undefined, tags, ownerId);
+    return await this.devicesService.read(
+      networkId,
+      undefined,
+      tags,
+      ownerId,
+      q,
+    );
   }
 
   @Get(":device_id")

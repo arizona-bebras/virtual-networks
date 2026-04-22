@@ -6,12 +6,14 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from "@nestjs/common";
 import {
   ApiBody,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
@@ -41,6 +43,28 @@ export class TagsController {
   @ApiResponse({ status: 201, description: "Тег успешно создан" })
   async createTag(@Param("network_id") network_id: string, @Body() tag: Tag) {
     await this.tagsService.create(tag, network_id);
+  }
+
+  @Get()
+  @Roles(Role.Admin)
+  @ApiOperation({ summary: "Получить теги сети" })
+  @ApiQuery({
+    name: "q",
+    description: "Пойсковой запрос по названию",
+    example: "Разраб",
+    required: false
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Теги получены",
+    type: TagDto,
+    isArray: true,
+  })
+  async getAllTags(
+    @Param("network_id") network_id: string,
+    @Query("q") q: string,
+  ) {
+    await this.tagsService.getAllTags(network_id, q);
   }
 
   @Get(":tag_id")

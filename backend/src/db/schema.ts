@@ -118,9 +118,19 @@ export const devices = pgTable("devices", {
     .references(() => user.id, { onDelete: "cascade" }),
 });
 
+export const colorEnum = pgEnum("color", [
+  "red",
+  "green",
+  "blue",
+  "yellow",
+  "purple",
+  "orange",
+]);
+
 export const tags = pgTable("tags", {
   id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull().unique(),
+  coloe: colorEnum("color"),
   networkId: uuid("network_id")
     .notNull()
     .references(() => networks.id, { onDelete: "cascade" }),

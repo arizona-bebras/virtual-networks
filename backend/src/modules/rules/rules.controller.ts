@@ -32,15 +32,23 @@ export class RulesController {
   @Post()
   @Roles(Role.Admin)
   @ApiOperation({ summary: "Создать новое правило" })
-  @ApiParam({
-    name: "network_id",
-    description: "UUID сети",
-    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-  })
   @ApiBody({ type: RuleDto })
   @ApiResponse({ status: 201, description: "Правило успешно создано" })
   async create(@Param("network_id") network_id: string, @Body() rule: Rule) {
     await this.rulesService.create(rule, network_id);
+  }
+
+  @Get()
+  @Roles(Role.Admin)
+  @ApiOperation({ summary: "Получить правила сети" })
+  @ApiResponse({
+    status: 200,
+    description: "Правила получены",
+    type: RuleDto,
+    isArray: true,
+  })
+  async getAllRules(@Param("network_id") networkId: string) {
+    await this.rulesService.getAllRules(networkId);
   }
 
   @Get(":rule_id")

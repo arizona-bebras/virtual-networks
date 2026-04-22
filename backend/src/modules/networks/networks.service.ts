@@ -43,6 +43,13 @@ export class NetworksService {
       .where(eq(schema.networks.id, id));
   }
 
+  async getMyNetworks(id: string) {
+    return await this.db
+      .select()
+      .from(schema.networks)
+      .where(eq(schema.networks.id, id));
+  }
+
   async update(id: string, network: Network) {
     await this.db
       .update(schema.networks)
