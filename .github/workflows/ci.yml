@@ -33,6 +33,7 @@ jobs:
             backend:
               - 'backend/**'
               - 'proto/**'
+              - 'common/**'
               - 'biome.json'
               - 'pnpm-lock*.yaml'
               - 'pnpm-workspace.yaml'
@@ -46,6 +47,7 @@ jobs:
             frontend:
               - 'frontend/**'
               - 'proto/**'
+              - 'common/**'
               - 'biome.json'
               - 'pnpm-lock*.yaml'
               - 'pnpm-workspace.yaml'
