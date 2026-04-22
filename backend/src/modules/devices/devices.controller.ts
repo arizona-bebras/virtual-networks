@@ -34,11 +34,6 @@ export class DevicesController {
   @Post("")
   @Roles(Role.Admin)
   @ApiOperation({ summary: "Создать новое устройство" })
-  @ApiParam({
-    name: "network_id",
-    description: "UUID сети",
-    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-  })
   @ApiBody({ type: DeviceDto })
   @ApiResponse({ status: 201, description: "Устройство успешно создано" })
   async createDevice(
@@ -56,7 +51,7 @@ export class DevicesController {
     example: "Бухгалтерия, разработка",
   })
   @ApiQuery({
-    name: "owner",
+    name: "owner_id",
     description: "UUID владельца устройства",
     example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   })
@@ -68,10 +63,11 @@ export class DevicesController {
   })
   @ApiResponse({ status: 404, description: "Устройства не найдены" })
   async getDevicesWithFilters(
+    @Param("network_id") networkId: string,
     @Query("tags") tags: string,
     @Query("owner_id") ownerId: string,
   ) {
-    return await this.devicesService.read(undefined, tags, ownerId);
+    return await this.devicesService.read(networkId, undefined, tags, ownerId);
   }
 
   @Get(":device_id")

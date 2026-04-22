@@ -17,7 +17,12 @@ export class DevicesService {
     await this.db.insert(schema.devices).values(device);
   }
 
-  async read(id?: string, tagsStr?: string, ownerId?: string) {
+  async read(
+    networkId: string,
+    id?: string,
+    tagsStr?: string,
+    ownerId?: string,
+  ) {
     const tags = tagsStr?.split(",").filter(Boolean);
 
     const conditions: (AnyColumn | SQLWrapper)[] = [];
@@ -43,7 +48,11 @@ export class DevicesService {
         eq(schema.devicesTags.deviceId, schema.devices.id),
       )
       .leftJoin(schema.tags, eq(schema.devicesTags.tagId, schema.tags.id))
-      .where(conditions.length ? and(...conditions) : undefined);
+      .where(
+        conditions.length
+          ? and(...conditions, eq(schema.devices.networkId, networkId))
+          : undefined,
+      );
   }
 
   async update(id: string, device: Device) {
