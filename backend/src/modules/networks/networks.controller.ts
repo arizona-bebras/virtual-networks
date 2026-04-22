@@ -21,13 +21,15 @@ import { AuthGuard } from "@thallesp/nestjs-better-auth";
 import { Role } from "../../authorization/role.enum";
 import { Roles } from "../../authorization/roles.decorator";
 import { RolesGuard } from "../../authorization/roles.guard";
-import { Network as NetworkDto } from "../../swaggerTypes";
-import type { Network } from "./interfaces/network.interface";
+import {
+  Network as NetworkDto,
+  NetworkEnterCredentials,
+} from "../../swaggerTypes";
+import type { EnterCredentials, Network } from "./interfaces/network.interface";
 import { NetworksService } from "./networks.service";
 
 @ApiTags("Networks")
 @Controller("networks")
-@UseGuards(AuthGuard, RolesGuard)
 export class NetworksController {
   constructor(private readonly networksService: NetworksService) {}
 
@@ -40,6 +42,7 @@ export class NetworksController {
   }
 
   @Get(":network_id")
+  @UseGuards(AuthGuard, RolesGuard)
   @ApiOperation({ summary: "Получить сеть по ID" })
   @ApiParam({
     name: "network_id",
@@ -52,7 +55,26 @@ export class NetworksController {
     return await this.networksService.read(id);
   }
 
+  @Post(":network_id")
+  @ApiOperation({ summary: "Войти в сеть" })
+  @ApiBody({ type: NetworkEnterCredentials })
+  @ApiParam({
+    name: "network_id",
+    description: "UUID сети",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  })
+  @ApiResponse({ status: 200, description: "Сеть найдена", type: NetworkDto })
+  @ApiResponse({ status: 404, description: "Сеть не найдена" })
+  async enter(
+    @Body() credentials: EnterCredentials,
+    @Param("network_id") networkId: string,
+    @Session() session: UserSession,
+  ) {
+    await this.networksService.enter(credentials, networkId, session.user.id);
+  }
+
   @Put(":network_id")
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @ApiOperation({ summary: "Обновить сеть по ID" })
   @ApiParam({
@@ -68,6 +90,7 @@ export class NetworksController {
   }
 
   @Delete(":network_id")
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @ApiOperation({ summary: "Удалить сеть по ID" })
   @ApiParam({

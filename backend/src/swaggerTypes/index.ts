@@ -109,3 +109,11 @@ export class Tag {
   })
   network_id!: string;
 }
+
+export class NetworkEnterCredentials {
+  @ApiProperty({
+    description: "Ключ для подключения к сети",
+    example: "2gW0ceanyvOMhhscLY+svQ==",
+  })
+  key!: string;
+}

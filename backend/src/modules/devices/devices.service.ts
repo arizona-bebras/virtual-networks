@@ -1,6 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { AnyColumn, SQLWrapper } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { eq } from "drizzle-orm/sql/expressions/conditions";
+import { and, eq, inArray } from "drizzle-orm/sql/expressions/conditions";
 import { DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
 import type { Device } from "./interfaces/device.interface";
@@ -16,11 +17,42 @@ export class DevicesService {
     await this.db.insert(schema.devices).values(device);
   }
 
-  async read(id: string) {
+  async read(
+    networkId: string,
+    id?: string,
+    tagsStr?: string,
+    ownerId?: string,
+  ) {
+    const tags = tagsStr?.split(",").filter(Boolean);
+
+    const conditions: (AnyColumn | SQLWrapper)[] = [];
+
+    if (id) {
+      conditions.push(eq(schema.devices.id, id));
+    }
+
+    if (tags?.length) {
+      conditions.push(inArray(schema.tags.name, tags));
+    }
+
+    if (ownerId) {
+      conditions.push(eq(schema.devices.ownerId, ownerId));
+    }
+    console.log(id, tags, ownerId);
+
     return await this.db
       .select()
       .from(schema.devices)
-      .where(eq(schema.devices.id, id));
+      .leftJoin(
+        schema.devicesTags,
+        eq(schema.devicesTags.deviceId, schema.devices.id),
+      )
+      .leftJoin(schema.tags, eq(schema.devicesTags.tagId, schema.tags.id))
+      .where(
+        conditions.length
+          ? and(...conditions, eq(schema.devices.networkId, networkId))
+          : undefined,
+      );
   }
 
   async update(id: string, device: Device) {
