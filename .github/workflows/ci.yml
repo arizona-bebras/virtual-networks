@@ -339,8 +339,7 @@ jobs:
           (
             cd frontend
             cp .env.example .env
-            pnpm exec svelte-kit sync
-            pnpm exec svelte-check --tsconfig ./tsconfig.json --output machine
+            pnpm check --output machine
           ) >"$output_file" 2>&1 || status=$?
 
           while IFS= read -r line; do

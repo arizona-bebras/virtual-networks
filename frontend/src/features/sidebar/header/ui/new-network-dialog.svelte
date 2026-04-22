@@ -1,12 +1,12 @@
 <script lang="ts">
 import { Plus } from "@lucide/svelte";
 import { createMutation } from "@tanstack/svelte-query";
+import { CreateNetworkSchema } from "common/schemas/network/create-network";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import * as Dialog from "$shared/ui/dialog/index.js";
 import * as Form from "$shared/ui/form/index.js";
 import { Input } from "$shared/ui/input/index.js";
 import { headerQueries } from "../api/query.js";
-import { formSchema } from "../model/schema.js";
 
 const query = createMutation(() => headerQueries.createNetworkMutation());
 
@@ -17,16 +17,12 @@ let {
   formData,
   valid,
   enhance,
-} = useForm(formSchema, {
+} = useForm(CreateNetworkSchema, {
   onSubmit: async () => {
-    const cidrParts = $formData.cidr.split("/");
     query.mutate({
       name: $formData.name,
       description: $formData.description,
-      ip: cidrParts[0]!,
-      subnet: parseInt(cidrParts[1]!, 10),
-      config: "proto udp\nport 1194\n...",
-      adminId: "B8osnmhFISBu6B7I0wAJsmGEmSOxWNam",
+      ip: $formData.ip,
     });
     isDialogOpen = false;
   },
@@ -60,13 +56,13 @@ let {
         </Form.Control>
         <Form.FieldErrors />
       </Form.Field>
-      <Form.Field {form} name="cidr">
+      <Form.Field {form} name="ip">
         <Form.Control>
           {#snippet children({ props })}
             <Form.Label>CIDR</Form.Label>
             <Input
               {...props}
-              bind:value={$formData.cidr}
+              bind:value={$formData.ip}
               placeholder="192.168.1.0/24"
             />
           {/snippet}

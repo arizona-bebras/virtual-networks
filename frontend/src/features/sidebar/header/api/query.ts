@@ -1,11 +1,11 @@
 import { mutationOptions } from "@tanstack/svelte-query";
+import type { CreateNetwork } from "common/schemas/network/create-network";
 import { client } from "$shared/api/openapi-client";
-import type { networkCreationBody } from "$shared/api/openapi-types";
 
 export const headerQueries = {
   createNetworkMutation: () =>
     mutationOptions({
-      mutationFn: async (newNetwork: networkCreationBody) => {
+      mutationFn: async (newNetwork: CreateNetwork) => {
         const { data, error } = await client.POST("/networks", {
           body: newNetwork,
         });
