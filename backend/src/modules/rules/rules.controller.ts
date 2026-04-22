@@ -16,11 +16,12 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { AuthGuard } from "@thallesp/nestjs-better-auth";
+import { CreateRuleDto } from "common/dto/rule/create-rule";
+import { RuleDto } from "common/dto/rule/index";
+import { UpdateRuleDto } from "common/dto/rule/update-rule";
 import { Role } from "../../authorization/role.enum";
 import { Roles } from "../../authorization/roles.decorator";
 import { RolesGuard } from "../../authorization/roles.guard";
-import { Rule as RuleDto } from "../../swaggerTypes";
-import type { Rule } from "./interfaces/rule.interface";
 import { RulesService } from "./rules.service";
 
 @ApiTags("Rules")
@@ -32,9 +33,12 @@ export class RulesController {
   @Post()
   @Roles(Role.Admin)
   @ApiOperation({ summary: "Создать новое правило" })
-  @ApiBody({ type: RuleDto })
+  @ApiBody({ type: CreateRuleDto })
   @ApiResponse({ status: 201, description: "Правило успешно создано" })
-  async create(@Param("network_id") network_id: string, @Body() rule: Rule) {
+  async create(
+    @Param("network_id") network_id: string,
+    @Body() rule: CreateRuleDto,
+  ) {
     await this.rulesService.create(rule, network_id);
   }
 
@@ -72,10 +76,10 @@ export class RulesController {
     description: "UUID правила",
     example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   })
-  @ApiBody({ type: RuleDto })
+  @ApiBody({ type: UpdateRuleDto })
   @ApiResponse({ status: 200, description: "Правило успешно обновлено" })
   @ApiResponse({ status: 404, description: "Правило не найдено" })
-  async update(@Param("rule_id") rule_id: string, @Body() rule: Rule) {
+  async update(@Param("rule_id") rule_id: string, @Body() rule: UpdateRuleDto) {
     await this.rulesService.update(rule_id, rule);
   }
 

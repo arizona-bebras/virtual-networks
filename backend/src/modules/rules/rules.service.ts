@@ -1,9 +1,10 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { CreateRuleDto } from "common/dto/rule/create-rule";
+import { UpdateRuleDto } from "common/dto/rule/update-rule";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { eq } from "drizzle-orm/sql/expressions/conditions";
 import { DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
-import type { Rule } from "./interfaces/rule.interface";
 
 @Injectable()
 export class RulesService {
@@ -11,9 +12,8 @@ export class RulesService {
     @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
-  async create(rule: Rule, networkId: string) {
-    rule.networkId = networkId;
-    await this.db.insert(schema.rules).values(rule);
+  async create(rule: CreateRuleDto, networkId: string) {
+    await this.db.insert(schema.rules).values({ ...rule, networkId });
   }
 
   async get(ruleId: string) {
@@ -30,7 +30,7 @@ export class RulesService {
       .where(eq(schema.rules.networkId, networkId));
   }
 
-  async update(ruleId: string, rule: Rule) {
+  async update(ruleId: string, rule: UpdateRuleDto) {
     await this.db
       .update(schema.rules)
       .set(rule)

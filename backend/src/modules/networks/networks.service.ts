@@ -1,16 +1,18 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { CreateNetworkDto } from "common/dto/create-network";
+import { NetworkEnterCredentialsDto } from "common/dto/network/enter-credentials";
+import { UpdateNetworkDto } from "common/dto/network/update-network";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { eq } from "drizzle-orm/sql/expressions/conditions";
 import { DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
-import type { EnterCredentials, Network } from "./interfaces/network.interface";
 
 @Injectable()
 export class NetworksService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>,
   ) {}
-  async create(networkData: Network, userId: string) {
+  async create(networkData: CreateNetworkDto, userId: string) {
     await this.db.transaction(async (tx) => {
       const [network] = await tx
         .insert(schema.networks)
@@ -25,7 +27,7 @@ export class NetworksService {
   }
 
   async enter(
-    _credentials: EnterCredentials,
+    _credentials: NetworkEnterCredentialsDto,
     networkId: string,
     userId: string,
   ) {
@@ -54,7 +56,7 @@ export class NetworksService {
       .where(eq(schema.networkUsers.userId, userId));
   }
 
-  async update(id: string, network: Network) {
+  async update(id: string, network: UpdateNetworkDto) {
     await this.db
       .update(schema.networks)
       .set(network)

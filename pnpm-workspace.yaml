@@ -4,6 +4,7 @@ packages:
   - "backend"
   - "frontend"
   - "proto"
+  - "common"
 gitBranchLockfile: true
 mergeGitBranchLockfilesBranchPattern:
   - main

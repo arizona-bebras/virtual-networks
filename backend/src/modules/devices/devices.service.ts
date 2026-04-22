@@ -1,11 +1,12 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { CreateDeviceDto } from "common/dto/device/create-device";
+import { UpdateDeviceDto } from "common/dto/device/update-device";
 import { AnyColumn, SQLWrapper } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { sql } from "drizzle-orm/sql";
 import { and, eq, inArray } from "drizzle-orm/sql/expressions/conditions";
 import { DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
-import type { Device } from "./interfaces/device.interface";
 
 @Injectable()
 export class DevicesService {
@@ -13,9 +14,8 @@ export class DevicesService {
     @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
-  async create(device: Device, networkId: string) {
-    device.networkId = networkId;
-    await this.db.insert(schema.devices).values(device);
+  async create(device: CreateDeviceDto, networkId: string) {
+    await this.db.insert(schema.devices).values({ ...device, networkId });
   }
 
   async read(
@@ -58,7 +58,7 @@ export class DevicesService {
       .orderBy(sql`similarity(${schema.devices.name}, ${q}) DESC`);
   }
 
-  async update(id: string, device: Device) {
+  async update(id: string, device: UpdateDeviceDto) {
     await this.db
       .update(schema.devices)
       .set(device)

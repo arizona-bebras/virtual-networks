@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
+      common: ${{ steps.filter.outputs.common }}
       frontend: ${{ steps.filter.outputs.frontend }}
       proto: ${{ steps.filter.outputs.proto }}
       router: ${{ steps.filter.outputs.router }}
@@ -36,6 +37,12 @@ jobs:
               - 'pnpm-lock*.yaml'
               - 'pnpm-workspace.yaml'
               - '.github/workflows/ci.yml'
+            common:
+              - 'common/**'
+              - 'biome.json'
+              - 'pnpm-lock*.yaml'
+              - 'pnpm-workspace.yaml'
+              - '.github/workflows/ci.yml'
             frontend:
               - 'frontend/**'
               - 'proto/**'
@@ -52,6 +59,103 @@ jobs:
               - 'router/**'
               - 'proto/**'
               - '.github/workflows/ci.yml'
+
+  common:
+    name: Common
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.common == 'true'
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Prepare pnpm lockfile for pull requests
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          branch_lockfile="pnpm-lock.${GITHUB_HEAD_REF//\//!}.yaml"
+
+          if [ ! -f "$branch_lockfile" ]; then
+            echo "Expected branch lockfile '$branch_lockfile' was not found."
+            exit 0
+          fi
+
+          cp "$branch_lockfile" pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
+
+      - name: Comment common Biome issues
+        id: common_lint
+        continue-on-error: true
+        shell: bash
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          reporter="github-check"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            reporter="github-pr-review"
+          fi
+
+          output_file="$(mktemp)"
+          biome_status=0
+
+          ./common/node_modules/.bin/biome check --reporter=checkstyle common >"$output_file" || biome_status=$?
+
+          reviewdog -f=checkstyle -name="biome-common" -reporter="$reporter" -filter-mode=file -fail-level=any <"$output_file"
+          reviewdog_status=$?
+
+          if [ "$biome_status" -gt 1 ]; then
+            cat "$output_file"
+            exit "$biome_status"
+          fi
+
+          exit "$reviewdog_status"
+
+      - name: Build common
+        id: common_build
+        continue-on-error: true
+        run: pnpm --filter common build
+
+      - name: Fail if common checks failed
+        if: always()
+        env:
+          COMMON_LINT_OUTCOME: ${{ steps.common_lint.outcome }}
+          COMMON_BUILD_OUTCOME: ${{ steps.common_build.outcome }}
+        run: |
+          failed=0
+
+          if [ "$COMMON_LINT_OUTCOME" != "success" ]; then
+            echo "Common Biome check failed."
+            failed=1
+          fi
+
+          if [ "$COMMON_BUILD_OUTCOME" != "success" ]; then
+            echo "Common build failed."
+            failed=1
+          fi
+
+          exit "$failed"
 
   backend:
     name: Backend
