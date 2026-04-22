@@ -15,7 +15,7 @@ export const DRIZZLE = "DRIZZLE";
       useFactory: async () => {
         const db = drizzle(postgresUrl, {
           schema: schema,
-          logger: true
+          logger: true,
         });
 
         await db.execute(sql`CREATE EXTENSION IF NOT EXISTS pg_trgm;`);

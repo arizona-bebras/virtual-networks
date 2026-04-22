@@ -54,9 +54,7 @@ export class DevicesService {
         eq(schema.devicesTags.deviceId, schema.devices.id),
       )
       .leftJoin(schema.tags, eq(schema.devicesTags.tagId, schema.tags.id))
-      .where(
-        and(...conditions, eq(schema.devices.networkId, networkId))
-      )
+      .where(and(...conditions, eq(schema.devices.networkId, networkId)))
       .orderBy(sql`similarity(${schema.devices.name}, ${q}) DESC`);
   }
 

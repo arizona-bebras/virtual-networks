@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { eq, and } from "drizzle-orm/sql/expressions/conditions";
+import { eq } from "drizzle-orm/sql/expressions/conditions";
 import { DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
 import type { EnterCredentials, Network } from "./interfaces/network.interface";
@@ -47,10 +47,11 @@ export class NetworksService {
     return await this.db
       .select()
       .from(schema.networks)
-      .leftJoin(schema.networkUsers, eq(schema.networkUsers.networkId, schema.networks.id))
-      .where(
-        eq(schema.networkUsers.userId, userId)
-      );
+      .leftJoin(
+        schema.networkUsers,
+        eq(schema.networkUsers.networkId, schema.networks.id),
+      )
+      .where(eq(schema.networkUsers.userId, userId));
   }
 
   async update(id: string, network: Network) {
