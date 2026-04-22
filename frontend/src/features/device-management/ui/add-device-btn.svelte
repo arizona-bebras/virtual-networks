@@ -24,8 +24,6 @@ let {
       deviceInfo: {
         name: $formData.name,
         ip: "12.2.2.12",
-        config: "proto udp\nport 1194\n...",
-        network_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
       },
       //   name: $formData.name,
       //   description: $formData.description,

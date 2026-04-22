@@ -20,38 +20,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/users": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: operations["UsersController_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/users/{id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: operations["UsersController_read"];
-    put: operations["UsersController_update"];
-    post?: never;
-    delete: operations["UsersController_delete"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/networks": {
     parameters: {
       query?: never;
@@ -59,7 +27,8 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /** Получить сети, в которых состоит пользователь */
+    get: operations["NetworksController_getMyNetworks"];
     put?: never;
     /** Создать новую сеть */
     post: operations["NetworksController_create"];
@@ -80,7 +49,8 @@ export interface paths {
     get: operations["NetworksController_get"];
     /** Обновить сеть по ID */
     put: operations["NetworksController_update"];
-    post?: never;
+    /** Войти в сеть */
+    post: operations["NetworksController_enter"];
     /** Удалить сеть по ID */
     delete: operations["NetworksController_delete"];
     options?: never;
@@ -95,7 +65,8 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /** Получить устройства по фильтрам */
+    get: operations["DevicesController_getDevicesWithFilters"];
     put?: never;
     /** Создать новое устройство */
     post: operations["DevicesController_createDevice"];
@@ -124,14 +95,15 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/network/{network_id}/tags": {
+  "/networks/{network_id}/tags": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /** Получить теги сети */
+    get: operations["TagsController_getAllTags"];
     put?: never;
     /** Создать новый тег */
     post: operations["TagsController_createTag"];
@@ -141,7 +113,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/network/{network_id}/tags/{tag_id}": {
+  "/networks/{network_id}/tags/{tag_id}": {
     parameters: {
       query?: never;
       header?: never;
@@ -167,7 +139,8 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /** Получить правила сети */
+    get: operations["RulesController_getAllRules"];
     put?: never;
     /** Создать новое правило */
     post: operations["RulesController_create"];
@@ -200,112 +173,170 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
-    Network: {
-      /**
-       * @description UUID сети (генерируется автоматически при создании)
-       * @example a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
-       */
-      id?: string;
-      /**
-       * @description Название VPN сети
-       * @example Office Network
-       */
+    CreateNetworkDto: {
+      /** @description The name of the network */
       name: string;
-      /**
-       * @description Описание сети
-       * @example Main office VPN network
-       */
+      /** @description A description of the network */
       description: string;
       /**
-       * @description IP адрес сети
-       * @example 192.168.1.0
+       * Format: ipv4
+       * @description The IP address of the network
        */
       ip: string;
-      /**
-       * @description Размер подсети (CIDR)
-       * @example 24
-       */
-      subnet: number;
-      /**
-       * @description Содержимое конфигурационного файла (.conf)
-       * @example proto udp
-       *     port 1194
-       *     ...
-       */
-      config: string;
-      /**
-       * @description UUID администратора, создавшего сеть
-       * @example a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
-       */
-      adminId: string;
     };
-    Device: {
+    NetworkDto: {
       /**
-       * @description UUID устройства (генерируется автоматически при создании)
-       * @example a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+       * Format: uuid
+       * @description The unique identifier of the network
        */
-      id?: string;
-      /**
-       * @description Название устройства
-       * @example Office-PC-01
-       */
+      id: string;
+      /** @description The name of the network */
       name: string;
+      /** @description A description of the network */
+      description: string;
       /**
-       * @description IP адрес устройства в сети
-       * @example 192.168.1.10
+       * Format: ipv4
+       * @description The IP address of the network
        */
       ip: string;
-      /**
-       * @description Содержимое конфигурационного файла устройства (.conf)
-       * @example client
-       *     remote vpn.example.com 1194
-       *     ...
-       */
-      config: string;
-      /**
-       * @description UUID сети, к которой подключается устройство
-       * @example a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
-       */
-      network_id: string;
     };
-    Tag: {
+    NetworkEnterCredentialsDto: {
+      /** @description The network access key */
+      key: string;
+    };
+    UpdateNetworkDto: {
+      /** @description The name of the network */
+      name?: string;
+      /** @description A description of the network */
+      description?: string;
       /**
-       * @description Название тега
-       * @example Office
+       * Format: ipv4
+       * @description The IP address of the network
        */
+      ip?: string;
+    };
+    CreateDeviceDto: {
+      /** @description The name of the device */
       name: string;
       /**
-       * @description UUID сети
-       * @example a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+       * Format: ipv4
+       * @description The IP address of the device
        */
-      network_id: string;
+      ip: string;
+      /** @description The identifier of the device owner */
+      ownerId?: string;
     };
-    Rule: {
+    DeviceDto: {
       /**
-       * @description ID тега устройства отправителя
-       * @example a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+       * Format: uuid
+       * @description The unique identifier of the device
        */
-      source: string;
+      id: string;
+      /** @description The name of the device */
+      name: string;
       /**
-       * @description ID тега устройства получатеся
-       * @example a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+       * Format: ipv4
+       * @description The IP address of the device
        */
-      dest: string;
+      ip: string;
+      /** @description The identifier of the device owner */
+      ownerId: string;
+    };
+    UpdateDeviceDto: {
+      /** @description The name of the device */
+      name?: string;
       /**
-       * @description Протокол (При отсутсвтии прямого указания протокола, применяется ко всем(ANY))
-       * @example TCP
+       * Format: ipv4
+       * @description The IP address of the device
        */
-      protocol: string;
+      ip?: string;
+      /** @description The identifier of the device owner */
+      ownerId?: string;
+    };
+    CreateTagDto: {
+      /** @description The name of the tag */
+      name: string;
       /**
-       * @description Порт (При отсутсвтии прямого указания порта, применяется ко всем(ALL)
-       * @example 443
+       * @description The display color of the tag
+       * @enum {string}
        */
-      port: number;
+      color: "red" | "blue" | "green" | "yellow" | "purple" | "orange";
+    };
+    TagDto: {
       /**
-       * @description UUID сети, к которой относится правило
-       * @example a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+       * Format: uuid
+       * @description The unique identifier of the tag
        */
-      network_id: string;
+      id: string;
+      /** @description The name of the tag */
+      name: string;
+      /**
+       * @description The display color of the tag
+       * @enum {string}
+       */
+      color: "red" | "blue" | "green" | "yellow" | "purple" | "orange";
+    };
+    UpdateTagDto: {
+      /** @description The name of the tag */
+      name?: string;
+      /**
+       * @description The display color of the tag
+       * @enum {string}
+       */
+      color?: "red" | "blue" | "green" | "yellow" | "purple" | "orange";
+    };
+    CreateRuleDto: {
+      /**
+       * Format: uuid
+       * @description The source tag identifier
+       */
+      source?: string;
+      /**
+       * Format: uuid
+       * @description The destination tag identifier
+       */
+      dest?: string;
+      /** @description The network protocol */
+      protocol?: string;
+      /** @description The destination port */
+      port?: number;
+    };
+    RuleDto: {
+      /**
+       * Format: uuid
+       * @description The unique identifier of the rule
+       */
+      id: string;
+      /**
+       * Format: uuid
+       * @description The source tag identifier
+       */
+      source?: string;
+      /**
+       * Format: uuid
+       * @description The destination tag identifier
+       */
+      dest?: string;
+      /** @description The network protocol */
+      protocol?: string;
+      /** @description The destination port */
+      port?: number;
+    };
+    UpdateRuleDto: {
+      /**
+       * Format: uuid
+       * @description The source tag identifier
+       */
+      source?: string;
+      /**
+       * Format: uuid
+       * @description The destination tag identifier
+       */
+      dest?: string;
+      /** @description The network protocol */
+      protocol?: string;
+      /** @description The destination port */
+      port?: number;
     };
   };
   responses: never;
@@ -333,77 +364,26 @@ export interface operations {
       };
     };
   };
-  UsersController_create: {
+  NetworksController_getMyNetworks: {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description UUID сети */
+        network_id: unknown;
+      };
       cookie?: never;
     };
     requestBody?: never;
     responses: {
+      /** @description Сети получены */
       201: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
-      };
-    };
-  };
-  UsersController_read: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+        content: {
+          "application/json": components["schemas"]["NetworkDto"][];
         };
-        content?: never;
-      };
-    };
-  };
-  UsersController_update: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  UsersController_delete: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
       };
     };
   };
@@ -416,7 +396,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["Network"];
+        "application/json": components["schemas"]["CreateNetworkDto"];
       };
     };
     responses: {
@@ -447,7 +427,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["Network"];
+          "application/json": components["schemas"]["NetworkDto"];
         };
       };
       /** @description Сеть не найдена */
@@ -471,11 +451,43 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["Network"];
+        "application/json": components["schemas"]["UpdateNetworkDto"];
       };
     };
     responses: {
       /** @description Сеть успешно обновлена */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Сеть не найдена */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  NetworksController_enter: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description UUID сети */
+        network_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["NetworkEnterCredentialsDto"];
+      };
+    };
+    responses: {
+      /** @description Успешный вход */
       200: {
         headers: {
           [name: string]: unknown;
@@ -519,19 +531,54 @@ export interface operations {
       };
     };
   };
+  DevicesController_getDevicesWithFilters: {
+    parameters: {
+      query?: {
+        /** @description Пойсковой запрос по названию */
+        q?: string;
+        /** @description Названия тэгов, повешенных на устройство */
+        tags?: string;
+        /** @description UUID владельца устройства */
+        owner_id?: string;
+      };
+      header?: never;
+      path: {
+        network_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Устройства найдены */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DeviceDto"][];
+        };
+      };
+      /** @description Устройства не найдены */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   DevicesController_createDevice: {
     parameters: {
       query?: never;
       header?: never;
       path: {
-        /** @description UUID сети */
         network_id: string;
       };
       cookie?: never;
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["Device"];
+        "application/json": components["schemas"]["CreateDeviceDto"];
       };
     };
     responses: {
@@ -562,7 +609,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["Device"];
+          "application/json": components["schemas"]["DeviceDto"];
         };
       };
       /** @description Устройство не найдено */
@@ -586,7 +633,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["Device"];
+        "application/json": components["schemas"]["UpdateDeviceDto"];
       };
     };
     responses: {
@@ -634,6 +681,31 @@ export interface operations {
       };
     };
   };
+  TagsController_getAllTags: {
+    parameters: {
+      query?: {
+        /** @description Пойсковой запрос по названию */
+        q?: string;
+      };
+      header?: never;
+      path: {
+        network_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Теги получены */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TagDto"][];
+        };
+      };
+    };
+  };
   TagsController_createTag: {
     parameters: {
       query?: never;
@@ -646,7 +718,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["Tag"];
+        "application/json": components["schemas"]["CreateTagDto"];
       };
     };
     responses: {
@@ -677,7 +749,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["Tag"];
+          "application/json": components["schemas"]["TagDto"];
         };
       };
       /** @description Тег не найден */
@@ -701,7 +773,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["Tag"];
+        "application/json": components["schemas"]["UpdateTagDto"];
       };
     };
     responses: {
@@ -749,19 +821,40 @@ export interface operations {
       };
     };
   };
+  RulesController_getAllRules: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        network_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Правила получены */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RuleDto"][];
+        };
+      };
+    };
+  };
   RulesController_create: {
     parameters: {
       query?: never;
       header?: never;
       path: {
-        /** @description UUID сети */
         network_id: string;
       };
       cookie?: never;
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["Rule"];
+        "application/json": components["schemas"]["CreateRuleDto"];
       };
     };
     responses: {
@@ -792,7 +885,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["Rule"];
+          "application/json": components["schemas"]["RuleDto"];
         };
       };
       /** @description Правило не найдено */
@@ -816,7 +909,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["Rule"];
+        "application/json": components["schemas"]["UpdateRuleDto"];
       };
     };
     responses: {

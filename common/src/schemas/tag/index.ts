@@ -14,3 +14,6 @@ export const TagSchema = z.object({
   name: z.string().min(1).max(255).describe("The name of the tag"),
   color: TagColorSchema.describe("The display color of the tag"),
 });
+
+export type TagColor = z.infer<typeof TagColorSchema>;
+export type Tag = z.infer<typeof TagSchema>;

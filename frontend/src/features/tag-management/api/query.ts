@@ -1,6 +1,6 @@
 import { mutationOptions } from "@tanstack/svelte-query";
+import type { CreateTag } from "common/schemas/tag/create-tag";
 import { client } from "$shared/api/openapi-client";
-import type { tagCreationBody } from "$shared/api/openapi-types";
 
 export const deviceСreationQuery = () =>
   mutationOptions({
@@ -9,9 +9,9 @@ export const deviceСreationQuery = () =>
       tagInfo,
     }: {
       networkId: string;
-      tagInfo: tagCreationBody;
+      tagInfo: CreateTag;
     }) => {
-      const { data, error } = await client.POST("/network/{network_id}/tags", {
+      const { data, error } = await client.POST("/networks/{network_id}/tags", {
         params: {
           path: {
             network_id: networkId,

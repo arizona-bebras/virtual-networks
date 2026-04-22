@@ -31,16 +31,9 @@ let {
       networkId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
       tagInfo: {
         name: $formData.name,
-        // color: $formData.color,
+        color: $formData.color,
         // icon: $formData.icon,
-        network_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
       },
-      //   name: $formData.name,
-      //   description: $formData.description,
-      //   ip: cidrParts[0]!,
-      //   subnet: parseInt(cidrParts[1]!, 10),
-      //   config: "proto udp\nport 1194\n...",
-      //   adminId: "B8osnmhFISBu6B7I0wAJsmGEmSOxWNam",
     });
     open = false;
   },

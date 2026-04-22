@@ -6,3 +6,5 @@ export const DeviceSchema = z.object({
   ip: z.ipv4().describe("The IP address of the device"),
   ownerId: z.string().describe("The identifier of the device owner"),
 });
+
+export type Device = z.infer<typeof DeviceSchema>;

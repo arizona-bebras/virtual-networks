@@ -18,3 +18,5 @@ export const RuleSchema = z.object({
     .describe("The destination port")
     .optional(),
 });
+
+export type Rule = z.infer<typeof RuleSchema>;

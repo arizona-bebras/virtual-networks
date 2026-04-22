@@ -6,3 +6,5 @@ export const NetworkSchema = z.object({
   description: z.string().max(255).describe("A description of the network"),
   ip: z.ipv4().describe("The IP address of the network"),
 });
+
+export type Network = z.infer<typeof NetworkSchema>;

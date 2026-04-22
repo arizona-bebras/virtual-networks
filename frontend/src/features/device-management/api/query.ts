@@ -1,6 +1,6 @@
 import { mutationOptions } from "@tanstack/svelte-query";
+import type { CreateDevice } from "common/schemas/device/create-device";
 import { client } from "$shared/api/openapi-client";
-import type { deviceCreationBody } from "$shared/api/openapi-types";
 
 export const deviceСreationQuery = () =>
   mutationOptions({
@@ -9,7 +9,7 @@ export const deviceСreationQuery = () =>
       deviceInfo,
     }: {
       networkId: string;
-      deviceInfo: deviceCreationBody;
+      deviceInfo: CreateDevice;
     }) => {
       const { data, error } = await client.POST(
         "/networks/{network_id}/devices",
