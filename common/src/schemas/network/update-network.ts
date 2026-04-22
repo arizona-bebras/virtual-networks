@@ -1,4 +1,4 @@
-import { z } from "zod";
+import type { z } from "zod";
 import { NetworkSchema } from "./index.js";
 
 export const UpdateNetworkSchema = NetworkSchema.omit({ id: true }).partial();

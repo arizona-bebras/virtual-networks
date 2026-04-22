@@ -1,4 +1,4 @@
-import { z } from "zod";
+import type { z } from "zod";
 import { TagSchema } from "./index.js";
 
 export const UpdateTagSchema = TagSchema.omit({ id: true }).partial();

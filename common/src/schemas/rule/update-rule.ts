@@ -1,4 +1,4 @@
-import { z } from "zod";
+import type { z } from "zod";
 import { RuleSchema } from "./index.js";
 
 export const UpdateRuleSchema = RuleSchema.omit({ id: true }).partial();
