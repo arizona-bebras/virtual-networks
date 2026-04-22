@@ -43,6 +43,11 @@ export class NetworksController {
 
   @Get()
   @ApiOperation({ summary: "Получить сети, в которых состоит пользователь" })
+  @ApiParam({
+    name: "network_id",
+    description: "UUID сети",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  })
   @ApiResponse({
     status: 201,
     description: "Сети получены",
@@ -50,7 +55,7 @@ export class NetworksController {
     isArray: true,
   })
   async getMyNetworks(@Session() session: UserSession) {
-    await this.networksService.getMyNetworks(session.user.id);
+    return await this.networksService.getMyNetworks(session.user.id);
   }
 
   @Get(":network_id")

@@ -64,7 +64,7 @@ export class TagsController {
     @Param("network_id") network_id: string,
     @Query("q") q: string,
   ) {
-    await this.tagsService.getAllTags(network_id, q);
+    return await this.tagsService.getAllTags(network_id, q);
   }
 
   @Get(":tag_id")

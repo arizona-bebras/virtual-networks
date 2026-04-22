@@ -48,7 +48,7 @@ export class RulesController {
     isArray: true,
   })
   async getAllRules(@Param("network_id") networkId: string) {
-    await this.rulesService.getAllRules(networkId);
+    return await this.rulesService.getAllRules(networkId);
   }
 
   @Get(":rule_id")
