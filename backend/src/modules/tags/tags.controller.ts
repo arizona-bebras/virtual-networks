@@ -52,7 +52,7 @@ export class TagsController {
     name: "q",
     description: "Пойсковой запрос по названию",
     example: "Разраб",
-    required: false
+    required: false,
   })
   @ApiResponse({
     status: 200,

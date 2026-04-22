@@ -49,19 +49,19 @@ export class DevicesController {
     name: "q",
     description: "Пойсковой запрос по названию",
     example: "PC",
-    required: false
+    required: false,
   })
   @ApiQuery({
     name: "tags",
     description: "Названия тэгов, повешенных на устройство",
     example: "Бухгалтерия,разработка",
-    required: false
+    required: false,
   })
   @ApiQuery({
     name: "owner_id",
     description: "UUID владельца устройства",
     example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-    required: false
+    required: false,
   })
   @ApiResponse({
     status: 200,
