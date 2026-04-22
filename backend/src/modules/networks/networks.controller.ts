@@ -18,8 +18,8 @@ import {
 } from "@nestjs/swagger";
 import type { UserSession } from "@thallesp/nestjs-better-auth";
 import { AuthGuard } from "@thallesp/nestjs-better-auth";
-import { NetworkEnterCredentialsDto } from "common/dto/network/enter-credentials";
 import { CreateNetworkDto } from "common/dto/network/create-network";
+import { NetworkEnterCredentialsDto } from "common/dto/network/enter-credentials";
 import { NetworkDto } from "common/dto/network/index";
 import { UpdateNetworkDto } from "common/dto/network/update-network";
 import { Role } from "../../authorization/role.enum";

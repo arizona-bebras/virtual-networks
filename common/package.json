@@ -2,24 +2,19 @@
   "name": "common",
   "version": "1.0.0",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
     "./*": {
-      "types": "./dist/*.d.ts",
+      "types": "./src/*.ts",
       "default": "./dist/*.js"
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "description": "",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json --incremental false",
     "build:watch": "tsc -p tsconfig.json --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "format": "biome check --write .",
@@ -33,5 +28,8 @@
     "nestjs-zod": "^5.3.0",
     "typescript": "^5.7.3",
     "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.11"
   }
 }
