@@ -6,4 +6,3 @@ export const client = createClient<paths>({
   baseUrl: PUBLIC_API_URL,
   credentials: "include",
 });
-

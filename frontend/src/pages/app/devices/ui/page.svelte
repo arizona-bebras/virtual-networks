@@ -3,6 +3,7 @@ import { Plus } from "@lucide/svelte";
 import { initialDevices } from "$entities/device/model/mock-devices.js";
 import type { Device } from "$entities/device/model/types.js";
 import { columns } from "$features/device-management/model/device-table-columns.js";
+import AddDeviceBtn from "$features/device-management/ui/add-device-btn.svelte";
 import { withRowActions } from "$shared/lib/table/with-row-actions";
 import { Button } from "$shared/ui/button/index.js";
 import * as Card from "$shared/ui/card/index.js";
@@ -12,27 +13,27 @@ import { Input } from "$shared/ui/input/index.js";
 import { Label } from "$shared/ui/label/index.js";
 
 let devices = $state<Device[]>(initialDevices);
-let isDialogOpen = $state(false);
+let isAddDeviceDialogOpen = $state(false);
 let newDeviceData = $state({ name: "", ip: "", tags: "" });
 
-function addDevice() {
-  if (!newDeviceData.name) return;
+// function addDevice() {
+//   if (!newDeviceData.name) return;
 
-  const device: Device = {
-    id: Math.random().toString(36).substring(2, 9),
-    name: newDeviceData.name,
-    ip: newDeviceData.ip || `10.0.0.${Math.floor(Math.random() * 254) + 1}`,
-    status: "online",
-    tags: newDeviceData.tags
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter(Boolean),
-  };
+//   const device: Device = {
+//     id: Math.random().toString(36).substring(2, 9),
+//     name: newDeviceData.name,
+//     ip: newDeviceData.ip || `10.0.0.${Math.floor(Math.random() * 254) + 1}`,
+//     status: "online",
+//     tags: newDeviceData.tags
+//       .split(",")
+//       .map((tag) => tag.trim())
+//       .filter(Boolean),
+//   };
 
-  devices = [...devices, device];
-  newDeviceData = { name: "", ip: "", tags: "" };
-  isDialogOpen = false;
-}
+//   devices = [...devices, device];
+//   newDeviceData = { name: "", ip: "", tags: "" };
+//   isAddDeviceDialogOpen = false;
+// }
 
 function removeDevice(id: string) {
   devices = devices.filter((device) => device.id !== id);
@@ -53,7 +54,9 @@ const tableColumns = $derived(withRowActions(columns, removeDevice));
         Manage and monitor your network devices.
       </p>
     </div>
-    <Dialog.Root bind:open={isDialogOpen}>
+
+    <AddDeviceBtn bind:open={isAddDeviceDialogOpen} />
+    <!-- <Dialog.Root bind:open={isDialogOpen}>
       <Dialog.Trigger>
         <Button>
           <Plus class="mr-2 size-4" />
@@ -97,7 +100,7 @@ const tableColumns = $derived(withRowActions(columns, removeDevice));
           <Button type="button" onclick={addDevice}>Save Device</Button>
         </Dialog.Footer>
       </Dialog.Content>
-    </Dialog.Root>
+    </Dialog.Root> -->
   </div>
 
   <Card.Root>

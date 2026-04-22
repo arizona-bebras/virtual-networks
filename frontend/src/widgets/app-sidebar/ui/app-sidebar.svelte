@@ -79,10 +79,10 @@ const networkQuery = createQuery(() =>
                 </div>
                 <div class="flex flex-col gap-0.5 text-left">
                   <span class="text-sm font-semibold truncate w-32">
-                    {selectedNetwork.name}
+                    {selectedNetwork?.name}
                   </span>
                   <span class="text-xs text-muted-foreground">
-                    {selectedNetwork.cidr}
+                    {selectedNetwork?.cidr}
                   </span>
                 </div>
               </div>

@@ -1,4 +1,3 @@
-import type { CreateMutationResult } from "@tanstack/svelte-query";
 import {
   defaults,
   type FormOptions,
@@ -10,17 +9,10 @@ import { zod4, zod4Client } from "sveltekit-superforms/adapters";
 import type { SuperFormData } from "sveltekit-superforms/client";
 import type { ZodObject, z } from "zod/v4";
 
-type MutationResult<Result, TSchema extends ZodObject> = CreateMutationResult<
-  Result,
-  Error,
-  z.infer<TSchema>,
-  unknown
->;
-
-export function useForm<Result, TSchema extends ZodObject>(
+export function useForm<TSchema extends ZodObject>(
   schema: TSchema,
   option?: FormOptions<z.infer<TSchema>>,
-  onResponse?: (response: Result) => void,
+  // onResponse?: (response: Result) => void,
 ): SuperForm<z.infer<TSchema>> & {
   forms: SuperForm<z.infer<TSchema>>;
   formData: SuperFormData<z.infer<TSchema>>;
@@ -33,7 +25,7 @@ export function useForm<Result, TSchema extends ZodObject>(
   >;
   const form = superForm(initialData, {
     SPA: true,
-    onSubmit: async ({ formData }) => {
+    onSubmit: async () => {
       // const data = schema.parse(Object.fromEntries(formData));
       // const response = await tanstackQuery?.mutateAsync(data);
       // if (response) onResponse?.(response);
