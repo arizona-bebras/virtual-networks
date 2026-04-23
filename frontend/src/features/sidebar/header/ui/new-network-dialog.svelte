@@ -7,10 +7,16 @@ import * as Dialog from "$shared/ui/dialog/index.js";
 import * as Form from "$shared/ui/form/index.js";
 import { Input } from "$shared/ui/input/index.js";
 import { headerQueries } from "../api/query.js";
+  import { goto } from "$app/navigation";
 
-const queryClient = getQueryClientContext()
+const queryClient = getQueryClientContext();
 
-const query = createMutation(() => headerQueries.createNetworkMutation(queryClient));
+const query = createMutation(() =>
+  headerQueries.createNetworkMutation(async (data) => {
+    await queryClient.invalidateQueries({ queryKey: ["userNetworks"] });
+    goto(`/app/network/${data.id}/dashboard`);
+  }),
+);
 
 let { isDialogOpen = $bindable() }: { isDialogOpen: boolean } = $props();
 

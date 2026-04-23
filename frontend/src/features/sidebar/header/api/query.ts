@@ -1,12 +1,16 @@
 import {
+  type MutationOptions,
   mutationOptions,
   type QueryClient,
 } from "@tanstack/svelte-query";
 import type { CreateNetwork } from "common/schemas/network/create-network";
+import type { Network } from "common/schemas/network/index";
 import { client } from "$shared/api/openapi-client";
 
 export const headerQueries = {
-  createNetworkMutation: (queryClient: QueryClient) =>
+  createNetworkMutation: (
+    onSuccess: (data: Network) => void,
+  ) =>
     mutationOptions({
       mutationFn: async (newNetwork: CreateNetwork) => {
         const { data, error } = await client.POST("/networks", {
@@ -15,8 +19,6 @@ export const headerQueries = {
         if (error) throw error;
         return data;
       },
-      onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: ["userNetworks"] });
-      },
+      onSuccess,
     }),
 };

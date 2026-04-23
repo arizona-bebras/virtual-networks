@@ -4,7 +4,7 @@ import { goto } from "$app/navigation";
 
 onMount(() => {
   const token = localStorage.getItem("token");
-  goto(token ? "/app/dashboard" : "/auth/login");
+  goto(token ? "/app/" : "/auth/login");
 });
 </script>
 

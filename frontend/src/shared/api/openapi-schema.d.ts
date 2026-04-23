@@ -402,7 +402,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["NetworkDto"];
+                };
             };
         };
     };
@@ -593,6 +595,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                network_id: string;
                 /** @description UUID устройства */
                 device_id: string;
             };

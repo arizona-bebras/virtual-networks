@@ -1,5 +1,8 @@
 <script lang="ts">
 import { Plus } from "@lucide/svelte";
+import { createQuery } from "@tanstack/svelte-query";
+import { getContext } from "svelte";
+import { page } from "$app/state";
 import { initialDevices } from "$entities/device/model/mock-devices.js";
 import type { Device } from "$entities/device/model/types.js";
 import { columns } from "$features/device-management/model/device-table-columns.js";
@@ -11,11 +14,12 @@ import DataTable from "$shared/ui/data-table/data-table.svelte";
 import * as Dialog from "$shared/ui/dialog/index.js";
 import { Input } from "$shared/ui/input/index.js";
 import { Label } from "$shared/ui/label/index.js";
+import { deviceQuery } from "../api/query";
+  import { getNetworkId } from "$shared/lib/network-id-context";
 
 let devices = $state<Device[]>(initialDevices);
 let isAddDeviceDialogOpen = $state(false);
 let newDeviceData = $state({ name: "", ip: "", tags: "" });
-
 // function addDevice() {
 //   if (!newDeviceData.name) return;
 
@@ -42,6 +46,10 @@ function removeDevice(id: string) {
 function removeSelected(ids: string[]) {
   devices = devices.filter((device) => !ids.includes(device.id));
 }
+
+const userDevicesQuery = createQuery(() =>
+  deviceQuery.userDevices(getNetworkId()),
+);
 
 const tableColumns = $derived(withRowActions(columns, removeDevice));
 </script>

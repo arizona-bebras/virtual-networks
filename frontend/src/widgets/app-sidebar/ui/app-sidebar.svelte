@@ -9,10 +9,12 @@ import {
   Tag,
 } from "@lucide/svelte";
 import { createQuery } from "@tanstack/svelte-query";
+import { getContext, untrack } from "svelte";
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
 import AddNetworkBtn from "$features/sidebar/header/ui/new-network-dialog.svelte";
 import { authClient } from "$shared/api/auth-client";
+import { getNetworkId } from "$shared/lib/network-id-context";
 import * as DropdownMenu from "$shared/ui/dropdown-menu/index.js";
 import * as Sidebar from "$shared/ui/sidebar/index.js";
 import { sidebarQuerys } from "../api/index.svelte";
@@ -23,10 +25,11 @@ const networks = [
   { id: "2", name: "IT Department", cidr: "192.168.1.0/24" },
   { id: "3", name: "Production", cidr: "172.16.0.0/16" },
 ];
+const userNetworks = createQuery(() => sidebarQuerys.userNetworks());
 
-let selectedNetwork = $state(networks[0]);
 let isDialogOpen = $state(false);
-let currentNetworkUUID = page.url.pathname.split("/")[3];
+let currentNetworkUUID = getNetworkId();
+let selectedNetwork = $derived(userNetworks.data?.find((n) => n.id === currentNetworkUUID));
 
 const navItems = $derived([
   {
@@ -61,14 +64,18 @@ async function handleLogout() {
   });
 }
 
-const userNetworks = createQuery(() => sidebarQuerys.userNetworks());
-</script>
+// $effect(() => {
+//   if (userNetworks.isSuccess){
+//     untrack(() => {
 
-<Sidebar.Root>
-  <Sidebar.Header>
-    <Sidebar.Menu>
-      <Sidebar.MenuItem>
-        {#if userNetworks.isSuccess}
+//     })
+//   })
+</script>
+{#if userNetworks.isSuccess}
+  <Sidebar.Root>
+    <Sidebar.Header>
+      <Sidebar.Menu>
+        <Sidebar.MenuItem>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger class="w-full">
               <Sidebar.MenuButton size="lg" class="w-full justify-between">
@@ -78,31 +85,39 @@ const userNetworks = createQuery(() => sidebarQuerys.userNetworks());
                   >
                     <LayoutDashboard class="size-4" />
                   </div>
-                  <div class="flex flex-col gap-0.5 text-left">
+                  {#if userNetworks.data.length === 0}
                     <span class="text-sm font-semibold truncate w-32">
-                      {selectedNetwork?.name}
+                      Выберите сеть
                     </span>
-                    <span class="text-xs text-muted-foreground">
-                      {selectedNetwork?.cidr}
-                    </span>
-                  </div>
+                  {:else}
+                    <div class="flex flex-col gap-0.5 text-left">
+                      <span class="text-sm font-semibold truncate w-32">
+                        {selectedNetwork?.name ?? userNetworks.data[0]?.name}
+                      </span>
+                      <span class="text-xs text-muted-foreground">
+                        {selectedNetwork?.cidr ?? userNetworks.data[0]?.cidr}
+                      </span>
+                    </div>
+                  {/if}
                 </div>
                 <ChevronDown class="size-4 opacity-50" />
               </Sidebar.MenuButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content class="w-56" align="start">
-              <DropdownMenu.Label>Networks</DropdownMenu.Label>
-              {#each userNetworks.data as network}
-                <DropdownMenu.Item
-                  onSelect={() => {
+              {#if userNetworks.data.length > 0}
+                <DropdownMenu.Label>Networks</DropdownMenu.Label>
+                {#each userNetworks.data as network}
+                  <DropdownMenu.Item
+                    onSelect={() => {
                   selectedNetwork = network;
                   goto(`/app/network/${network.id}/dashboard`);
                 }}
-                >
-                  {network.name}
-                </DropdownMenu.Item>
-              {/each}
-              <DropdownMenu.Separator />
+                  >
+                    {network.name}
+                  </DropdownMenu.Item>
+                {/each}
+                <DropdownMenu.Separator />
+              {/if}
               <DropdownMenu.Item
                 onSelect={(e) => {
                 e.preventDefault();
@@ -115,41 +130,43 @@ const userNetworks = createQuery(() => sidebarQuerys.userNetworks());
             </DropdownMenu.Content>
           </DropdownMenu.Root>
           <AddNetworkBtn bind:isDialogOpen />
-        {/if}
-      </Sidebar.MenuItem>
-    </Sidebar.Menu>
-  </Sidebar.Header>
+        </Sidebar.MenuItem>
+      </Sidebar.Menu>
+    </Sidebar.Header>
 
-  <Sidebar.Content>
-    <Sidebar.Group>
-      <Sidebar.GroupLabel>Management</Sidebar.GroupLabel>
-      <Sidebar.GroupContent>
-        <Sidebar.Menu>
-          {#each navItems as item (item.title)}
-            <Sidebar.MenuItem>
-              <Sidebar.MenuButton>
-                {#snippet child({ props })}
-                  <a href={item.url} {...props}>
-                    <item.icon class="size-4" />
-                    <span>{item.title}</span>
-                  </a>
-                {/snippet}
-              </Sidebar.MenuButton>
-            </Sidebar.MenuItem>
-          {/each}
-        </Sidebar.Menu>
-      </Sidebar.GroupContent>
-    </Sidebar.Group>
-  </Sidebar.Content>
+    <Sidebar.Content>
+      {#if userNetworks.data.length !== 0}
+        <Sidebar.Group>
+          <Sidebar.GroupLabel>Management</Sidebar.GroupLabel>
+          <Sidebar.GroupContent>
+            <Sidebar.Menu>
+              {#each navItems as item (item.title)}
+                <Sidebar.MenuItem>
+                  <Sidebar.MenuButton>
+                    {#snippet child({ props })}
+                      <a href={item.url} {...props}>
+                        <item.icon class="size-4" />
+                        <span>{item.title}</span>
+                      </a>
+                    {/snippet}
+                  </Sidebar.MenuButton>
+                </Sidebar.MenuItem>
+              {/each}
+            </Sidebar.Menu>
+          </Sidebar.GroupContent>
+        </Sidebar.Group>
+      {/if}
+    </Sidebar.Content>
 
-  <Sidebar.Footer>
-    <Sidebar.Menu>
-      <Sidebar.MenuItem>
-        <Sidebar.MenuButton onclick={handleLogout}>
-          <LogOut class="size-4" />
-          <span>Logout</span>
-        </Sidebar.MenuButton>
-      </Sidebar.MenuItem>
-    </Sidebar.Menu>
-  </Sidebar.Footer>
-</Sidebar.Root>
+    <Sidebar.Footer>
+      <Sidebar.Menu>
+        <Sidebar.MenuItem>
+          <Sidebar.MenuButton onclick={handleLogout}>
+            <LogOut class="size-4" />
+            <span>Logout</span>
+          </Sidebar.MenuButton>
+        </Sidebar.MenuItem>
+      </Sidebar.Menu>
+    </Sidebar.Footer>
+  </Sidebar.Root>
+{/if}

@@ -1,5 +1,5 @@
 <script lang="ts">
-import Page from "$pages/root/ui/page.svelte";
+import Page from "$pages/app/page.svelte";
 </script>
 
 <Page />
