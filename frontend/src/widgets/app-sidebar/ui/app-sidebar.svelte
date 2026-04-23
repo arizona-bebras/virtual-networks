@@ -91,7 +91,10 @@ const userNetworks = createQuery(() => sidebarQuerys.userNetworks());
             <DropdownMenu.Content class="w-56" align="start">
               <DropdownMenu.Label>Networks</DropdownMenu.Label>
               {#each userNetworks.data as network}
-                <DropdownMenu.Item onSelect={() => (selectedNetwork = network)}>
+                <DropdownMenu.Item onSelect={() => {
+                  selectedNetwork = network;
+                  goto(`/app/network/${network.id}/dashboard`);
+                }}>
                   {network.name}
                 </DropdownMenu.Item>
               {/each}
