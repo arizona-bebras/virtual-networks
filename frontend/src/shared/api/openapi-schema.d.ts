@@ -368,16 +368,13 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path: {
-                /** @description UUID сети */
-                network_id: unknown;
-            };
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
             /** @description Сети получены */
-            201: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

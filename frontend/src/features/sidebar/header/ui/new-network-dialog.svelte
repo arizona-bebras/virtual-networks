@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Plus } from "@lucide/svelte";
-import { createMutation } from "@tanstack/svelte-query";
+import { createMutation, getQueryClientContext } from "@tanstack/svelte-query";
 import { CreateNetworkSchema } from "common/schemas/network/create-network";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import * as Dialog from "$shared/ui/dialog/index.js";
@@ -8,7 +8,9 @@ import * as Form from "$shared/ui/form/index.js";
 import { Input } from "$shared/ui/input/index.js";
 import { headerQueries } from "../api/query.js";
 
-const query = createMutation(() => headerQueries.createNetworkMutation());
+const queryClient = getQueryClientContext()
+
+const query = createMutation(() => headerQueries.createNetworkMutation(queryClient));
 
 let { isDialogOpen = $bindable() }: { isDialogOpen: boolean } = $props();
 

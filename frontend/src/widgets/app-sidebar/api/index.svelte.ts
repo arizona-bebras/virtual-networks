@@ -17,4 +17,13 @@ export const sidebarQuerys = {
         return data;
       },
     }),
+  userNetworks: () =>
+    queryOptions({
+      queryKey: ["userNetworks"],
+      queryFn: async () => {
+        const { data, error } = await client.GET("/networks");
+        if (error) throw error;
+        return data;
+      },
+    }),
 };

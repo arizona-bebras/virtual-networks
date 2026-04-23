@@ -59,56 +59,56 @@ async function handleLogout() {
   });
 }
 
-const networkQuery = createQuery(() =>
-  sidebarQuerys.networkDetails("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
-);
+const userNetworks = createQuery(() => sidebarQuerys.userNetworks());
 </script>
 
 <Sidebar.Root>
   <Sidebar.Header>
     <Sidebar.Menu>
       <Sidebar.MenuItem>
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger class="w-full">
-            <Sidebar.MenuButton size="lg" class="w-full justify-between">
-              <div class="flex items-center gap-2">
-                <div
-                  class="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"
-                >
-                  <LayoutDashboard class="size-4" />
+        {#if userNetworks.isSuccess}
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger class="w-full">
+              <Sidebar.MenuButton size="lg" class="w-full justify-between">
+                <div class="flex items-center gap-2">
+                  <div
+                    class="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"
+                  >
+                    <LayoutDashboard class="size-4" />
+                  </div>
+                  <div class="flex flex-col gap-0.5 text-left">
+                    <span class="text-sm font-semibold truncate w-32">
+                      {selectedNetwork?.name}
+                    </span>
+                    <span class="text-xs text-muted-foreground">
+                      {selectedNetwork?.cidr}
+                    </span>
+                  </div>
                 </div>
-                <div class="flex flex-col gap-0.5 text-left">
-                  <span class="text-sm font-semibold truncate w-32">
-                    {selectedNetwork?.name}
-                  </span>
-                  <span class="text-xs text-muted-foreground">
-                    {selectedNetwork?.cidr}
-                  </span>
-                </div>
-              </div>
-              <ChevronDown class="size-4 opacity-50" />
-            </Sidebar.MenuButton>
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Content class="w-56" align="start">
-            <DropdownMenu.Label>Networks</DropdownMenu.Label>
-            {#each networks as network}
-              <DropdownMenu.Item onSelect={() => (selectedNetwork = network)}>
-                {network.name}
-              </DropdownMenu.Item>
-            {/each}
-            <DropdownMenu.Separator />
-            <DropdownMenu.Item
-              onSelect={(e) => {
+                <ChevronDown class="size-4 opacity-50" />
+              </Sidebar.MenuButton>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content class="w-56" align="start">
+              <DropdownMenu.Label>Networks</DropdownMenu.Label>
+              {#each userNetworks.data as network}
+                <DropdownMenu.Item onSelect={() => (selectedNetwork = network)}>
+                  {network.name}
+                </DropdownMenu.Item>
+              {/each}
+              <DropdownMenu.Separator />
+              <DropdownMenu.Item
+                onSelect={(e) => {
                 e.preventDefault();
                 isDialogOpen = true;
               }}
-            >
-              <Plus class="mr-2 size-4" />
-              <span>New Network</span>
-            </DropdownMenu.Item>
-          </DropdownMenu.Content>
-        </DropdownMenu.Root>
-        <AddNetworkBtn bind:isDialogOpen />
+              >
+                <Plus class="mr-2 size-4" />
+                <span>New Network</span>
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+          <AddNetworkBtn bind:isDialogOpen />
+        {/if}
       </Sidebar.MenuItem>
     </Sidebar.Menu>
   </Sidebar.Header>
