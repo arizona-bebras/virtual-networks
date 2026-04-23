@@ -10,6 +10,7 @@ import {
 } from "@lucide/svelte";
 import { createQuery } from "@tanstack/svelte-query";
 import { goto } from "$app/navigation";
+import { page } from "$app/state";
 import AddNetworkBtn from "$features/sidebar/header/ui/new-network-dialog.svelte";
 import { authClient } from "$shared/api/auth-client";
 import * as DropdownMenu from "$shared/ui/dropdown-menu/index.js";
@@ -25,26 +26,27 @@ const networks = [
 
 let selectedNetwork = $state(networks[0]);
 let isDialogOpen = $state(false);
+let currentNetworkUUID = page.url.pathname.split("/")[3];
 
 const navItems = $derived([
   {
     title: "Dashboard",
-    url: "/app/dashboard",
+    url: `/app/network/${currentNetworkUUID}/dashboard`,
     icon: LayoutDashboard,
   },
   {
     title: "Devices",
-    url: "/app/devices",
+    url: `/app/network/${currentNetworkUUID}/devices`,
     icon: Monitor,
   },
   {
     title: "Tags",
-    url: "/app/tags",
+    url: `/app/network/${currentNetworkUUID}/tags`,
     icon: Tag,
   },
   {
     title: "Configuration",
-    url: `/app/networks/${selectedNetwork?.id}/config`,
+    url: `/app/network/${currentNetworkUUID}/config`,
     icon: Settings,
   },
 ]);
@@ -91,10 +93,12 @@ const userNetworks = createQuery(() => sidebarQuerys.userNetworks());
             <DropdownMenu.Content class="w-56" align="start">
               <DropdownMenu.Label>Networks</DropdownMenu.Label>
               {#each userNetworks.data as network}
-                <DropdownMenu.Item onSelect={() => {
+                <DropdownMenu.Item
+                  onSelect={() => {
                   selectedNetwork = network;
                   goto(`/app/network/${network.id}/dashboard`);
-                }}>
+                }}
+                >
                   {network.name}
                 </DropdownMenu.Item>
               {/each}
