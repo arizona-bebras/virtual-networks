@@ -130,10 +130,11 @@ export class DevicesController {
   @ApiResponse({ status: 200, description: "Устройство успешно обновлено" })
   @ApiResponse({ status: 404, description: "Устройство не найдено" })
   async updateDevice(
+    @Param("network_id") networkId: string,
     @Param("device_id") id: string,
     @Body() device: UpdateDeviceDto,
   ) {
-    await this.devicesService.update(id, device);
+    await this.devicesService.update(id, networkId, device);
   }
 
   @Delete(":device_id")

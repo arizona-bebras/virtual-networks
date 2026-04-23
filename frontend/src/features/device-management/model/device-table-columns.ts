@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/table-core";
-import type { Device } from "$entities/device/model/types.js";
+import type { DeviceRelations } from "common/schemas/device/index";
 import DeviceNameCell from "$entities/device/ui/device-name-cell.svelte";
 import DeviceStatusCell from "$entities/device/ui/device-status-cell.svelte";
 import DeviceTagsCell from "$entities/device/ui/device-tags-cell.svelte";
@@ -8,7 +8,7 @@ import DataTableSortButton from "$shared/ui/data-table/data-table-sort-button.sv
 import { renderComponent } from "$shared/ui/data-table/index.js";
 import DeviceActionsCell from "../ui/device-actions-cell.svelte";
 
-export const columns: ColumnDef<Device>[] = [
+export const columns: ColumnDef<DeviceRelations>[] = [
   {
     id: "select",
     header: ({ table }) => {
@@ -71,6 +71,18 @@ export const columns: ColumnDef<Device>[] = [
     },
   },
   {
+    accessorKey: "owner",
+    header: ({ column }) => {
+      return renderComponent(DataTableSortButton, {
+        label: "Owner",
+        onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+      });
+    },
+    cell: ({ row }) => {
+      return row.getValue("owner") || "—";
+    },
+  },
+  {
     accessorKey: "tags",
     header: "Tags",
     cell: ({ row }) => {
@@ -82,7 +94,7 @@ export const columns: ColumnDef<Device>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      return renderComponent(DeviceActionsCell, { id: row.original.id });
+      return renderComponent(DeviceActionsCell, { device: row.original });
     },
   },
 ];

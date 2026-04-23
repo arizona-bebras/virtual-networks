@@ -18,7 +18,13 @@ export const deviceQuery = {
           },
         );
         if (error) throw error;
-        return data;
+
+        // TODO: удалить после реализации стастуса и владельца на бэке
+        return data.map((device) => ({
+          ...device,
+          status: "online" as const,
+          owner: device.ownerId,
+        }));
       },
     }),
 };

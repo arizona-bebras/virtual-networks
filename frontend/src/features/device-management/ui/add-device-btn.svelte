@@ -1,17 +1,23 @@
 <script lang="ts">
 import { Plus } from "@lucide/svelte";
-import { createMutation } from "@tanstack/svelte-query";
+import { createMutation, getQueryClientContext } from "@tanstack/svelte-query";
 import { CreateDeviceSchema } from "common/schemas/device/create-device";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
+import { getNetworkId } from "$shared/lib/network-id-context";
 import { Button } from "$shared/ui/button/index.js";
 import * as Dialog from "$shared/ui/dialog/index.js";
 import * as Form from "$shared/ui/form/index.js";
 import { Input } from "$shared/ui/input/index.js";
-import { Label } from "$shared/ui/label/index.js";
 import { deviceСreationQuery } from "../api/query";
 
 let { open = $bindable() }: { open: boolean } = $props();
-const query = createMutation(() => deviceСreationQuery());
+const query = createMutation(() =>
+  deviceСreationQuery(() =>
+    queryClient.invalidateQueries({ queryKey: ["userDevices"] }),
+  ),
+);
+const queryClient = getQueryClientContext();
+let currentNetworkId = $derived(getNetworkId().id);
 let {
   forms: form,
   formData,
@@ -20,17 +26,11 @@ let {
 } = useForm(CreateDeviceSchema, {
   onSubmit: async () => {
     query.mutate({
-      networkId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      networkId: currentNetworkId,
       deviceInfo: {
         name: $formData.name,
-        ip: "12.2.2.12",
+        ip: $formData.ip,
       },
-      //   name: $formData.name,
-      //   description: $formData.description,
-      //   ip: cidrParts[0]!,
-      //   subnet: parseInt(cidrParts[1]!, 10),
-      //   config: "proto udp\nport 1194\n...",
-      //   adminId: "B8osnmhFISBu6B7I0wAJsmGEmSOxWNam",
     });
     open = false;
   },
@@ -62,17 +62,17 @@ let {
         <Form.Description />
         <Form.FieldErrors />
       </Form.Field>
-      <Form.Button>Save Device</Form.Button>
+      <Form.Field {form} name="ip">
+        <Form.Control>
+          {#snippet children({ props })}
+            <Form.Label>IP Address</Form.Label>
+            <Input {...props} bind:value={$formData.ip} />
+          {/snippet}
+        </Form.Control>
+        <Form.Description />
+        <Form.FieldErrors />
+      </Form.Field>
+      <Form.Button disabled={!valid()}>Save Device</Form.Button>
     </form>
-    <!-- <div class="grid gap-2 py-4">
-      <div class="grid gap-1">
-        <Label for="name">Name</Label>
-        <Input
-          id="name"
-          bind:value={newDeviceData.name}
-          placeholder="My Device"
-        />
-      </div>
-    </div> -->
   </Dialog.Content>
 </Dialog.Root>

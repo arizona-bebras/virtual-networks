@@ -124,11 +124,11 @@ export class DevicesService {
     });
   }
 
-  async update(id: string, device: UpdateDeviceDto) {
+  async update(id: string, networkId: string, device: UpdateDeviceDto) {
     await this.db
       .update(schema.devices)
       .set(device)
-      .where(eq(schema.devices.id, id));
+      .where(and(eq(schema.devices.id, id), eq(schema.devices.networkId, networkId)));
   }
 
   async delete(id: string) {
