@@ -22,7 +22,7 @@ const loginQuery = createMutation(() => ({
     });
 
     if (!error) {
-      goto("/app/network/none/dashboard");
+      goto("/app");
       return responseData;
     }
 

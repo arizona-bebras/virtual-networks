@@ -7,6 +7,7 @@ import { initialDevices } from "$entities/device/model/mock-devices.js";
 import type { Device } from "$entities/device/model/types.js";
 import { columns } from "$features/device-management/model/device-table-columns.js";
 import AddDeviceBtn from "$features/device-management/ui/add-device-btn.svelte";
+import { getNetworkId } from "$shared/lib/network-id-context";
 import { withRowActions } from "$shared/lib/table/with-row-actions";
 import { Button } from "$shared/ui/button/index.js";
 import * as Card from "$shared/ui/card/index.js";
@@ -15,11 +16,11 @@ import * as Dialog from "$shared/ui/dialog/index.js";
 import { Input } from "$shared/ui/input/index.js";
 import { Label } from "$shared/ui/label/index.js";
 import { deviceQuery } from "../api/query";
-  import { getNetworkId } from "$shared/lib/network-id-context";
 
 let devices = $state<Device[]>(initialDevices);
 let isAddDeviceDialogOpen = $state(false);
 let newDeviceData = $state({ name: "", ip: "", tags: "" });
+let currentNetworkId = $derived(getNetworkId().id);
 // function addDevice() {
 //   if (!newDeviceData.name) return;
 
@@ -48,7 +49,7 @@ function removeSelected(ids: string[]) {
 }
 
 const userDevicesQuery = createQuery(() =>
-  deviceQuery.userDevices(getNetworkId()),
+  deviceQuery.userDevices(currentNetworkId),
 );
 
 const tableColumns = $derived(withRowActions(columns, removeDevice));

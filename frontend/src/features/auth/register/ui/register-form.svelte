@@ -22,7 +22,7 @@ const registerQuery = createMutation(() => ({
     });
 
     if (!error) {
-      goto("/app/network/none/dashboard");
+      goto("/app");
       return requestData;
     }
 

@@ -28,8 +28,9 @@ const networks = [
 const userNetworks = createQuery(() => sidebarQuerys.userNetworks());
 
 let isDialogOpen = $state(false);
-let currentNetworkUUID = getNetworkId();
+let currentNetworkUUID = $derived(getNetworkId().id);
 let selectedNetwork = $derived(userNetworks.data?.find((n) => n.id === currentNetworkUUID));
+$inspect(currentNetworkUUID);
 
 const navItems = $derived([
   {
@@ -85,7 +86,7 @@ async function handleLogout() {
                   >
                     <LayoutDashboard class="size-4" />
                   </div>
-                  {#if userNetworks.data.length === 0}
+                  {#if !selectedNetwork}
                     <span class="text-sm font-semibold truncate w-32">
                       Выберите сеть
                     </span>
@@ -135,7 +136,7 @@ async function handleLogout() {
     </Sidebar.Header>
 
     <Sidebar.Content>
-      {#if userNetworks.data.length !== 0}
+      {#if selectedNetwork }
         <Sidebar.Group>
           <Sidebar.GroupLabel>Management</Sidebar.GroupLabel>
           <Sidebar.GroupContent>
