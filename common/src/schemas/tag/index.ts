@@ -12,7 +12,7 @@ export const TagColorSchema = z.enum([
 export const TagSchema = z.object({
   id: z.uuid().describe("The unique identifier of the tag"),
   name: z.string().min(1).max(255).describe("The name of the tag"),
-  color: TagColorSchema.describe("The display color of the tag"),
+  color: TagColorSchema.nullable().describe("The display color of the tag"),
 });
 
 export type TagColor = z.infer<typeof TagColorSchema>;

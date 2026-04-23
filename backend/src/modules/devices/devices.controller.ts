@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Post,
   Put,
@@ -20,7 +21,7 @@ import {
 import type { UserSession } from "@thallesp/nestjs-better-auth";
 import { AuthGuard, Session } from "@thallesp/nestjs-better-auth";
 import { CreateDeviceDto } from "common/dto/device/create-device";
-import { DeviceDto } from "common/dto/device/index";
+import { DeviceRelationsDto } from "common/dto/device/index";
 import { UpdateDeviceDto } from "common/dto/device/update-device";
 import { Role } from "../../authorization/role.enum";
 import { Roles } from "../../authorization/roles.decorator";
@@ -72,7 +73,7 @@ export class DevicesController {
   @ApiResponse({
     status: 200,
     description: "Устройства найдены",
-    type: DeviceDto,
+    type: DeviceRelationsDto,
     isArray: true,
   })
   @ApiResponse({ status: 404, description: "Устройства не найдены" })
@@ -81,7 +82,7 @@ export class DevicesController {
     @Query("q") q: string,
     @Query("tags") tags: string,
     @Query("owner_id") ownerId: string,
-  ) {
+  ): Promise<DeviceRelationsDto[]> {
     return await this.devicesService.read(
       networkId,
       undefined,
@@ -101,14 +102,20 @@ export class DevicesController {
   @ApiResponse({
     status: 200,
     description: "Устройство найдено",
-    type: DeviceDto,
+    type: DeviceRelationsDto,
   })
   @ApiResponse({ status: 404, description: "Устройство не найдено" })
   async getDevice(
     @Param("network_id") networkId: string,
     @Param("device_id") id: string,
-  ) {
-    return await this.devicesService.read(networkId, id);
+  ): Promise<DeviceRelationsDto> {
+    const device = await this.devicesService.read(networkId, id);
+
+    if (!device) {
+      throw new NotFoundException(`Device with ID ${id} not found`);
+    }
+
+    return device;
   }
 
   @Put(":device_id")

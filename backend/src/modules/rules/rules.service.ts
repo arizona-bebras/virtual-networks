@@ -1,30 +1,30 @@
 import { Inject, Injectable } from "@nestjs/common";
 import type { CreateRuleDto } from "common/dto/rule/create-rule";
 import type { UpdateRuleDto } from "common/dto/rule/update-rule";
-import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { eq } from "drizzle-orm/sql/expressions/conditions";
-import { DRIZZLE } from "../../db/database.module";
+import { type Database, DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
 
 @Injectable()
 export class RulesService {
-  constructor(
-    @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>,
-  ) {}
+  constructor(@Inject(DRIZZLE) private readonly db: Database) {}
 
   async create(rule: CreateRuleDto, networkId: string) {
     await this.db.insert(schema.rules).values({ ...rule, networkId });
   }
 
   async get(ruleId: string) {
-    return await this.db
+    const [rule] = await this.db
       .select()
       .from(schema.rules)
-      .where(eq(schema.rules.id, ruleId));
+      .where(eq(schema.rules.id, ruleId))
+      .limit(1);
+
+    return rule;
   }
 
   async getAllRules(networkId: string) {
-    return await this.db
+    return this.db
       .select()
       .from(schema.rules)
       .where(eq(schema.rules.networkId, networkId));

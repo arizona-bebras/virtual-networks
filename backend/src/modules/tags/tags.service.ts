@@ -1,39 +1,52 @@
 import { Inject, Injectable } from "@nestjs/common";
 import type { CreateTagDto } from "common/dto/tag/create-tag";
 import type { UpdateTagDto } from "common/dto/tag/update-tag";
-import { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { and, eq } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
 import { sql } from "drizzle-orm/sql";
-import { and, eq } from "drizzle-orm/sql/expressions/conditions";
-import { DRIZZLE } from "../../db/database.module";
+import { type Database, DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
 
 @Injectable()
 export class TagsService {
-  constructor(
-    @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>,
-  ) {}
+  constructor(@Inject(DRIZZLE) private readonly db: Database) {}
+
+  private buildReadFilters(networkId?: string, q?: string): SQL[] {
+    const filters: SQL[] = [];
+
+    if (networkId) {
+      filters.push(eq(schema.tags.networkId, networkId));
+    }
+
+    if (q) {
+      filters.push(sql`${schema.tags.name} % ${q}`);
+    }
+
+    return filters;
+  }
+
   async create(tag: CreateTagDto, networkId: string) {
     await this.db.insert(schema.tags).values({ ...tag, networkId });
   }
 
   async read(id: string) {
-    return await this.db
+    const [tag] = await this.db
       .select()
       .from(schema.tags)
-      .where(eq(schema.tags.id, id));
+      .where(eq(schema.tags.id, id))
+      .limit(1);
+
+    return tag;
   }
 
-  async getAllTags(networkId: string, q: string) {
-    return await this.db
+  async getAllTags(networkId: string, q?: string) {
+    return this.db
       .select()
       .from(schema.tags)
-      .where(
-        and(
-          eq(schema.tags.networkId, networkId),
-          sql`${schema.tags.name} % ${q}`,
-        ),
-      )
-      .orderBy(sql`similarity(${schema.tags.name}, ${q}) DESC`);
+      .where(and(...this.buildReadFilters(networkId, q)))
+      .orderBy(
+        q ? sql`similarity(${schema.tags.name}, ${q}) DESC` : schema.tags.name,
+      );
   }
 
   async update(id: string, tag: UpdateTagDto) {

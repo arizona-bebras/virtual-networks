@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TagSchema } from "../tag/index.js";
 
 export const DeviceSchema = z.object({
   id: z.uuid().describe("The unique identifier of the device"),
@@ -7,4 +8,11 @@ export const DeviceSchema = z.object({
   ownerId: z.string().describe("The identifier of the device owner"),
 });
 
+export const DeviceRelationsSchema = DeviceSchema.extend({
+  tags: z
+    .array(TagSchema)
+    .describe("The list of tags associated with the device"),
+});
+
 export type Device = z.infer<typeof DeviceSchema>;
+export type DeviceRelations = z.infer<typeof DeviceRelationsSchema>;

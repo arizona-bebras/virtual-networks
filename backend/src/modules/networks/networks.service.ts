@@ -3,30 +3,30 @@ import type { CreateNetworkDto } from "common/dto/network/create-network";
 import type { NetworkEnterCredentialsDto } from "common/dto/network/enter-credentials";
 import { NetworkDto } from "common/dto/network/index";
 import type { UpdateNetworkDto } from "common/dto/network/update-network";
-import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { eq } from "drizzle-orm/sql/expressions/conditions";
-import { DRIZZLE } from "../../db/database.module";
+import { type Database, DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
 
 @Injectable()
 export class NetworksService {
-  constructor(
-    @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>,
-  ) {}
+  constructor(@Inject(DRIZZLE) private readonly db: Database) {}
+
   async create(
     networkData: CreateNetworkDto,
     userId: string,
   ): Promise<NetworkDto> {
-    return await this.db.transaction(async (tx) => {
+    return this.db.transaction(async (tx) => {
       const [network] = await tx
         .insert(schema.networks)
         .values(networkData)
         .returning();
+
       await tx.insert(schema.networkUsers).values({
         networkId: network.id,
-        userId: userId,
+        userId,
         role: "admin",
       });
+
       return network;
     });
   }
@@ -37,25 +37,26 @@ export class NetworksService {
     userId: string,
   ) {
     await this.db.insert(schema.networkUsers).values({
-      userId: userId,
-      networkId: networkId,
+      userId,
+      networkId,
       role: "user",
     });
   }
 
   async read(id: string) {
-    const networks = await this.db
+    const [network] = await this.db
       .select()
       .from(schema.networks)
       .where(eq(schema.networks.id, id))
       .limit(1);
-    return networks[0];
+
+    return network;
   }
 
   async getMyNetworks(
     userId: string,
   ): Promise<(typeof schema.networks.$inferSelect)[]> {
-    return await this.db
+    return this.db
       .select({
         id: schema.networks.id,
         name: schema.networks.name,

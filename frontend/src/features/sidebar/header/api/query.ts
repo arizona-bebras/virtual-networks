@@ -8,9 +8,7 @@ import type { Network } from "common/schemas/network/index";
 import { client } from "$shared/api/openapi-client";
 
 export const headerQueries = {
-  createNetworkMutation: (
-    onSuccess: (data: Network) => void,
-  ) =>
+  createNetworkMutation: (onSuccess: (data: Network) => void) =>
     mutationOptions({
       mutationFn: async (newNetwork: CreateNetwork) => {
         const { data, error } = await client.POST("/networks", {
