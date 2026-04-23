@@ -22,7 +22,7 @@ let {
     query.mutate({
       name: $formData.name,
       description: $formData.description,
-      ip: $formData.ip,
+      cidr: $formData.cidr,
     });
     isDialogOpen = false;
   },
@@ -56,13 +56,13 @@ let {
         </Form.Control>
         <Form.FieldErrors />
       </Form.Field>
-      <Form.Field {form} name="ip">
+      <Form.Field {form} name="cidr">
         <Form.Control>
           {#snippet children({ props })}
             <Form.Label>CIDR</Form.Label>
             <Input
               {...props}
-              bind:value={$formData.ip}
+              bind:value={$formData.cidr}
               placeholder="192.168.1.0/24"
             />
           {/snippet}

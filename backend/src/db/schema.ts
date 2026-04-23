@@ -1,6 +1,7 @@
 import { defineRelations } from "drizzle-orm";
 import {
   boolean,
+  cidr,
   index,
   inet,
   integer,
@@ -101,7 +102,7 @@ export const networks = pgTable("networks", {
   id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
   description: varchar({ length: 255 }).notNull(),
-  ip: inet().notNull(),
+  cidr: cidr().default("192.168.123.0/24").notNull(),
 });
 
 export const devices = pgTable("devices", {
