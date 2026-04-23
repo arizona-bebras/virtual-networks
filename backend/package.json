@@ -13,6 +13,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main",
     "format": "biome format --write .",
+    "check": "biome check --write .",
     "lint": "biome lint .",
     "test": "jest",
     "test:watch": "jest --watch",
