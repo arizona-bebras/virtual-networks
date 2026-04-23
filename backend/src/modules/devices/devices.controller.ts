@@ -104,8 +104,11 @@ export class DevicesController {
     type: DeviceDto,
   })
   @ApiResponse({ status: 404, description: "Устройство не найдено" })
-  async getDevice(@Param("device_id") id: string) {
-    return await this.devicesService.read(id);
+  async getDevice(
+    @Param("network_id") networkId: string,
+    @Param("device_id") id: string,
+  ) {
+    return await this.devicesService.read(networkId, id);
   }
 
   @Put(":device_id")
