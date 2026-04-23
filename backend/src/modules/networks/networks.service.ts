@@ -1,6 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import type { CreateNetworkDto } from "common/dto/network/create-network";
 import type { NetworkEnterCredentialsDto } from "common/dto/network/enter-credentials";
+import { NetworkDto } from "common/dto/network/index";
 import type { UpdateNetworkDto } from "common/dto/network/update-network";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { eq } from "drizzle-orm/sql/expressions/conditions";
@@ -12,8 +13,11 @@ export class NetworksService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>,
   ) {}
-  async create(networkData: CreateNetworkDto, userId: string) {
-    await this.db.transaction(async (tx) => {
+  async create(
+    networkData: CreateNetworkDto,
+    userId: string,
+  ): Promise<NetworkDto> {
+    return await this.db.transaction(async (tx) => {
       const [network] = await tx
         .insert(schema.networks)
         .values(networkData)
@@ -23,6 +27,7 @@ export class NetworksService {
         userId: userId,
         role: "admin",
       });
+      return network;
     });
   }
 

@@ -35,12 +35,16 @@ export class NetworksController {
 
   @Post()
   @ApiOperation({ summary: "Создать новую сеть" })
-  @ApiResponse({ status: 201, description: "Сеть успешно создана" })
+  @ApiResponse({
+    status: 201,
+    description: "Сеть успешно создана",
+    type: NetworkDto,
+  })
   async create(
     @Body() network: CreateNetworkDto,
     @Session() session: UserSession,
   ) {
-    await this.networksService.create(network, session.user.id);
+    return await this.networksService.create(network, session.user.id);
   }
 
   @Get()
