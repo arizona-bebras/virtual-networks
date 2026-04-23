@@ -7,10 +7,7 @@ import {
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import type { UserSession } from "@thallesp/nestjs-better-auth";
-import { and, eq } from "drizzle-orm";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { DRIZZLE } from "../db/database.module";
-import * as schema from "../db/schema";
+import { type Database, DRIZZLE } from "../db/database.module";
 import type { Role } from "./role.enum";
 import { ROLES_KEY } from "./roles.decorator";
 
@@ -18,7 +15,7 @@ import { ROLES_KEY } from "./roles.decorator";
 export class RolesGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>,
+    @Inject(DRIZZLE) private readonly db: Database,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -32,16 +29,12 @@ export class RolesGuard implements CanActivate {
     const userId = session.user.id;
     const networkId = req.params.network_id;
 
-    const [membership] = await this.db
-      .select()
-      .from(schema.networkUsers)
-      .where(
-        and(
-          eq(schema.networkUsers.userId, userId),
-          eq(schema.networkUsers.networkId, networkId),
-        ),
-      )
-      .limit(1);
+    const membership = await this.db.query.networkUsers.findFirst({
+      where: {
+        userId,
+        networkId,
+      },
+    });
 
     if (!membership) {
       throw new ForbiddenException("You are not in network");

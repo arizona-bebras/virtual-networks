@@ -44,31 +44,27 @@ export class NetworksService {
   }
 
   async read(id: string) {
-    const [network] = await this.db
-      .select()
-      .from(schema.networks)
-      .where(eq(schema.networks.id, id))
-      .limit(1);
-
-    return network;
+    return this.db.query.networks.findFirst({
+      where: {
+        id,
+      },
+    });
   }
 
   async getMyNetworks(
     userId: string,
   ): Promise<(typeof schema.networks.$inferSelect)[]> {
-    return this.db
-      .select({
-        id: schema.networks.id,
-        name: schema.networks.name,
-        description: schema.networks.description,
-        cidr: schema.networks.cidr,
-      })
-      .from(schema.networks)
-      .innerJoin(
-        schema.networkUsers,
-        eq(schema.networkUsers.networkId, schema.networks.id),
-      )
-      .where(eq(schema.networkUsers.userId, userId));
+    const user = await this.db.query.user.findFirst({
+      columns: {},
+      where: {
+        id: userId,
+      },
+      with: {
+        networks: true,
+      },
+    });
+
+    return user?.networks ?? [];
   }
 
   async update(id: string, network: UpdateNetworkDto) {

@@ -2,7 +2,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import type { DeviceRelations } from "common/schemas/device/index";
 import type { CreateDeviceDto } from "common/dto/device/create-device";
 import type { UpdateDeviceDto } from "common/dto/device/update-device";
-import { and, eq, exists, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 import { sql } from "drizzle-orm/sql";
 import { type Database, DRIZZLE } from "../../db/database.module";
@@ -17,19 +17,15 @@ export class DevicesService {
     networkId: string,
     tags: string[],
   ): SQL {
-    return exists(
-      this.db
-        .select({ value: sql`1` })
-        .from(schema.devicesTags)
-        .innerJoin(schema.tags, eq(schema.devicesTags.tagId, schema.tags.id))
-        .where(
-          and(
-            eq(schema.devicesTags.deviceId, deviceId),
-            eq(schema.tags.networkId, networkId),
-            inArray(schema.tags.name, tags),
-          ),
-        ),
-    );
+    return sql`exists (
+      select 1
+      from ${schema.devicesTags}
+      inner join ${schema.tags}
+        on ${schema.devicesTags.tagId} = ${schema.tags.id}
+      where ${schema.devicesTags.deviceId} = ${deviceId}
+        and ${schema.tags.networkId} = ${networkId}
+        and ${inArray(schema.tags.name, tags)}
+    )`;
   }
 
   private buildReadFilters(

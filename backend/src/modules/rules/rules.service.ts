@@ -14,20 +14,19 @@ export class RulesService {
   }
 
   async get(ruleId: string) {
-    const [rule] = await this.db
-      .select()
-      .from(schema.rules)
-      .where(eq(schema.rules.id, ruleId))
-      .limit(1);
-
-    return rule;
+    return this.db.query.rules.findFirst({
+      where: {
+        id: ruleId,
+      },
+    });
   }
 
   async getAllRules(networkId: string) {
-    return this.db
-      .select()
-      .from(schema.rules)
-      .where(eq(schema.rules.networkId, networkId));
+    return this.db.query.rules.findMany({
+      where: {
+        networkId,
+      },
+    });
   }
 
   async update(ruleId: string, rule: UpdateRuleDto) {
