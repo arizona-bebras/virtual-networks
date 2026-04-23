@@ -56,7 +56,7 @@ export class NetworksController {
     type: NetworkDto,
     isArray: true,
   })
-  async getMyNetworks(@Session() session: UserSession) {
+  async getMyNetworks(@Session() session: UserSession): Promise<NetworkDto[]> {
     return await this.networksService.getMyNetworks(session.user.id);
   }
 

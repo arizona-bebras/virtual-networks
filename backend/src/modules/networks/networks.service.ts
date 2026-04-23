@@ -47,11 +47,18 @@ export class NetworksService {
     return networks[0];
   }
 
-  async getMyNetworks(userId: string) {
+  async getMyNetworks(
+    userId: string,
+  ): Promise<(typeof schema.networks.$inferSelect)[]> {
     return await this.db
-      .select()
+      .select({
+        id: schema.networks.id,
+        name: schema.networks.name,
+        description: schema.networks.description,
+        cidr: schema.networks.cidr,
+      })
       .from(schema.networks)
-      .leftJoin(
+      .innerJoin(
         schema.networkUsers,
         eq(schema.networkUsers.networkId, schema.networks.id),
       )
