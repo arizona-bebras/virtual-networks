@@ -4,7 +4,10 @@ import { createMutation, getQueryClientContext } from "@tanstack/svelte-query";
 import type { DeviceRelations } from "common/schemas/device/index";
 import { UpdateDeviceSchema } from "common/schemas/device/update-device";
 import { untrack } from "svelte";
-import { deviceUpdateMutation } from "$features/device-management/api/query";
+import {
+  deviceDeletionMutation,
+  deviceUpdateMutation,
+} from "$features/device-management/api/query";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { Button } from "$shared/ui/button/index.js";
@@ -13,8 +16,7 @@ import * as DropdownMenu from "$shared/ui/dropdown-menu/index.js";
 import * as Form from "$shared/ui/form/index.js";
 import { Input } from "$shared/ui/input/index.js";
 
-let { device, onDelete }: { device: DeviceRelations; onDelete?: () => void } =
-  $props();
+let { device }: { device: DeviceRelations } = $props();
 
 const queryClient = getQueryClientContext();
 let isEditDialogOpen = $state(false);
@@ -24,6 +26,12 @@ const updateMutation = createMutation(() =>
   deviceUpdateMutation(() => {
     queryClient.invalidateQueries({ queryKey: ["userDevices"] });
     isEditDialogOpen = false;
+  }),
+);
+
+const deleteDeviceMutation = createMutation(() =>
+  deviceDeletionMutation(() => {
+    queryClient.invalidateQueries({ queryKey: ["userDevices"] });
   }),
 );
 
@@ -57,6 +65,13 @@ $effect(() => {
     });
   }
 });
+
+function handleDelete() {
+  deleteDeviceMutation.mutate({
+    networkId: currentNetworkId,
+    deviceId: device.id,
+  });
+}
 </script>
 
 <div class="text-right">
@@ -71,12 +86,10 @@ $effect(() => {
         <Edit class="mr-2 size-4" />
         Edit Device
       </DropdownMenu.Item>
-      {#if onDelete}
-        <DropdownMenu.Item class="text-destructive" onclick={onDelete}>
-          <Trash class="mr-2 size-4" />
-          Delete Device
-        </DropdownMenu.Item>
-      {/if}
+      <DropdownMenu.Item class="text-destructive" onclick={handleDelete}>
+        <Trash class="mr-2 size-4" />
+        Delete Device
+      </DropdownMenu.Item>
     </DropdownMenu.Content>
   </DropdownMenu.Root>
 </div>
