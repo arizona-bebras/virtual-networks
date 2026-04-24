@@ -42,12 +42,13 @@ jobs:
       - name: Fetch base and head refs
         run: |
           set -euxo pipefail
+          previous_head_sha="${PREVIOUS_HEAD_SHA:-}"
           git fetch --no-tags origin \
             "${{ github.event.pull_request.base.ref }}" \
             +refs/pull/${{ github.event.pull_request.number }}/head
 
-          if [ -n "${PREVIOUS_HEAD_SHA}" ]; then
-            git fetch --no-tags --depth=1 origin "${PREVIOUS_HEAD_SHA}" || true
+          if [ -n "${previous_head_sha}" ]; then
+            git fetch --no-tags --depth=1 origin "${previous_head_sha}" || true
           fi
         shell: bash
 
@@ -162,6 +163,7 @@ jobs:
           set -euo pipefail
           PROMPT_PATH="codex-prompt.md"
           TEMPLATE_PATH="${REVIEW_PROMPT_PATH}"
+          previous_head_sha="${PREVIOUS_HEAD_SHA:-}"
 
           if [ -n "$TEMPLATE_PATH" ] && [ -f "$TEMPLATE_PATH" ]; then
             cat "$TEMPLATE_PATH" > "$PROMPT_PATH"
@@ -181,12 +183,12 @@ jobs:
             REVIEW_BASE_SHA="${BASE_SHA}"
             REVIEW_SCOPE="full pull request diff"
 
-            if [ "${PR_ACTION}" = "synchronize" ] && [ -n "${PREVIOUS_HEAD_SHA}" ]; then
-              if git cat-file -e "${PREVIOUS_HEAD_SHA}^{commit}" 2>/dev/null; then
-                REVIEW_BASE_SHA="${PREVIOUS_HEAD_SHA}"
+            if [ "${PR_ACTION}" = "synchronize" ] && [ -n "${previous_head_sha}" ]; then
+              if git cat-file -e "${previous_head_sha}^{commit}" 2>/dev/null; then
+                REVIEW_BASE_SHA="${previous_head_sha}"
                 REVIEW_SCOPE="newly pushed commits only"
               else
-                echo "Previous head SHA ${PREVIOUS_HEAD_SHA} is unavailable locally; falling back to full PR diff."
+                echo "Previous head SHA ${previous_head_sha} is unavailable locally; falling back to full PR diff."
               fi
             fi
 
