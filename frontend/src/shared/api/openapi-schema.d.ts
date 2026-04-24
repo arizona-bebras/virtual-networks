@@ -226,7 +226,7 @@ export interface components {
             /** @description The identifier of the device owner */
             ownerId?: string;
         };
-        DeviceDto: {
+        DeviceRelationsDto: {
             /**
              * Format: uuid
              * @description The unique identifier of the device
@@ -241,6 +241,18 @@ export interface components {
             ip: string;
             /** @description The identifier of the device owner */
             ownerId: string;
+            /** @description The list of tags associated with the device */
+            tags: {
+                /**
+                 * Format: uuid
+                 * @description The unique identifier of the tag
+                 */
+                id: string;
+                /** @description The name of the tag */
+                name: string;
+                /** @description The display color of the tag */
+                color: ("red" | "blue" | "green" | "yellow" | "purple" | "orange") | null;
+            }[];
         };
         UpdateDeviceDto: {
             /** @description The name of the device */
@@ -256,11 +268,8 @@ export interface components {
         CreateTagDto: {
             /** @description The name of the tag */
             name: string;
-            /**
-             * @description The display color of the tag
-             * @enum {string}
-             */
-            color: "red" | "blue" | "green" | "yellow" | "purple" | "orange";
+            /** @description The display color of the tag */
+            color: ("red" | "blue" | "green" | "yellow" | "purple" | "orange") | null;
         };
         TagDto: {
             /**
@@ -270,20 +279,14 @@ export interface components {
             id: string;
             /** @description The name of the tag */
             name: string;
-            /**
-             * @description The display color of the tag
-             * @enum {string}
-             */
-            color: "red" | "blue" | "green" | "yellow" | "purple" | "orange";
+            /** @description The display color of the tag */
+            color: ("red" | "blue" | "green" | "yellow" | "purple" | "orange") | null;
         };
         UpdateTagDto: {
             /** @description The name of the tag */
             name?: string;
-            /**
-             * @description The display color of the tag
-             * @enum {string}
-             */
-            color?: "red" | "blue" | "green" | "yellow" | "purple" | "orange";
+            /** @description The display color of the tag */
+            color?: ("red" | "blue" | "green" | "yellow" | "purple" | "orange") | null;
         };
         CreateRuleDto: {
             /**
@@ -554,7 +557,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DeviceDto"][];
+                    "application/json": components["schemas"]["DeviceRelationsDto"][];
                 };
             };
             /** @description Устройства не найдены */
@@ -609,7 +612,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DeviceDto"];
+                    "application/json": components["schemas"]["DeviceRelationsDto"];
                 };
             };
             /** @description Устройство не найдено */

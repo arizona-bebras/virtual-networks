@@ -1,9 +1,11 @@
 <script lang="ts">
 import { Plus } from "@lucide/svelte";
+import { createQuery } from "@tanstack/svelte-query";
 import { initialTags } from "$entities/tag/model/mock-tags.js";
 import type { Tag } from "$entities/tag/model/types.js";
 import { columns } from "$features/tag-management/model/tag-table-columns.js";
 import AddTagBtn from "$features/tag-management/ui/add-tag-btn.svelte";
+import { getNetworkId } from "$shared/lib/network-id-context";
 import { withRowActions } from "$shared/lib/table/with-row-actions";
 import { Button } from "$shared/ui/button/index.js";
 import * as Card from "$shared/ui/card/index.js";
@@ -11,10 +13,12 @@ import DataTable from "$shared/ui/data-table/data-table.svelte";
 import * as Dialog from "$shared/ui/dialog/index.js";
 import { Input } from "$shared/ui/input/index.js";
 import { Label } from "$shared/ui/label/index.js";
+import { deviceTags } from "../api/query";
 
 let tags = $state<Tag[]>(initialTags);
 let isDialogOpen = $state(false);
 let newTagData = $state({ name: "", color: "blue", icon: "Tag" });
+let currentNetworkId = $derived(getNetworkId().id);
 
 const colors = [
   { name: "Blue", value: "bg-blue-500", key: "blue" },
@@ -25,21 +29,6 @@ const colors = [
   { name: "Yellow", value: "bg-yellow-500", key: "yellow" },
 ];
 
-// function addTag() {
-//   if (!newTagData.name) return;
-
-//   const tag: Tag = {
-//     id: Math.random().toString(36).substring(2, 9),
-//     name: newTagData.name,
-//     icon: TagIcon,
-//     color: newTagData.color,
-//     count: 0,
-//   };
-
-//   tags = [...tags, tag];
-//   newTagData = { name: "", color: "blue", icon: "Tag" };
-//   isDialogOpen = false;
-// }
 
 function removeTag(id: string) {
   tags = tags.filter((tag) => tag.id !== id);
@@ -50,6 +39,8 @@ function removeSelected(ids: string[]) {
 }
 
 const tableColumns = $derived(withRowActions(columns, removeTag));
+
+const userTags = createQuery(() => deviceTags.userTags(currentNetworkId));
 </script>
 
 <div class="p-8">
@@ -61,13 +52,15 @@ const tableColumns = $derived(withRowActions(columns, removeTag));
     <AddTagBtn bind:open={isDialogOpen} />
   </div>
 
-  <Card.Root>
-    <Card.Content class="p-6">
-      <DataTable
-        columns={tableColumns}
-        data={tags}
-        onDeleteSelected={removeSelected}
-      />
-    </Card.Content>
-  </Card.Root>
+  {#if userTags.isSuccess}
+    <Card.Root>
+      <Card.Content class="p-6">
+        <DataTable
+          columns={tableColumns}
+          data={userTags.data! || []} 
+          onDeleteSelected={removeSelected}
+        />
+      </Card.Content>
+    </Card.Root>
+  {/if}
 </div>

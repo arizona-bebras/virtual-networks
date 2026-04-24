@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/table-core";
-import type { Tag } from "$entities/tag/model/types.js";
+import type { Tag } from "common/schemas/tag/index";
 import TagColorCell from "$entities/tag/ui/tag-color-cell.svelte";
 import TagCountCell from "$entities/tag/ui/tag-count-cell.svelte";
 import TagNameCell from "$entities/tag/ui/tag-name-cell.svelte";
@@ -77,7 +77,7 @@ export const columns: ColumnDef<Tag>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      return renderComponent(TagActionsCell, { id: row.original.id });
+      return renderComponent(TagActionsCell, { tag: row.original });
     },
   },
 ];
