@@ -10,9 +10,10 @@
     "openapi-types": "pnpm openapi-typescript http://localhost:3000/api/docs-json -o src/shared/api/openapi-schema.d.ts",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
-    "check": "pnpm --filter common build && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "format": "biome check --write .",
+    "type-check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "type-check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "format": "biome format --write .",
+    "check": "pnpm type-check && biome check --write .",
     "lint": "biome lint ."
   },
   "devDependencies": {

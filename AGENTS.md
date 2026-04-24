@@ -10,15 +10,28 @@
 
 ## Tools
 
-- Package manager: `pnpm` workspaces
+- Package manager: `pnpm` monorepo workspace
 - Formatter/linter: Biome
 - Frontend build/tooling: Vite, `svelte-check`
-- Backend build/tooling: Nest CLI, TypeScript
-- Go validation: `go vet`, `go build`
+- Backend build/tooling: Nest CLI, Drizzle Kit, TypeScript
+- Go validation: `go vet`, `go build`, `gofmt`
 
 ### Using
 
-Always run `pnpm check`, `pnpm lint`, `pnpm format` and fix all issues after implementing a task in `backend` and `frontend`. Run `go vet` for Go code.
+#### For Go modules (`router`, `proto`)
+
+Run `go vet` for Go code. 
+Verify builds if code was changed in the package.
+Format code using `gofmt`.
+
+#### For TypeScript packages (`backend`, `frontend`, `common`)
+
+Run `pnpm --filter <package name> check` to verify code style and run lints, it automatically applies fixes where possible. In frontend this also automatically includes typechecking using `svelte-check`.
+Verify builds if code was changed in the package.
+
+#### For `common`
+
+If anything in `common` was modified, always run `pnpm --filter common build` to refresh built files.
 
 ## Monorepo Structure
 
