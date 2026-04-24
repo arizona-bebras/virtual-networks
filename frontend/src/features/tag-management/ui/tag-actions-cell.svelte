@@ -1,7 +1,7 @@
 <script lang="ts">
 import { Edit, MoreHorizontal, Trash } from "@lucide/svelte";
 import { createMutation, getQueryClientContext } from "@tanstack/svelte-query";
-import { Tag } from "common/schemas/tag/index";
+import type { Tag } from "common/schemas/tag/index";
 import { UpdateTagSchema } from "common/schemas/tag/update-tag";
 import { untrack } from "svelte";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
