@@ -5,7 +5,7 @@ import { client } from "$shared/api/openapi-client";
 export const deviceQuery = {
   userDevices: (networkId: string) =>
     queryOptions({
-      queryKey: ["userDevices"],
+      queryKey: ["userDevices", networkId],
       queryFn: async () => {
         const { data, error } = await client.GET(
           "/networks/{network_id}/devices",

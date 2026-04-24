@@ -8,7 +8,7 @@ import {
   Settings,
   Tag,
 } from "@lucide/svelte";
-import { createQuery } from "@tanstack/svelte-query";
+import { createQuery, getQueryClientContext } from "@tanstack/svelte-query";
 import { getContext, untrack } from "svelte";
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
@@ -25,12 +25,16 @@ const networks = [
   { id: "2", name: "IT Department", cidr: "192.168.1.0/24" },
   { id: "3", name: "Production", cidr: "172.16.0.0/16" },
 ];
+
+let currentNetworkUUID = $derived(getNetworkId().id);
+
 const userNetworks = createQuery(() => sidebarQuerys.userNetworks());
+const queryClient = getQueryClientContext();
 
 let isDialogOpen = $state(false);
-let currentNetworkUUID = $derived(getNetworkId().id);
-let selectedNetwork = $derived(userNetworks.data?.find((n) => n.id === currentNetworkUUID));
-$inspect(currentNetworkUUID);
+let selectedNetwork = $derived(
+  userNetworks.data?.find((n) => n.id === currentNetworkUUID),
+);
 
 const navItems = $derived([
   {
@@ -109,8 +113,7 @@ async function handleLogout() {
                 <DropdownMenu.Label>Networks</DropdownMenu.Label>
                 {#each userNetworks.data as network}
                   <DropdownMenu.Item
-                    onSelect={() => {
-                  selectedNetwork = network;
+                    onSelect={async () => {
                   goto(`/app/network/${network.id}/dashboard`);
                 }}
                   >
@@ -136,7 +139,7 @@ async function handleLogout() {
     </Sidebar.Header>
 
     <Sidebar.Content>
-      {#if selectedNetwork }
+      {#if selectedNetwork}
         <Sidebar.Group>
           <Sidebar.GroupLabel>Management</Sidebar.GroupLabel>
           <Sidebar.GroupContent>
