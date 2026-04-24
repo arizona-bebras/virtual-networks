@@ -1,9 +1,9 @@
 import { Inject, Injectable } from "@nestjs/common";
-import type { DeviceRelations } from "common/schemas/device/index";
 import type { CreateDeviceDto } from "common/dto/device/create-device";
 import type { UpdateDeviceDto } from "common/dto/device/update-device";
-import { and, eq, inArray } from "drizzle-orm";
+import type { DeviceRelations } from "common/schemas/device/index";
 import type { SQL } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { sql } from "drizzle-orm/sql";
 import { type Database, DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
@@ -128,7 +128,9 @@ export class DevicesService {
     await this.db
       .update(schema.devices)
       .set(device)
-      .where(and(eq(schema.devices.id, id), eq(schema.devices.networkId, networkId)));
+      .where(
+        and(eq(schema.devices.id, id), eq(schema.devices.networkId, networkId)),
+      );
   }
 
   async delete(id: string) {

@@ -11,7 +11,7 @@ let isDialogOpen = $state(false);
 let currentNetworkId = $derived(getNetworkId().id);
 
 // TODO: в ожидании реализации bulk delete на бэке
-function bulkRemoveSelected(ids: string[]) {}
+function bulkRemoveSelected(_ids: string[]) {}
 
 // const tableColumns = $derived(withRowActions(columns, removeTag));
 

@@ -2,7 +2,7 @@ import { Global, Module } from "@nestjs/common";
 import type { ExtractTablesFromSchema } from "drizzle-orm";
 import "dotenv/config";
 import { sql } from "drizzle-orm";
-import { type NodePgDatabase, drizzle } from "drizzle-orm/node-postgres";
+import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { Pool } from "pg";
 import { postgresUrl } from "./connection";
 import * as schema from "./schema";
