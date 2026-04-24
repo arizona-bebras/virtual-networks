@@ -41,6 +41,7 @@ export const columns: ColumnDef<Tag>[] = [
     cell: ({ row }) => {
       return renderComponent(TagNameCell, {
         name: row.getValue("name"),
+        // @ts-expect-error: Пока с endpint не приходит icon
         icon: row.original.icon,
         color: row.original.color,
       });

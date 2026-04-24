@@ -35,7 +35,11 @@ const colorVariants = {
 <div class="flex flex-wrap gap-1">
   {#each tags as tag}
     {@const color = colorVariants[tag.color ?? 'purple']}
-    <Badge variant="secondary" class="text-[10px] border {color.backgroundColor} {color.borderColor}" style="">
+    <Badge
+      variant="secondary"
+      class="text-[10px] border {color.backgroundColor} {color.borderColor}"
+      style=""
+    >
       {tag.name}
     </Badge>
   {/each}

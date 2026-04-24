@@ -87,7 +87,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     header: "Tags",
     cell: ({ row }) => {
       return renderComponent(DeviceTagsCell, {
-        tags: row.getValue("tags"),
+        tags: row.original.tags,
       });
     },
   },

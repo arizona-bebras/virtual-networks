@@ -1,5 +1,6 @@
-import type { Network } from 'common/schemas/network/index';
-import { createContext } from 'svelte';
+import type { Network } from "common/schemas/network/index";
+import { createContext } from "svelte";
 
-
-export const [getNetworkId, setNetworkId] = createContext<{ id: Network['id'] }>();
+export const [getNetworkId, setNetworkId] = createContext<{
+  id: Network["id"];
+}>();

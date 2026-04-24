@@ -5,9 +5,9 @@ import { SvelteQueryDevtools } from "@tanstack/svelte-query-devtools";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: Infinity
-    }
-  }
+      staleTime: Infinity,
+    },
+  },
 });
 
 let { children } = $props();

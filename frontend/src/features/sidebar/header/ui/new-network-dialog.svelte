@@ -2,12 +2,12 @@
 import { Plus } from "@lucide/svelte";
 import { createMutation, getQueryClientContext } from "@tanstack/svelte-query";
 import { CreateNetworkSchema } from "common/schemas/network/create-network";
+import { goto } from "$app/navigation";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import * as Dialog from "$shared/ui/dialog/index.js";
 import * as Form from "$shared/ui/form/index.js";
 import { Input } from "$shared/ui/input/index.js";
 import { headerQueries } from "../api/query.js";
-  import { goto } from "$app/navigation";
 
 const queryClient = getQueryClientContext();
 

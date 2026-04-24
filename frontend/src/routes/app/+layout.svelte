@@ -7,7 +7,11 @@ import AppSidebar from "$widgets/app-sidebar/ui/app-sidebar.svelte";
 
 let { children } = $props();
 let networkId = $derived(page.params.slug!);
-setNetworkId({ get id() { return networkId; } });
+setNetworkId({
+  get id() {
+    return networkId;
+  },
+});
 </script>
 
 <Sidebar.Provider>

@@ -20,7 +20,7 @@ export const deviceQuery = {
         if (error) throw error;
 
         // TODO: удалить после реализации стастуса и владельца на бэке
-        return data.map((device) => ({
+        return data!.map((device) => ({
           ...device,
           status: "online" as const,
           owner: device.ownerId,

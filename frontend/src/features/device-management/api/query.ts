@@ -81,5 +81,3 @@ export const deviceUpdateMutation = (onSuccess: () => void) =>
     },
     onSuccess,
   });
-
-

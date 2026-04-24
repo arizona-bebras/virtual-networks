@@ -1,8 +1,4 @@
-import {
-  type MutationOptions,
-  mutationOptions,
-  type QueryClient,
-} from "@tanstack/svelte-query";
+import { mutationOptions } from "@tanstack/svelte-query";
 import type { CreateNetwork } from "common/schemas/network/create-network";
 import type { Network } from "common/schemas/network/index";
 import { client } from "$shared/api/openapi-client";
