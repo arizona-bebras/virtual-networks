@@ -20,7 +20,7 @@ export type TooltipPayload = Tooltip.TooltipSeries;
 // Helper to extract item config from a payload.
 export function getPayloadConfigFromPayload(
   config: ChartConfig,
-  payload: TooltipPayload,
+  payload: TooltipPayload | null | undefined,
   key: string,
   // biome-ignore lint/suspicious/noExplicitAny: allow any type for data as it can be of any shape depending on the chart and use case.
   data?: Record<string, any> | null,

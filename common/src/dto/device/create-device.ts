@@ -1,6 +1,4 @@
 import { createZodDto } from "nestjs-zod";
-import { DeviceSchema } from "./index.js";
-
-export const CreateDeviceSchema = DeviceSchema.omit({ id: true });
+import { CreateDeviceSchema } from "../../schemas/device/create-device.js";
 
 export class CreateDeviceDto extends createZodDto(CreateDeviceSchema) {}

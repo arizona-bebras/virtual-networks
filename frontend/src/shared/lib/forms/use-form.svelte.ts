@@ -1,4 +1,3 @@
-import type { CreateMutationResult } from "@tanstack/svelte-query";
 import {
   defaults,
   type FormOptions,
@@ -9,19 +8,11 @@ import {
 import { zod4, zod4Client } from "sveltekit-superforms/adapters";
 import type { SuperFormData } from "sveltekit-superforms/client";
 import type { ZodObject, z } from "zod/v4";
-import { goto } from "$app/navigation";
-
-type MutationResult<TSchema extends ZodObject> = CreateMutationResult<
-  Record<string, string>,
-  Error,
-  z.infer<TSchema>,
-  unknown
->;
 
 export function useForm<TSchema extends ZodObject>(
   schema: TSchema,
-  tanstackQuery?: MutationResult<TSchema>,
   option?: FormOptions<z.infer<TSchema>>,
+  // onResponse?: (response: Result) => void,
 ): SuperForm<z.infer<TSchema>> & {
   forms: SuperForm<z.infer<TSchema>>;
   formData: SuperFormData<z.infer<TSchema>>;
@@ -34,14 +25,10 @@ export function useForm<TSchema extends ZodObject>(
   >;
   const form = superForm(initialData, {
     SPA: true,
-    onSubmit: async ({ formData }) => {
-      const data = schema.parse(Object.fromEntries(formData));
-      const response = await tanstackQuery?.mutateAsync(data);
-
-      if (response?.token) {
-        localStorage.setItem("token", response.token);
-        goto("/app/dashboard");
-      }
+    onSubmit: async () => {
+      // const data = schema.parse(Object.fromEntries(formData));
+      // const response = await tanstackQuery?.mutateAsync(data);
+      // if (response) onResponse?.(response);
     },
     onChange: async () => {
       const result = await validateForm();

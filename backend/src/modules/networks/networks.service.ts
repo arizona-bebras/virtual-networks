@@ -1,28 +1,33 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { CreateNetworkDto } from "common/dto/network/create-network";
-import { NetworkEnterCredentialsDto } from "common/dto/network/enter-credentials";
-import { UpdateNetworkDto } from "common/dto/network/update-network";
-import { NodePgDatabase } from "drizzle-orm/node-postgres";
+import type { CreateNetworkDto } from "common/dto/network/create-network";
+import type { NetworkEnterCredentialsDto } from "common/dto/network/enter-credentials";
+import { NetworkDto } from "common/dto/network/index";
+import type { UpdateNetworkDto } from "common/dto/network/update-network";
 import { eq } from "drizzle-orm/sql/expressions/conditions";
-import { DRIZZLE } from "../../db/database.module";
+import { type Database, DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
 
 @Injectable()
 export class NetworksService {
-  constructor(
-    @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>,
-  ) {}
-  async create(networkData: CreateNetworkDto, userId: string) {
-    await this.db.transaction(async (tx) => {
+  constructor(@Inject(DRIZZLE) private readonly db: Database) {}
+
+  async create(
+    networkData: CreateNetworkDto,
+    userId: string,
+  ): Promise<NetworkDto> {
+    return this.db.transaction(async (tx) => {
       const [network] = await tx
         .insert(schema.networks)
         .values(networkData)
         .returning();
+
       await tx.insert(schema.networkUsers).values({
         networkId: network.id,
-        userId: userId,
+        userId,
         role: "admin",
       });
+
+      return network;
     });
   }
 
@@ -32,28 +37,34 @@ export class NetworksService {
     userId: string,
   ) {
     await this.db.insert(schema.networkUsers).values({
-      userId: userId,
-      networkId: networkId,
+      userId,
+      networkId,
       role: "user",
     });
   }
 
   async read(id: string) {
-    return await this.db
-      .select()
-      .from(schema.networks)
-      .where(eq(schema.networks.id, id));
+    return this.db.query.networks.findFirst({
+      where: {
+        id,
+      },
+    });
   }
 
-  async getMyNetworks(userId: string) {
-    return await this.db
-      .select()
-      .from(schema.networks)
-      .leftJoin(
-        schema.networkUsers,
-        eq(schema.networkUsers.networkId, schema.networks.id),
-      )
-      .where(eq(schema.networkUsers.userId, userId));
+  async getMyNetworks(
+    userId: string,
+  ): Promise<(typeof schema.networks.$inferSelect)[]> {
+    const user = await this.db.query.user.findFirst({
+      columns: {},
+      where: {
+        id: userId,
+      },
+      with: {
+        networks: true,
+      },
+    });
+
+    return user?.networks ?? [];
   }
 
   async update(id: string, network: UpdateNetworkDto) {

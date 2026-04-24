@@ -23,7 +23,7 @@ export function resolveCollisions(nodes: Node[], draggedNodeId?: string) {
     let moved = false;
     for (let i = 0; i < result.length; i++) {
       const node = result[i];
-      if (node.id === draggedNodeId) continue;
+      if (!node || node.id === draggedNodeId) continue;
 
       const nodeDim = getDimensions(node);
 

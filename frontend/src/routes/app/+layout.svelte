@@ -1,8 +1,17 @@
 <script lang="ts">
+import { setContext } from "svelte";
+import { page } from "$app/state";
+import { getNetworkId, setNetworkId } from "$shared/lib/network-id-context";
 import * as Sidebar from "$shared/ui/sidebar/index.js";
 import AppSidebar from "$widgets/app-sidebar/ui/app-sidebar.svelte";
 
 let { children } = $props();
+let networkId = $derived(page.params.slug!);
+setNetworkId({
+  get id() {
+    return networkId;
+  },
+});
 </script>
 
 <Sidebar.Provider>

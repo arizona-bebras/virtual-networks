@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Post,
   Put,
@@ -34,28 +35,27 @@ export class NetworksController {
 
   @Post()
   @ApiOperation({ summary: "Создать новую сеть" })
-  @ApiResponse({ status: 201, description: "Сеть успешно создана" })
+  @ApiResponse({
+    status: 201,
+    description: "Сеть успешно создана",
+    type: NetworkDto,
+  })
   async create(
     @Body() network: CreateNetworkDto,
     @Session() session: UserSession,
   ) {
-    await this.networksService.create(network, session.user.id);
+    return await this.networksService.create(network, session.user.id);
   }
 
   @Get()
   @ApiOperation({ summary: "Получить сети, в которых состоит пользователь" })
-  @ApiParam({
-    name: "network_id",
-    description: "UUID сети",
-    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-  })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: "Сети получены",
     type: NetworkDto,
     isArray: true,
   })
-  async getMyNetworks(@Session() session: UserSession) {
+  async getMyNetworks(@Session() session: UserSession): Promise<NetworkDto[]> {
     return await this.networksService.getMyNetworks(session.user.id);
   }
 
@@ -70,7 +70,11 @@ export class NetworksController {
   @ApiResponse({ status: 200, description: "Сеть найдена", type: NetworkDto })
   @ApiResponse({ status: 404, description: "Сеть не найдена" })
   async get(@Param("network_id") id: string) {
-    return await this.networksService.read(id);
+    const network = await this.networksService.read(id);
+    if (!network) {
+      throw new NotFoundException(`Network with ID ${id} not found`);
+    }
+    return network;
   }
 
   @Post(":network_id")

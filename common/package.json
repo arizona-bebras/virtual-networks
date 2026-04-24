@@ -3,14 +3,17 @@
   "version": "1.0.0",
   "type": "module",
   "exports": {
-    "./*": {
-      "types": "./src/*.ts",
-      "default": "./dist/*.js"
+    "./dto/*": {
+      "types": "./dist/dto/*.d.ts",
+      "default": "./dist/dto/*.js"
+    },
+    "./schemas/*": {
+      "types": "./dist/schemas/*.d.ts",
+      "default": "./dist/schemas/*.js"
     }
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "description": "",
   "scripts": {

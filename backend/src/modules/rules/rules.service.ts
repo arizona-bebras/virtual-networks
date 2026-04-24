@@ -1,33 +1,32 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { CreateRuleDto } from "common/dto/rule/create-rule";
-import { UpdateRuleDto } from "common/dto/rule/update-rule";
-import { NodePgDatabase } from "drizzle-orm/node-postgres";
+import type { CreateRuleDto } from "common/dto/rule/create-rule";
+import type { UpdateRuleDto } from "common/dto/rule/update-rule";
 import { eq } from "drizzle-orm/sql/expressions/conditions";
-import { DRIZZLE } from "../../db/database.module";
+import { type Database, DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
 
 @Injectable()
 export class RulesService {
-  constructor(
-    @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>,
-  ) {}
+  constructor(@Inject(DRIZZLE) private readonly db: Database) {}
 
   async create(rule: CreateRuleDto, networkId: string) {
     await this.db.insert(schema.rules).values({ ...rule, networkId });
   }
 
   async get(ruleId: string) {
-    return await this.db
-      .select()
-      .from(schema.rules)
-      .where(eq(schema.rules.id, ruleId));
+    return this.db.query.rules.findFirst({
+      where: {
+        id: ruleId,
+      },
+    });
   }
 
   async getAllRules(networkId: string) {
-    return await this.db
-      .select()
-      .from(schema.rules)
-      .where(eq(schema.rules.networkId, networkId));
+    return this.db.query.rules.findMany({
+      where: {
+        networkId,
+      },
+    });
   }
 
   async update(ruleId: string, rule: UpdateRuleDto) {

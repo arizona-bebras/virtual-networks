@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Post,
   Put,
@@ -17,9 +18,10 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { AuthGuard } from "@thallesp/nestjs-better-auth";
+import type { UserSession } from "@thallesp/nestjs-better-auth";
+import { AuthGuard, Session } from "@thallesp/nestjs-better-auth";
 import { CreateDeviceDto } from "common/dto/device/create-device";
-import { DeviceDto } from "common/dto/device/index";
+import { DeviceRelationsDto } from "common/dto/device/index";
 import { UpdateDeviceDto } from "common/dto/device/update-device";
 import { Role } from "../../authorization/role.enum";
 import { Roles } from "../../authorization/roles.decorator";
@@ -35,13 +37,17 @@ export class DevicesController {
   @Post("")
   @Roles(Role.Admin)
   @ApiOperation({ summary: "Создать новое устройство" })
-  @ApiBody({ type: DeviceDto })
+  @ApiBody({ type: CreateDeviceDto })
   @ApiResponse({ status: 201, description: "Устройство успешно создано" })
   async createDevice(
     @Param("network_id") network_id: string,
     @Body() device: CreateDeviceDto,
+    @Session() session: UserSession,
   ) {
-    await this.devicesService.create(device, network_id);
+    await this.devicesService.create(
+      { ownerId: session.user.id, ...device },
+      network_id,
+    );
   }
 
   @Get("")
@@ -67,7 +73,7 @@ export class DevicesController {
   @ApiResponse({
     status: 200,
     description: "Устройства найдены",
-    type: DeviceDto,
+    type: DeviceRelationsDto,
     isArray: true,
   })
   @ApiResponse({ status: 404, description: "Устройства не найдены" })
@@ -76,7 +82,7 @@ export class DevicesController {
     @Query("q") q: string,
     @Query("tags") tags: string,
     @Query("owner_id") ownerId: string,
-  ) {
+  ): Promise<DeviceRelationsDto[]> {
     return await this.devicesService.read(
       networkId,
       undefined,
@@ -96,11 +102,20 @@ export class DevicesController {
   @ApiResponse({
     status: 200,
     description: "Устройство найдено",
-    type: DeviceDto,
+    type: DeviceRelationsDto,
   })
   @ApiResponse({ status: 404, description: "Устройство не найдено" })
-  async getDevice(@Param("device_id") id: string) {
-    return await this.devicesService.read(id);
+  async getDevice(
+    @Param("network_id") networkId: string,
+    @Param("device_id") id: string,
+  ): Promise<DeviceRelationsDto> {
+    const device = await this.devicesService.read(networkId, id);
+
+    if (!device) {
+      throw new NotFoundException(`Device with ID ${id} not found`);
+    }
+
+    return device;
   }
 
   @Put(":device_id")
@@ -111,14 +126,15 @@ export class DevicesController {
     description: "UUID устройства",
     example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   })
-  @ApiBody({ type: DeviceDto })
+  @ApiBody({ type: UpdateDeviceDto })
   @ApiResponse({ status: 200, description: "Устройство успешно обновлено" })
   @ApiResponse({ status: 404, description: "Устройство не найдено" })
   async updateDevice(
+    @Param("network_id") networkId: string,
     @Param("device_id") id: string,
     @Body() device: UpdateDeviceDto,
   ) {
-    await this.devicesService.update(id, device);
+    await this.devicesService.update(id, networkId, device);
   }
 
   @Delete(":device_id")

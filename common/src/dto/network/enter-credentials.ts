@@ -1,9 +1,5 @@
 import { createZodDto } from "nestjs-zod";
-import { z } from "zod";
-
-export const NetworkEnterCredentialsSchema = z.object({
-  key: z.string().min(1).describe("The network access key"),
-});
+import { NetworkEnterCredentialsSchema } from "../../schemas/network/enter-credentials.js";
 
 export class NetworkEnterCredentialsDto extends createZodDto(
   NetworkEnterCredentialsSchema,
