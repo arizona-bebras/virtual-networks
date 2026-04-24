@@ -37,6 +37,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
 
       - name: Fetch base and head refs
         run: |
@@ -44,6 +45,10 @@ jobs:
           git fetch --no-tags origin \
             "${{ github.event.pull_request.base.ref }}" \
             +refs/pull/${{ github.event.pull_request.number }}/head
+
+          if [ -n "${PREVIOUS_HEAD_SHA}" ]; then
+            git fetch --no-tags --depth=1 origin "${PREVIOUS_HEAD_SHA}" || true
+          fi
         shell: bash
 
       # The structured output schema ensures that codex produces comments
