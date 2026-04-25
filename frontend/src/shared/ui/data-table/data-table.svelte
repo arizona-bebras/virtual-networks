@@ -141,7 +141,12 @@ function handleDeleteSelected() {
     {#if columnFilters.length > 0}
       <div class="flex flex-wrap gap-2" in:fade>
         {#each columnFilters as filter (filter.id)}
+          {@const column = table.getColumn(filter.id)}
+          {@const Icon = column?.columnDef.meta?.icon}
           <Badge variant="secondary" class="h-7 gap-1 px-2 font-normal">
+            {#if Icon}
+              <Icon class="mr-1 size-3 text-muted-foreground" />
+            {/if}
             <span class="text-muted-foreground capitalize">{filter.id}:</span>
             <span class="capitalize">{filter.value}</span>
             <button
