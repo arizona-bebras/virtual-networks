@@ -6,6 +6,7 @@ import {
   Monitor,
   Plus,
   Settings,
+  ShieldAlert,
   Tag,
 } from "@lucide/svelte";
 import { createQuery, getQueryClientContext } from "@tanstack/svelte-query";
@@ -46,6 +47,11 @@ const navItems = $derived([
     title: "Devices",
     url: `/app/network/${currentNetworkUUID}/devices`,
     icon: Monitor,
+  },
+  {
+    title: "Rules",
+    url: `/app/network/${currentNetworkUUID}/rules`,
+    icon: ShieldAlert,
   },
   {
     title: "Tags",
