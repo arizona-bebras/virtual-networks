@@ -9,7 +9,7 @@ async function bootstrap() {
     bodyParser: false,
   });
   app.enableCors({
-    origin: process.env.TRUSTED_ORIGINS?.split(",") || [],
+    origin: process.env.TRUSTED_ORIGINS?.split(",").map((o) => o.trim()) || [],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
     credentials: true,
   });
