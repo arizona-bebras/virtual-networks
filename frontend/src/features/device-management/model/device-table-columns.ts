@@ -8,6 +8,8 @@ import DataTableSortButton from "$shared/ui/data-table/data-table-sort-button.sv
 import { renderComponent } from "$shared/ui/data-table/index.js";
 import DeviceActionsCell from "../ui/device-actions-cell.svelte";
 import DeviceStatusFilter from "../ui/device-status-filter.svelte";
+import DeviceOwnerFilter from "../ui/device-owner-filter.svelte";
+import DeviceTagsFilter from "../ui/device-tags-filter.svelte";
 
 export const columns: ColumnDef<DeviceRelations>[] = [
   {
@@ -31,6 +33,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     enableSorting: false,
     enableHiding: false,
     enableGlobalFilter: false,
+    size: 40,
   },
   {
     accessorKey: "name",
@@ -61,6 +64,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
       });
     },
     enableGlobalFilter: false,
+    size: 150,
   },
   {
     accessorKey: "ip",
@@ -74,13 +78,14 @@ export const columns: ColumnDef<DeviceRelations>[] = [
       return row.getValue("ip");
     },
     enableGlobalFilter: true,
+    size: 150,
   },
   {
     accessorKey: "owner",
     header: ({ column }) => {
-      return renderComponent(DataTableSortButton, {
+      return renderComponent(DeviceOwnerFilter, {
         label: "Owner",
-        onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        column,
       });
     },
     cell: ({ row }) => {
@@ -90,13 +95,25 @@ export const columns: ColumnDef<DeviceRelations>[] = [
   },
   {
     accessorKey: "tags",
-    header: "Tags",
+    header: ({ column }) => {
+      return renderComponent(DeviceTagsFilter, {
+        label: "Tags",
+        column,
+      });
+    },
     cell: ({ row }) => {
       return renderComponent(DeviceTagsCell, {
         tags: row.original.tags,
       });
     },
     enableGlobalFilter: false,
+    filterFn: (row, columnId, filterValue) => {
+      const tags = row.getValue(columnId) as any[];
+      if (!filterValue) return true;
+      return tags.some(tag => 
+        tag.name.toLowerCase().includes(filterValue.toLowerCase())
+      );
+    },
   },
   {
     id: "actions",
@@ -104,5 +121,6 @@ export const columns: ColumnDef<DeviceRelations>[] = [
       return renderComponent(DeviceActionsCell, { device: row.original });
     },
     enableGlobalFilter: false,
+    size: 50,
   },
 ];
