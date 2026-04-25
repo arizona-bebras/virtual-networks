@@ -7,6 +7,7 @@ import DataTableCheckbox from "$shared/ui/data-table/data-table-checkbox.svelte"
 import DataTableSortButton from "$shared/ui/data-table/data-table-sort-button.svelte";
 import { renderComponent } from "$shared/ui/data-table/index.js";
 import DeviceActionsCell from "../ui/device-actions-cell.svelte";
+import DeviceStatusFilter from "../ui/device-status-filter.svelte";
 
 export const columns: ColumnDef<DeviceRelations>[] = [
   {
@@ -29,6 +30,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     },
     enableSorting: false,
     enableHiding: false,
+    enableGlobalFilter: false,
   },
   {
     accessorKey: "name",
@@ -43,13 +45,14 @@ export const columns: ColumnDef<DeviceRelations>[] = [
         name: row.getValue("name"),
       });
     },
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "status",
     header: ({ column }) => {
-      return renderComponent(DataTableSortButton, {
+      return renderComponent(DeviceStatusFilter, {
         label: "Status",
-        onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        column,
       });
     },
     cell: ({ row }) => {
@@ -57,6 +60,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
         status: row.getValue("status"),
       });
     },
+    enableGlobalFilter: false,
   },
   {
     accessorKey: "ip",
@@ -69,6 +73,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     cell: ({ row }) => {
       return row.getValue("ip");
     },
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "owner",
@@ -81,6 +86,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     cell: ({ row }) => {
       return row.getValue("owner") || "—";
     },
+    enableGlobalFilter: false,
   },
   {
     accessorKey: "tags",
@@ -90,11 +96,13 @@ export const columns: ColumnDef<DeviceRelations>[] = [
         tags: row.original.tags,
       });
     },
+    enableGlobalFilter: false,
   },
   {
     id: "actions",
     cell: ({ row }) => {
       return renderComponent(DeviceActionsCell, { device: row.original });
     },
+    enableGlobalFilter: false,
   },
 ];

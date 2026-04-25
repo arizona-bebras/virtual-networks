@@ -38,6 +38,7 @@ function bulkRemoveSelected(_ids: string[]) {}
         <DataTable
           {columns}
           data={userDevices.data || []}
+          filterPlaceholder="Search by name or ID..."
           onDeleteSelected={bulkRemoveSelected}
         />
       </Card.Content>
