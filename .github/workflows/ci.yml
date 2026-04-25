@@ -342,7 +342,7 @@ jobs:
           (
             cd frontend
             cp .env.example .env
-            pnpm check --output machine
+            pnpm type-check --output machine
           ) >"$output_file" 2>&1 || status=$?
 
           while IFS= read -r line; do
