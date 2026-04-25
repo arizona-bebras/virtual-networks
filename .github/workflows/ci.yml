@@ -298,6 +298,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
+      - name: Build common dependency
+        run: pnpm --filter common build
+
       - name: Setup reviewdog
         uses: reviewdog/action-setup@v1
 
