@@ -9,7 +9,7 @@ async function bootstrap() {
     bodyParser: false,
   });
   app.enableCors({
-    origin: ["http://localhost:5173"],
+    origin: process.env.TRUSTED_ORIGINS?.split(",") || [],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
     credentials: true,
   });

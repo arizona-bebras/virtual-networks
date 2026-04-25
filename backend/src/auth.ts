@@ -19,7 +19,7 @@ const authOptions: BetterAuthOptions = {
   emailAndPassword: {
     enabled: true,
   },
-  trustedOrigins: ["http://localhost:5173"],
+  trustedOrigins: process.env.TRUSTED_ORIGINS?.split(",") || [],
   plugins: [
     jwt(),
     localization({
