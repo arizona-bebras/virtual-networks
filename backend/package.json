@@ -79,8 +79,18 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "moduleNameMapper": {
+      "^@thallesp/nestjs-better-auth$": "<rootDir>/test-utils/nestjs-better-auth.mock.ts",
+      "^common/dto/.*$": "<rootDir>/test-utils/common-dto.mock.ts"
+    },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(t|j)s",
+      "!**/*.spec.ts",
+      "!**/*.module.ts",
+      "!main.ts",
+      "!auth.ts",
+      "!db/schema.ts",
+      "!test-utils/**"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
