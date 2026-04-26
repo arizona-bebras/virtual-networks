@@ -1,6 +1,5 @@
 import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { jwt } from "better-auth/plugins";
 import { localization } from "better-auth-localization";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { postgresUrl } from "./db/connection";
@@ -22,7 +21,6 @@ const authOptions: BetterAuthOptions = {
   trustedOrigins:
     process.env.TRUSTED_ORIGINS?.split(",").map((o) => o.trim()) || [],
   plugins: [
-    jwt(),
     localization({
       defaultLocale: "ru-RU",
       fallbackLocale: "default",
