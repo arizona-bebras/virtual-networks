@@ -17,18 +17,6 @@ async function bootstrap() {
     .setTitle("Virtual Networks API")
     .setDescription("API for managing virtual networks")
     .setVersion("1.0")
-    .addBearerAuth(
-      {
-        type: "http",
-        scheme: "bearer",
-        bearerFormat: "JWT",
-        name: "JWT",
-        description: "Введите токен",
-        in: "header",
-      },
-      "JWT-auth",
-    )
-    .addSecurityRequirements("JWT-auth")
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("api/docs", app, document);
