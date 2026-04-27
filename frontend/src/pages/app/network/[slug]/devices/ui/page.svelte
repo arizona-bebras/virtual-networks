@@ -1,5 +1,6 @@
 <script lang="ts">
 import { createQuery } from "@tanstack/svelte-query";
+import type { ColumnFiltersState } from "@tanstack/table-core";
 import { columns } from "$features/device-management/model/device-table-columns.js";
 import AddDeviceBtn from "$features/device-management/ui/add-device-btn.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
@@ -10,9 +11,15 @@ import { deviceQuery } from "../api/query";
 
 let isAddDeviceDialogOpen = $state(false);
 let currentNetworkId = $derived(getNetworkId().id);
+let globalFilter = $state("");
+let columnFilters = $state<ColumnFiltersState>([]);
+
+let tagsFilter = $derived(
+  columnFilters.find((f) => f.id === "tags")?.value as string | undefined,
+);
 
 const userDevices = createQuery(() =>
-  deviceQuery.userDevices(currentNetworkId),
+  deviceQuery.userDevices(currentNetworkId, globalFilter, tagsFilter),
 );
 
 // TODO: в ожидании реализации bulk delete на бэке
@@ -32,7 +39,7 @@ function bulkRemoveSelected(_ids: string[]) {}
 
     <AddDeviceBtn bind:open={isAddDeviceDialogOpen} />
   </div>
-  {#if userDevices.isSuccess}
+
     <Card.Root>
       <Card.Content class="p-6">
         <DataTable
@@ -40,8 +47,10 @@ function bulkRemoveSelected(_ids: string[]) {}
           data={userDevices.data || []}
           filterPlaceholder="Search by name or ID..."
           onDeleteSelected={bulkRemoveSelected}
+          onGlobalFilterChange={(value) => (globalFilter = value)}
+          onColumnFiltersChange={(filters) => (columnFilters = filters)}
         />
       </Card.Content>
     </Card.Root>
-  {/if}
+
 </div>

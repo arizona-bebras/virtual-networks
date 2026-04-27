@@ -8,7 +8,6 @@ import DataTableCheckbox from "$shared/ui/data-table/data-table-checkbox.svelte"
 import DataTableSortButton from "$shared/ui/data-table/data-table-sort-button.svelte";
 import { renderComponent } from "$shared/ui/data-table/index.js";
 import DeviceActionsCell from "../ui/device-actions-cell.svelte";
-import DeviceStatusFilter from "../ui/device-status-filter.svelte";
 import DeviceOwnerFilter from "../ui/device-owner-filter.svelte";
 import DeviceTagsFilter from "../ui/device-tags-filter.svelte";
 
@@ -54,9 +53,9 @@ export const columns: ColumnDef<DeviceRelations>[] = [
   {
     accessorKey: "status",
     header: ({ column }) => {
-      return renderComponent(DeviceStatusFilter, {
+      return renderComponent(DataTableSortButton, {
         label: "Status",
-        column,
+        onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
       });
     },
     cell: ({ row }) => {
@@ -108,9 +107,10 @@ export const columns: ColumnDef<DeviceRelations>[] = [
         column,
       });
     },
-    cell: ({ row }) => {
+    cell: ({ row, column }) => {
       return renderComponent(DeviceTagsCell, {
         tags: row.original.tags,
+        onclick: (name: string) => column.setFilterValue(name),
       });
     },
     enableGlobalFilter: false,

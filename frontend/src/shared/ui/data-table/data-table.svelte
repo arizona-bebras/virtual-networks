@@ -17,6 +17,7 @@ import {
   type RowSelectionState,
   type SortingState,
 } from "@tanstack/table-core";
+import { Debounced } from "runed";
 import { fade } from "svelte/transition";
 import { Badge } from "$shared/ui/badge/index.js";
 import { Button } from "$shared/ui/button/index.js";
@@ -30,6 +31,8 @@ type DataTableProps<TData, TValue> = {
   filterColumn?: string;
   filterPlaceholder?: string;
   onDeleteSelected?: (selectedIds: string[]) => void;
+  onGlobalFilterChange?: (value: string) => void;
+  onColumnFiltersChange?: (filters: ColumnFiltersState) => void;
 };
 
 let {
@@ -37,12 +40,23 @@ let {
   columns,
   filterPlaceholder = "Filter...",
   onDeleteSelected,
+  onGlobalFilterChange,
+  onColumnFiltersChange,
 }: DataTableProps<TData, TValue> = $props();
 
 let sorting = $state<SortingState>([]);
 let columnFilters = $state<ColumnFiltersState>([]);
 let rowSelection = $state<RowSelectionState>({});
 let globalFilter = $state("");
+const debounced = new Debounced(() => globalFilter, 500);
+
+$effect(() => {
+  onGlobalFilterChange?.(debounced.current);
+});
+
+$effect(() => {
+  onColumnFiltersChange?.(columnFilters);
+});
 
 const table = createSvelteTable({
   get data() {
@@ -65,6 +79,7 @@ const table = createSvelteTable({
       return globalFilter;
     },
   },
+  manualFiltering: true,
   enableRowSelection: true,
   onSortingChange: (updater) => {
     if (typeof updater === "function") {

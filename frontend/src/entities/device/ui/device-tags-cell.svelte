@@ -12,8 +12,9 @@ let { tags }: { tags: DeviceRelations["tags"] } = $props();
     {@const color = colorVariants[tag.color ?? 'purple']}
     <Badge
       variant="secondary"
-      class="text-[10px] border {color.backgroundColor} {color.borderColor}"
+      class="text-[10px] border {color.backgroundColor} {color.borderColor} {onclick ? 'cursor-pointer hover:brightness-75 transition-all' : ''}"
       style=""
+      onclick={() => onclick?.(tag.name)}
     >
       {tag.name}
     </Badge>

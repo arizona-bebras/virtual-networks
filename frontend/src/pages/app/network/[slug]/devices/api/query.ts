@@ -3,9 +3,9 @@ import { queryOptions } from "@tanstack/svelte-query";
 import { client } from "$shared/api/openapi-client";
 
 export const deviceQuery = {
-  userDevices: (networkId: string) =>
+  userDevices: (networkId: string, q?: string, tags?: string) =>
     queryOptions({
-      queryKey: ["userDevices", networkId],
+      queryKey: ["userDevices", networkId, q, tags],
       queryFn: async () => {
         const { data, error } = await client.GET(
           "/networks/{network_id}/devices",
@@ -13,6 +13,10 @@ export const deviceQuery = {
             params: {
               path: {
                 network_id: networkId,
+              },
+              query: {
+                q,
+                tags,
               },
             },
           },
