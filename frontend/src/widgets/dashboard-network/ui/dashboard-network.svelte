@@ -8,6 +8,9 @@ import {
 } from "@xyflow/svelte";
 import "@xyflow/svelte/dist/style.css";
 import { Activity, ArrowRight, ShieldCheck, Zap } from "@lucide/svelte";
+import { useQueryClient } from "@tanstack/svelte-query";
+import type { Tag } from "common/schemas/tag/index";
+import { getNetworkId } from "$shared/lib/network-id-context";
 import { Badge } from "$shared/ui/badge/index.js";
 import * as Dialog from "$shared/ui/dialog/index.js";
 import {
@@ -15,18 +18,31 @@ import {
   initialNodes,
 } from "$widgets/dashboard-network/model/mock";
 import { resolveCollisions } from "$widgets/dashboard-network/model/resolve-collisions";
+import { tagDataToNode } from "../model/mapper";
 import DeviceNode from "./device-node.svelte";
 import RuleNode from "./rule-node.svelte";
+
+const queryClient = useQueryClient();
+let currentNetworkId = $derived(getNetworkId().id);
+let networkTagsQuery: Tag[] = $derived(
+  queryClient.getQueryData(["userTags", currentNetworkId])!,
+);
 
 const nodeTypes = {
   device: DeviceNode,
   rule: RuleNode,
 };
 
-let nodes = $state.raw<Node[]>(initialNodes);
+let nodes = $state.raw<Node[]>([]);
 let edges = $state.raw<Edge[]>(initialEdges);
 let selectedEdge = $state<Edge | null>(null);
 let isDialogOpen = $state(false);
+
+$effect(() => {
+  if (networkTagsQuery) {
+    nodes = tagDataToNode(networkTagsQuery);
+  }
+});
 
 function handleEdgeClick(event: { edge: Edge }) {
   selectedEdge = event.edge;
