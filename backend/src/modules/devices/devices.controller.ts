@@ -42,7 +42,7 @@ export class DevicesController {
   async createDevice(
     @Param("network_id") network_id: string,
     @Body() device: CreateDeviceDto,
-    @Session() session: UserSession,
+    @Session() session: UserSession
   ) {
     await this.devicesService.create(
       { ...device, ownerId: session.user.id },
