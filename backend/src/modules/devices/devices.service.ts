@@ -57,7 +57,7 @@ export class DevicesService {
     return filters;
   }
 
-  async create(device: Required<CreateDeviceDto>, networkId: string) {
+  async create(device: CreateDeviceDto, networkId: string) {
     await this.db.insert(schema.devices).values({ ...device, networkId });
   }
 
@@ -135,5 +135,23 @@ export class DevicesService {
 
   async delete(id: string) {
     await this.db.delete(schema.devices).where(eq(schema.devices.id, id));
+  }
+
+  async addTag(deviceId: string, tagId: string) {
+    await this.db.insert(schema.devicesTags).values({
+      deviceId: deviceId,
+      tagId: tagId,
+    });
+  }
+
+  async deleteTag(deviceId: string, tagId: string) {
+    await this.db
+      .delete(schema.devicesTags)
+      .where(
+        and(
+          eq(schema.devicesTags.deviceId, deviceId),
+          eq(schema.devicesTags.tagId, tagId),
+        ),
+      );
   }
 }

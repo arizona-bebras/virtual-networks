@@ -113,7 +113,6 @@ export const devices = pgTable("devices", {
     .notNull()
     .references(() => networks.id, { onDelete: "cascade" }),
   ownerId: text("owner_id")
-    .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
 });
 
