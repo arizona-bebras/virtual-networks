@@ -42,9 +42,7 @@ export class TagsService {
       .select()
       .from(schema.tags)
       .where(and(...this.buildReadFilters(networkId, q)))
-      .orderBy(
-        q ? sql`length(${schema.tags.name}) ASC` : schema.tags.name,
-      );
+      .orderBy(q ? sql`length(${schema.tags.name}) ASC` : schema.tags.name);
   }
 
   async update(id: string, tag: UpdateTagDto) {
