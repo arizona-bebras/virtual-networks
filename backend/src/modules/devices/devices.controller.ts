@@ -75,7 +75,7 @@ export class DevicesController {
   async getDevicesWithFilters(
     @Param("network_id") networkId: string,
     @Query("q") q: string,
-    @Query("tags") tags: string,
+    @Query("tags") tags: string[],
     @Query("owner_id") ownerId: string,
   ): Promise<DeviceRelationsDto[]> {
     return await this.devicesService.read(
