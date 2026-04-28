@@ -3,7 +3,7 @@ import type { CreateTagDto } from "common/dto/tag/create-tag";
 import type { UpdateTagDto } from "common/dto/tag/update-tag";
 import type { SQL } from "drizzle-orm";
 import { and, eq } from "drizzle-orm";
-import { sql } from "drizzle-orm/sql";
+import { ilike, sql } from "drizzle-orm/sql";
 import { type Database, DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
 
@@ -19,7 +19,7 @@ export class TagsService {
     }
 
     if (q) {
-      filters.push(sql`${schema.tags.name} % ${q}`);
+      filters.push(ilike(schema.tags.name, `${q}%`));
     }
 
     return filters;
@@ -43,7 +43,7 @@ export class TagsService {
       .from(schema.tags)
       .where(and(...this.buildReadFilters(networkId, q)))
       .orderBy(
-        q ? sql`similarity(${schema.tags.name}, ${q}) DESC` : schema.tags.name,
+        q ? sql`length(${schema.tags.name}) ASC` : schema.tags.name,
       );
   }
 
