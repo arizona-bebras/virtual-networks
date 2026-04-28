@@ -18,8 +18,7 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import type { UserSession } from "@thallesp/nestjs-better-auth";
-import { AuthGuard, Session } from "@thallesp/nestjs-better-auth";
+import { AuthGuard } from "@thallesp/nestjs-better-auth";
 import { CreateDeviceDto } from "common/dto/device/create-device";
 import { DeviceRelationsDto } from "common/dto/device/index";
 import { UpdateDeviceDto } from "common/dto/device/update-device";
@@ -41,12 +40,9 @@ export class DevicesController {
   @ApiResponse({ status: 201, description: "Устройство успешно создано" })
   async createDevice(
     @Param("network_id") network_id: string,
-    @Body() device: CreateDeviceDto
+    @Body() device: CreateDeviceDto,
   ) {
-    await this.devicesService.create(
-      device,
-      network_id,
-    );
+    await this.devicesService.create(device, network_id);
   }
 
   @Get("")
@@ -154,25 +150,31 @@ export class DevicesController {
   @Roles(Role.Admin)
   @ApiOperation({ summary: "Добавить тег на устройство" })
   @ApiBody({ type: DeviceRelationsDto })
-  @ApiResponse({ status: 201, description: "Тег успешно добавлен к устройству" })
+  @ApiResponse({
+    status: 201,
+    description: "Тег успешно добавлен к устройству",
+  })
   @ApiResponse({ status: 404, description: "Устройство не найдено" })
   async addTagOnDevice(
     @Param("device_id") deviceId: string,
-    @Param("tag_id") tagId: string
+    @Param("tag_id") tagId: string,
   ) {
-      await this.devicesService.addTag(deviceId, tagId)
+    await this.devicesService.addTag(deviceId, tagId);
   }
 
   @Delete(":device_id/add_tag/:tag_id")
   @Roles(Role.Admin)
   @ApiOperation({ summary: "Добавить тег на устройство" })
   @ApiBody({ type: DeviceRelationsDto })
-  @ApiResponse({ status: 201, description: "Тег успешно добавлен к устройству" })
+  @ApiResponse({
+    status: 201,
+    description: "Тег успешно добавлен к устройству",
+  })
   @ApiResponse({ status: 404, description: "Устройство не найдено" })
   async deleteTagFromDevice(
     @Param("device_id") deviceId: string,
-    @Param("tag_id") tagId: string
+    @Param("tag_id") tagId: string,
   ) {
-      await this.devicesService.deleteTag(deviceId, tagId)
+    await this.devicesService.deleteTag(deviceId, tagId);
   }
 }
