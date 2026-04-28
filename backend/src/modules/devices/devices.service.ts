@@ -23,10 +23,10 @@ export class DevicesService {
     tags: string[],
   ): SQL {
     if (!Array.isArray(tags)) {
-      tags = [tags]
+      tags = [tags];
     }
     const tagsFilter = inArray(schema.tags.id, tags);
-    
+
     return sql`exists (
       select 1
       from ${schema.devicesTags}
