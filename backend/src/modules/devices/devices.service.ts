@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import type { CreateDeviceDto } from "common/dto/device/create-device";
 import type { UpdateDeviceDto } from "common/dto/device/update-device";
 import type { DeviceRelations } from "common/schemas/device/index";
@@ -138,6 +138,17 @@ export class DevicesService {
   }
 
   async addTag(deviceId: string, tagId: string) {
+    const tag = (await this.db
+      .select()
+      .from(schema.tags)
+      .where(eq(schema.tags.id, tagId)))[0];
+    const device = (await this.db
+      .select()
+      .from(schema.devices)
+      .where(eq(schema.devices.id, deviceId)))[0];
+    if (tag.networkId !== device.networkId) {
+      throw new BadRequestException("Tag and device must be in one network");
+    }
     await this.db.insert(schema.devicesTags).values({
       deviceId: deviceId,
       tagId: tagId,
