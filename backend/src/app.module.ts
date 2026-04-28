@@ -1,5 +1,7 @@
 import { Module } from "@nestjs/common";
+import { APP_PIPE } from "@nestjs/core";
 import { AuthModule } from "@thallesp/nestjs-better-auth";
+import { ZodValidationPipe } from "nestjs-zod";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { auth } from "./auth";
@@ -21,6 +23,12 @@ import { TagsModule } from "./modules/tags/tags.module";
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_PIPE,
+      useClass: ZodValidationPipe,
+    },
+  ],
 })
 export class AppModule {}
