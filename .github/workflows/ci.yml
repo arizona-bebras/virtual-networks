@@ -87,16 +87,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.node == 'true'
-    outputs:
-      common_lint: ${{ steps.common_lint.outcome }}
-      backend_lint: ${{ steps.backend_lint.outcome }}
-      frontend_lint: ${{ steps.frontend_lint.outcome }}
-      frontend_dependencies: ${{ steps.frontend_dependencies.outcome }}
-      frontend_check: ${{ steps.frontend_check.outcome }}
-      common_build: ${{ steps.common_build.outcome }}
-      backend_build: ${{ steps.backend_build.outcome }}
-      frontend_build: ${{ steps.frontend_build.outcome }}
-      proto_ts_build: ${{ steps.proto_ts_build.outcome }}
     permissions:
       contents: read
       checks: write
@@ -278,29 +268,35 @@ jobs:
           cat "$output_file"
           exit "$status"
 
-      - name: Build common
-        id: common_build
-        if: needs.changes.outputs.common == 'true'
-        continue-on-error: true
-        run: pnpm exec turbo run common#build
+      - name: Select Turbo build tasks
+        id: turbo_tasks
+        shell: bash
+        run: |
+          build_tasks=()
 
-      - name: Build backend
-        id: backend_build
-        if: needs.changes.outputs.backend == 'true'
-        continue-on-error: true
-        run: pnpm exec turbo run backend#build
+          if [ "${{ needs.changes.outputs.common }}" = "true" ]; then
+            build_tasks+=(common#build)
+          fi
 
-      - name: Build frontend
-        id: frontend_build
-        if: needs.changes.outputs.frontend == 'true'
-        continue-on-error: true
-        run: pnpm exec turbo run frontend#build
+          if [ "${{ needs.changes.outputs.backend }}" = "true" ]; then
+            build_tasks+=(backend#build)
+          fi
 
-      - name: Build proto TypeScript artifacts
-        id: proto_ts_build
-        if: needs.changes.outputs.proto == 'true'
+          if [ "${{ needs.changes.outputs.frontend }}" = "true" ]; then
+            build_tasks+=(frontend#build)
+          fi
+
+          if [ "${{ needs.changes.outputs.proto }}" = "true" ]; then
+            build_tasks+=(proto#build)
+          fi
+
+          echo "build_tasks=${build_tasks[*]}" >> "$GITHUB_OUTPUT"
+
+      - name: Run Turbo builds
+        id: turbo_build
+        if: steps.turbo_tasks.outputs.build_tasks != ''
         continue-on-error: true
-        run: pnpm exec turbo run proto#build
+        run: pnpm exec turbo run ${{ steps.turbo_tasks.outputs.build_tasks }}
 
       - name: Fail if Node workspace checks failed
         if: always()
@@ -308,16 +304,13 @@ jobs:
           COMMON_CHANGED: ${{ needs.changes.outputs.common }}
           BACKEND_CHANGED: ${{ needs.changes.outputs.backend }}
           FRONTEND_CHANGED: ${{ needs.changes.outputs.frontend }}
-          PROTO_CHANGED: ${{ needs.changes.outputs.proto }}
+          BUILD_TASKS: ${{ steps.turbo_tasks.outputs.build_tasks }}
           COMMON_LINT_OUTCOME: ${{ steps.common_lint.outcome }}
           BACKEND_LINT_OUTCOME: ${{ steps.backend_lint.outcome }}
           FRONTEND_LINT_OUTCOME: ${{ steps.frontend_lint.outcome }}
           FRONTEND_DEPENDENCIES_OUTCOME: ${{ steps.frontend_dependencies.outcome }}
           FRONTEND_CHECK_OUTCOME: ${{ steps.frontend_check.outcome }}
-          COMMON_BUILD_OUTCOME: ${{ steps.common_build.outcome }}
-          BACKEND_BUILD_OUTCOME: ${{ steps.backend_build.outcome }}
-          FRONTEND_BUILD_OUTCOME: ${{ steps.frontend_build.outcome }}
-          PROTO_TS_BUILD_OUTCOME: ${{ steps.proto_ts_build.outcome }}
+          TURBO_BUILD_OUTCOME: ${{ steps.turbo_build.outcome }}
         run: |
           failed=0
 
@@ -346,23 +339,8 @@ jobs:
             failed=1
           fi
 
-          if [ "$COMMON_CHANGED" = "true" ] && [ "$COMMON_BUILD_OUTCOME" != "success" ]; then
-            echo "Common build failed."
-            failed=1
-          fi
-
-          if [ "$BACKEND_CHANGED" = "true" ] && [ "$BACKEND_BUILD_OUTCOME" != "success" ]; then
-            echo "Backend build failed."
-            failed=1
-          fi
-
-          if [ "$FRONTEND_CHANGED" = "true" ] && [ "$FRONTEND_BUILD_OUTCOME" != "success" ]; then
-            echo "Frontend build failed."
-            failed=1
-          fi
-
-          if [ "$PROTO_CHANGED" = "true" ] && [ "$PROTO_TS_BUILD_OUTCOME" != "success" ]; then
-            echo "Proto TypeScript build failed."
+          if [ -n "$BUILD_TASKS" ] && [ "$TURBO_BUILD_OUTCOME" != "success" ]; then
+            echo "Turbo build failed."
             failed=1
           fi
 
@@ -373,10 +351,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.proto == 'true'
-    outputs:
-      generate: ${{ steps.proto_generate.outcome }}
-      go_vet: ${{ steps.proto_go_vet.outcome }}
-      go_build: ${{ steps.proto_go_build.outcome }}
     env:
       PROTOC_VERSION: "25.2"
       TURBO_TELEMETRY_DISABLED: "1"
@@ -425,16 +399,13 @@ jobs:
           version: ${{ env.PROTOC_VERSION }}
 
       - name: Verify generated protobuf artifacts
-        id: proto_generate
         run: pnpm exec turbo run proto#generate --force
 
       - name: Lint generated Go proto module
-        id: proto_go_vet
         working-directory: proto
         run: go vet ./...
 
       - name: Build generated Go proto module
-        id: proto_go_build
         working-directory: proto
         run: go build ./...
 
@@ -443,9 +414,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.router == 'true'
-    outputs:
-      go_vet: ${{ steps.router_go_vet.outcome }}
-      go_build: ${{ steps.router_go_build.outcome }}
 
     steps:
       - name: Checkout repository
@@ -459,13 +427,11 @@ jobs:
             router/go.sum
 
       - name: Lint router Go module
-        id: router_go_vet
         working-directory: router
         shell: bash
         run: go vet ./...
 
       - name: Build router Go module
-        id: router_go_build
         working-directory: router
         shell: bash
         run: go build ./...
