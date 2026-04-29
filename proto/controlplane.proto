@@ -1,0 +1,211 @@
+syntax = "proto3";
+
+package virtualnetworks.controlplane.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "proto/gen/go/controlplane;controlplanepb";
+
+service RouterControlPlane {
+  // Called by a router at startup to fetch the full desired network and peer state.
+  rpc GetRouterConfiguration(GetRouterConfigurationRequest) returns (RouterConfiguration);
+
+  // Opened by a router after startup to receive live configuration snapshots.
+  rpc WatchRouterConfiguration(WatchRouterConfigurationRequest) returns (stream RouterConfigurationUpdate);
+
+  // Opened by a router to report WireGuard handshake and connection activity.
+  rpc ReportRouterEvents(stream RouterEvent) returns (ReportRouterEventsResponse);
+}
+
+message RouterInfo {
+  string router_id = 1;
+  string hostname = 2;
+  string version = 3;
+  repeated string supported_protocols = 4;
+  map<string, string> labels = 5;
+}
+
+message GetRouterConfigurationRequest {
+  RouterInfo router = 1;
+  string current_revision = 2;
+}
+
+message WatchRouterConfigurationRequest {
+  RouterInfo router = 1;
+  string current_revision = 2;
+}
+
+message RouterConfiguration {
+  // Opaque backend revision. Routers echo it on later requests and watches.
+  string revision = 1;
+  repeated NetworkConfig networks = 2;
+  repeated ProtocolInstanceConfig protocols = 3;
+}
+
+message NetworkConfig {
+  string id = 1;
+  string name = 2;
+  string cidr = 3;
+  string server_address = 4;
+  uint32 mtu = 5;
+  uint32 status_port = 6;
+  repeated PeerConfig peers = 7;
+}
+
+message PeerConfig {
+  string id = 1;
+  string network_id = 2;
+  string name = 3;
+  string address = 4;
+  repeated string allowed_ips = 5;
+  map<string, string> labels = 6;
+
+  oneof protocol {
+    WireGuardPeerConfig wireguard = 10;
+  }
+}
+
+message WireGuardPeerConfig {
+  // Raw 32-byte WireGuard public key.
+  bytes public_key = 1;
+  // Raw 32-byte WireGuard preshared key, when enabled.
+  bytes preshared_key = 2;
+}
+
+message ProtocolInstanceConfig {
+  string id = 1;
+  string name = 2;
+  string instance_name = 3;
+  string network_id = 4;
+  uint32 listen_port = 5;
+  string public_host = 6;
+  // Empty means all peers in the referenced network are eligible for this instance.
+  repeated string peer_ids = 7;
+
+  oneof settings {
+    WireGuardProtocolConfig wireguard = 10;
+  }
+}
+
+message WireGuardProtocolConfig {
+  // Raw 32-byte WireGuard interface private key used by the router.
+  bytes interface_private_key = 1;
+  // Raw 32-byte WireGuard interface public key advertised to peers.
+  bytes interface_public_key = 2;
+  uint32 persistent_keepalive_seconds = 3;
+}
+
+message RouterConfigurationUpdate {
+  string revision = 1;
+  ConfigurationUpdateReason reason = 2;
+  RouterConfiguration configuration = 3;
+  repeated ChangedResource changed_resources = 4;
+}
+
+enum ConfigurationUpdateReason {
+  CONFIGURATION_UPDATE_REASON_UNSPECIFIED = 0;
+  CONFIGURATION_UPDATE_REASON_INITIAL_SNAPSHOT = 1;
+  CONFIGURATION_UPDATE_REASON_MANUAL_REFRESH = 2;
+  CONFIGURATION_UPDATE_REASON_NETWORK_CHANGED = 3;
+  CONFIGURATION_UPDATE_REASON_PEER_CHANGED = 4;
+  CONFIGURATION_UPDATE_REASON_PROTOCOL_CHANGED = 5;
+}
+
+message ChangedResource {
+  ChangedResourceType type = 1;
+  string id = 2;
+  string network_id = 3;
+  ChangeOperation operation = 4;
+}
+
+enum ChangedResourceType {
+  CHANGED_RESOURCE_TYPE_UNSPECIFIED = 0;
+  CHANGED_RESOURCE_TYPE_NETWORK = 1;
+  CHANGED_RESOURCE_TYPE_PEER = 2;
+  CHANGED_RESOURCE_TYPE_PROTOCOL_INSTANCE = 3;
+}
+
+enum ChangeOperation {
+  CHANGE_OPERATION_UNSPECIFIED = 0;
+  CHANGE_OPERATION_CREATED = 1;
+  CHANGE_OPERATION_UPDATED = 2;
+  CHANGE_OPERATION_DELETED = 3;
+}
+
+message RouterEvent {
+  RouterInfo router = 1;
+  string event_id = 2;
+  string configuration_revision = 3;
+  google.protobuf.Timestamp observed_at = 4;
+
+  oneof event {
+    WireGuardHandshakeLog wireguard_handshake = 10;
+    WireGuardConnectionLog wireguard_connection = 11;
+    WireGuardPacketObservation wireguard_packet = 12;
+  }
+}
+
+message WireGuardHandshakeLog {
+  string network_id = 1;
+  string protocol_instance_id = 2;
+  string protocol_instance_name = 3;
+  string peer_id = 4;
+  string endpoint = 5;
+  WireGuardHandshakeStage stage = 6;
+  uint32 sender_index = 7;
+  uint32 receiver_index = 8;
+  uint32 packet_size = 9;
+}
+
+enum WireGuardHandshakeStage {
+  WIRE_GUARD_HANDSHAKE_STAGE_UNSPECIFIED = 0;
+  WIRE_GUARD_HANDSHAKE_STAGE_INITIATION = 1;
+  WIRE_GUARD_HANDSHAKE_STAGE_RESPONSE = 2;
+  WIRE_GUARD_HANDSHAKE_STAGE_COOKIE_REPLY = 3;
+}
+
+message WireGuardConnectionLog {
+  string network_id = 1;
+  string protocol_instance_id = 2;
+  string protocol_instance_name = 3;
+  string peer_id = 4;
+  string endpoint = 5;
+  PeerConnectionState state = 6;
+  google.protobuf.Timestamp latest_handshake_at = 7;
+  uint64 rx_bytes = 8;
+  uint64 tx_bytes = 9;
+}
+
+enum PeerConnectionState {
+  PEER_CONNECTION_STATE_UNSPECIFIED = 0;
+  PEER_CONNECTION_STATE_CONNECTED = 1;
+  PEER_CONNECTION_STATE_DISCONNECTED = 2;
+}
+
+message WireGuardPacketObservation {
+  string network_id = 1;
+  string protocol_instance_id = 2;
+  string protocol_instance_name = 3;
+  string peer_id = 4;
+  string endpoint = 5;
+  WireGuardPacketType packet_type = 6;
+  string backend = 7;
+  uint32 sender_index = 8;
+  uint32 receiver_index = 9;
+  uint32 packet_size = 10;
+  uint64 packets_seen = 11;
+}
+
+enum WireGuardPacketType {
+  WIRE_GUARD_PACKET_TYPE_UNSPECIFIED = 0;
+  WIRE_GUARD_PACKET_TYPE_HANDSHAKE_INITIATION = 1;
+  WIRE_GUARD_PACKET_TYPE_HANDSHAKE_RESPONSE = 2;
+  WIRE_GUARD_PACKET_TYPE_COOKIE_REPLY = 3;
+  WIRE_GUARD_PACKET_TYPE_TRANSPORT = 4;
+  WIRE_GUARD_PACKET_TYPE_UNKNOWN = 5;
+}
+
+message ReportRouterEventsResponse {
+  uint64 accepted_events = 1;
+  string last_event_id = 2;
+}
