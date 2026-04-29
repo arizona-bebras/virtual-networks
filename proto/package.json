@@ -4,6 +4,7 @@
   "description": "Protobuf schema and code generation for TS and Go",
   "private": true,
   "scripts": {
+    "build": "pnpm generate:ts",
     "clean": "node ./scripts/generate.mjs clean",
     "generate": "node ./scripts/generate.mjs all",
     "generate:ts": "node ./scripts/generate.mjs ts",

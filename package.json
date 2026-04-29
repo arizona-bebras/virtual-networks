@@ -1,0 +1,22 @@
+{
+  "name": "virtual-networks",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "build": "turbo run build",
+    "check": "turbo run backend#check common#check frontend#check",
+    "clean": "turbo run proto#clean",
+    "dev": "turbo run frontend#dev backend#start:dev",
+    "format": "turbo run backend#format common#format frontend#format",
+    "generate": "turbo run proto#generate",
+    "generate:go": "turbo run proto#generate:go",
+    "generate:ts": "turbo run proto#generate:ts",
+    "lint": "turbo run backend#lint common#lint frontend#lint",
+    "preview": "turbo run frontend#preview",
+    "test": "turbo run backend#test",
+    "type-check": "turbo run frontend#type-check"
+  },
+  "devDependencies": {
+    "turbo": "^2.9.6"
+  }
+}
