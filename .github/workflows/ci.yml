@@ -15,6 +15,7 @@ jobs:
     name: Detect Changes
     runs-on: ubuntu-latest
     outputs:
+      node: ${{ steps.filter.outputs.node }}
       backend: ${{ steps.filter.outputs.backend }}
       common: ${{ steps.filter.outputs.common }}
       frontend: ${{ steps.filter.outputs.frontend }}
@@ -30,47 +31,68 @@ jobs:
         uses: dorny/paths-filter@v3
         with:
           filters: |
+            node:
+              - 'backend/**'
+              - 'common/**'
+              - 'frontend/**'
+              - 'proto/**'
+              - 'biome.json'
+              - 'package.json'
+              - 'pnpm-lock*.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'turbo.json'
+              - '.github/workflows/ci.yml'
             backend:
               - 'backend/**'
               - 'proto/**'
               - 'common/**'
               - 'biome.json'
+              - 'package.json'
               - 'pnpm-lock*.yaml'
               - 'pnpm-workspace.yaml'
+              - 'turbo.json'
               - '.github/workflows/ci.yml'
             common:
               - 'common/**'
               - 'biome.json'
+              - 'package.json'
               - 'pnpm-lock*.yaml'
               - 'pnpm-workspace.yaml'
+              - 'turbo.json'
               - '.github/workflows/ci.yml'
             frontend:
               - 'frontend/**'
               - 'proto/**'
               - 'common/**'
               - 'biome.json'
+              - 'package.json'
               - 'pnpm-lock*.yaml'
               - 'pnpm-workspace.yaml'
+              - 'turbo.json'
               - '.github/workflows/ci.yml'
             proto:
               - 'proto/**'
+              - 'package.json'
               - 'pnpm-lock*.yaml'
               - 'pnpm-workspace.yaml'
+              - 'turbo.json'
               - '.github/workflows/ci.yml'
             router:
               - 'router/**'
               - 'proto/**'
               - '.github/workflows/ci.yml'
 
-  common:
-    name: Common
+  node-workspaces:
+    name: Node Workspaces
     runs-on: ubuntu-latest
     needs: changes
-    if: needs.changes.outputs.common == 'true'
+    if: needs.changes.outputs.node == 'true'
     permissions:
       contents: read
       checks: write
       pull-requests: write
+    env:
+      TURBO_TELEMETRY_DISABLED: "1"
 
     steps:
       - name: Checkout repository
@@ -104,11 +126,25 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
+      - name: Restore Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - name: Prepare frontend environment
+        if: needs.changes.outputs.frontend == 'true'
+        run: cp frontend/.env.example frontend/.env
+
       - name: Setup reviewdog
+        if: needs.changes.outputs.common == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true'
         uses: reviewdog/action-setup@v1
 
       - name: Comment common Biome issues
         id: common_lint
+        if: needs.changes.outputs.common == 'true'
         continue-on-error: true
         shell: bash
         env:
@@ -134,78 +170,9 @@ jobs:
 
           exit "$reviewdog_status"
 
-      - name: Build common
-        id: common_build
-        continue-on-error: true
-        run: pnpm --filter common build
-
-      - name: Fail if common checks failed
-        if: always()
-        env:
-          COMMON_LINT_OUTCOME: ${{ steps.common_lint.outcome }}
-          COMMON_BUILD_OUTCOME: ${{ steps.common_build.outcome }}
-        run: |
-          failed=0
-
-          if [ "$COMMON_LINT_OUTCOME" != "success" ]; then
-            echo "Common Biome check failed."
-            failed=1
-          fi
-
-          if [ "$COMMON_BUILD_OUTCOME" != "success" ]; then
-            echo "Common build failed."
-            failed=1
-          fi
-
-          exit "$failed"
-
-  backend:
-    name: Backend
-    runs-on: ubuntu-latest
-    needs: changes
-    if: needs.changes.outputs.backend == 'true'
-    permissions:
-      contents: read
-      checks: write
-      pull-requests: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-          run_install: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Prepare pnpm lockfile for pull requests
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          branch_lockfile="pnpm-lock.${GITHUB_HEAD_REF//\//!}.yaml"
-
-          if [ ! -f "$branch_lockfile" ]; then
-            echo "Expected branch lockfile '$branch_lockfile' was not found."
-            exit 0
-          fi
-
-          cp "$branch_lockfile" pnpm-lock.yaml
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
-
-      - name: Setup reviewdog
-        uses: reviewdog/action-setup@v1
-
       - name: Comment backend Biome issues
         id: backend_lint
+        if: needs.changes.outputs.backend == 'true'
         continue-on-error: true
         shell: bash
         env:
@@ -231,81 +198,9 @@ jobs:
 
           exit "$reviewdog_status"
 
-      - name: Build backend
-        id: backend_build
-        continue-on-error: true
-        run: pnpm --filter backend build
-
-      - name: Fail if backend checks failed
-        if: always()
-        env:
-          BACKEND_LINT_OUTCOME: ${{ steps.backend_lint.outcome }}
-          BACKEND_BUILD_OUTCOME: ${{ steps.backend_build.outcome }}
-        run: |
-          failed=0
-
-          if [ "$BACKEND_LINT_OUTCOME" != "success" ]; then
-            echo "Backend Biome check failed."
-            failed=1
-          fi
-
-          if [ "$BACKEND_BUILD_OUTCOME" != "success" ]; then
-            echo "Backend build failed."
-            failed=1
-          fi
-
-          exit "$failed"
-
-  frontend:
-    name: Frontend
-    runs-on: ubuntu-latest
-    needs: changes
-    if: needs.changes.outputs.frontend == 'true'
-    permissions:
-      contents: read
-      checks: write
-      pull-requests: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-          run_install: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Prepare pnpm lockfile for pull requests
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          branch_lockfile="pnpm-lock.${GITHUB_HEAD_REF//\//!}.yaml"
-
-          if [ ! -f "$branch_lockfile" ]; then
-            echo "Expected branch lockfile '$branch_lockfile' was not found."
-            exit 0
-          fi
-
-          cp "$branch_lockfile" pnpm-lock.yaml
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
-
-      - name: Build common dependency
-        run: pnpm --filter common build
-
-      - name: Setup reviewdog
-        uses: reviewdog/action-setup@v1
-
       - name: Comment frontend Biome issues
         id: frontend_lint
+        if: needs.changes.outputs.frontend == 'true'
         continue-on-error: true
         shell: bash
         env:
@@ -331,8 +226,15 @@ jobs:
 
           exit "$reviewdog_status"
 
+      - name: Build frontend type-check dependencies
+        id: frontend_dependencies
+        if: needs.changes.outputs.frontend == 'true'
+        continue-on-error: true
+        run: pnpm exec turbo run common#build
+
       - name: Type-check frontend
         id: frontend_check
+        if: needs.changes.outputs.frontend == 'true'
         continue-on-error: true
         shell: bash
         run: |
@@ -341,7 +243,6 @@ jobs:
 
           (
             cd frontend
-            cp .env.example .env
             pnpm type-check --output machine
           ) >"$output_file" 2>&1 || status=$?
 
@@ -368,32 +269,79 @@ jobs:
           cat "$output_file"
           exit "$status"
 
-      - name: Build frontend
-        id: frontend_build
-        continue-on-error: true
-        run: pnpm --filter frontend build
+      - name: Select Turbo build tasks
+        id: turbo_tasks
+        shell: bash
+        run: |
+          build_tasks=()
 
-      - name: Fail if frontend checks failed
+          if [ "${{ needs.changes.outputs.common }}" = "true" ]; then
+            build_tasks+=(common#build)
+          fi
+
+          if [ "${{ needs.changes.outputs.backend }}" = "true" ]; then
+            build_tasks+=(backend#build)
+          fi
+
+          if [ "${{ needs.changes.outputs.frontend }}" = "true" ]; then
+            build_tasks+=(frontend#build)
+          fi
+
+          if [ "${{ needs.changes.outputs.proto }}" = "true" ]; then
+            build_tasks+=(proto#build)
+          fi
+
+          echo "build_tasks=${build_tasks[*]}" >> "$GITHUB_OUTPUT"
+
+      - name: Run Turbo builds
+        id: turbo_build
+        if: steps.turbo_tasks.outputs.build_tasks != ''
+        continue-on-error: true
+        run: pnpm exec turbo run ${{ steps.turbo_tasks.outputs.build_tasks }}
+
+      - name: Fail if Node workspace checks failed
         if: always()
         env:
+          COMMON_CHANGED: ${{ needs.changes.outputs.common }}
+          BACKEND_CHANGED: ${{ needs.changes.outputs.backend }}
+          FRONTEND_CHANGED: ${{ needs.changes.outputs.frontend }}
+          BUILD_TASKS: ${{ steps.turbo_tasks.outputs.build_tasks }}
+          COMMON_LINT_OUTCOME: ${{ steps.common_lint.outcome }}
+          BACKEND_LINT_OUTCOME: ${{ steps.backend_lint.outcome }}
           FRONTEND_LINT_OUTCOME: ${{ steps.frontend_lint.outcome }}
+          FRONTEND_DEPENDENCIES_OUTCOME: ${{ steps.frontend_dependencies.outcome }}
           FRONTEND_CHECK_OUTCOME: ${{ steps.frontend_check.outcome }}
-          FRONTEND_BUILD_OUTCOME: ${{ steps.frontend_build.outcome }}
+          TURBO_BUILD_OUTCOME: ${{ steps.turbo_build.outcome }}
         run: |
           failed=0
 
-          if [ "$FRONTEND_LINT_OUTCOME" != "success" ]; then
+          if [ "$COMMON_CHANGED" = "true" ] && [ "$COMMON_LINT_OUTCOME" != "success" ]; then
+            echo "Common Biome check failed."
+            failed=1
+          fi
+
+          if [ "$BACKEND_CHANGED" = "true" ] && [ "$BACKEND_LINT_OUTCOME" != "success" ]; then
+            echo "Backend Biome check failed."
+            failed=1
+          fi
+
+          if [ "$FRONTEND_CHANGED" = "true" ] && [ "$FRONTEND_LINT_OUTCOME" != "success" ]; then
             echo "Frontend Biome check failed."
             failed=1
           fi
 
-          if [ "$FRONTEND_CHECK_OUTCOME" != "success" ]; then
+          if [ "$FRONTEND_CHANGED" = "true" ] && [ "$FRONTEND_DEPENDENCIES_OUTCOME" != "success" ]; then
+            echo "Frontend type-check dependency build failed."
+            failed=1
+          fi
+
+          if [ "$FRONTEND_CHANGED" = "true" ] && [ "$FRONTEND_CHECK_OUTCOME" != "success" ]; then
             echo "Frontend type-check failed."
             failed=1
           fi
 
-          if [ "$FRONTEND_BUILD_OUTCOME" != "success" ]; then
-            echo "Frontend build failed."
+          if [ -n "$BUILD_TASKS" ] && [ "$TURBO_BUILD_OUTCOME" != "success" ]; then
+            echo "Turbo build failed."
             failed=1
           fi
 
@@ -406,6 +354,7 @@ jobs:
     if: needs.changes.outputs.proto == 'true'
     env:
       PROTOC_VERSION: "25.2"
+      TURBO_TELEMETRY_DISABLED: "1"
 
     steps:
       - name: Checkout repository
@@ -452,7 +401,7 @@ jobs:
           version: ${{ env.PROTOC_VERSION }}
 
       - name: Verify generated protobuf artifacts
-        run: pnpm --filter proto generate
+        run: pnpm exec turbo run proto#generate --force
 
       - name: Lint generated Go proto module
         working-directory: proto
@@ -477,7 +426,7 @@ jobs:
         with:
           go-version-file: router/go.mod
           cache-dependency-path: |
-            proto/go.sum
+            router/go.sum
 
       - name: Lint router Go module
         working-directory: router
