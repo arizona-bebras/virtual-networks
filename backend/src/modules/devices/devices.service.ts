@@ -151,7 +151,7 @@ export class DevicesService {
     if (!tag) {
       throw new NotFoundException(`Tag with id ${tagId} not found`);
     }
-    
+
     const device = await this.db.query.devices.findFirst({
       where: {
         id: deviceId,

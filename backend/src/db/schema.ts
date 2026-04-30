@@ -109,7 +109,9 @@ export const devices = pgTable("devices", {
   id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
   ip: inet().notNull(),
-  ownerId: text("owner_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  ownerId: text("owner_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
   networkId: uuid("network_id")
     .notNull()
     .references(() => networks.id, { onDelete: "cascade" }),

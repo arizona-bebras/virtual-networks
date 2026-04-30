@@ -45,7 +45,7 @@ export class DevicesController {
     @Session() session: UserSession,
   ) {
     await this.devicesService.create(
-      { ownerId: session.user.id, ...device },
+      { ...device, ownerId: session.user.id },
       network_id,
     );
   }
