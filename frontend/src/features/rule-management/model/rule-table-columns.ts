@@ -4,11 +4,22 @@ import DataTableSortButton from "$shared/ui/data-table/data-table-sort-button.sv
 import { renderComponent } from "$shared/ui/data-table/index.js";
 import RuleActionsCell from "../ui/rule-actions-cell.svelte";
 
+// TODO: удалить после переделки endpoint, схему брать из папки common
 export interface RuleMock {
   id: string;
   description: string;
-  sourceTag: string;
-  destTag: string;
+  source: {
+    id: string;
+    name: string;
+    color: string;
+    devices_count: number;
+  };
+  dest: {
+    id: string;
+    name: string;
+    color: string;
+    devices_count: number;
+  };
   protocol: string;
   port: number | string;
 }
@@ -56,7 +67,7 @@ export const columns: ColumnDef<RuleMock>[] = [
       });
     },
     cell: ({ row }) => {
-      return row.getValue("sourceTag");
+      return row.original.source.name;
     },
   },
   {
@@ -68,7 +79,7 @@ export const columns: ColumnDef<RuleMock>[] = [
       });
     },
     cell: ({ row }) => {
-      return row.getValue("destTag");
+      return row.original.dest.name;
     },
   },
   {
