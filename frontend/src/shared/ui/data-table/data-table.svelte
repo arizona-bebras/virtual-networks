@@ -163,7 +163,7 @@ function handleDeleteSelected() {
               <Icon class="mr-1 size-3 text-muted-foreground" />
             {/if}
             <span class="text-muted-foreground capitalize">{filter.id}:</span>
-            <span class="capitalize">{filter.value}</span>
+            <span class="capitalize">{filter.value?.name ?? filter.value}</span>
             <button
               type="button"
               class="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"

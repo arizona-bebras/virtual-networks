@@ -24,12 +24,6 @@ const debounced = new Debounced(() => search, 500);
 const query = createQuery(() =>
   deviceTags.userTags(networkID, debounced.current),
 );
-
-function handleInput(e: Event) {
-  const value = (e.target as HTMLInputElement).value;
-  filterValue = value;
-  column.setFilterValue(value || undefined);
-}
 </script>
 
 <div class="flex items-center gap-1">
@@ -54,13 +48,12 @@ function handleInput(e: Event) {
         <Input
           placeholder="Tag name..."
           bind:value={search}
-          oninput={handleInput}
           class="h-8"
         />
       </div>
       <div>
         <DeviceCell
-          tags={query!.data}
+          tags={query?.data || []}
           onclick={(name) => {
             search = name;
             filterValue = name;

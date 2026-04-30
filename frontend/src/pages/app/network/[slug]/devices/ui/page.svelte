@@ -17,9 +17,19 @@ let columnFilters = $state<ColumnFiltersState>([]);
 let tagsFilter = $derived(
   columnFilters.find((f) => f.id === "tags")?.value as string | undefined,
 );
+let onwerFilter = $derived(
+  columnFilters.find((f) => f.id === "owner")?.value as string | undefined,
+);
+
+$inspect(columnFilters);
 
 const userDevices = createQuery(() =>
-  deviceQuery.userDevices(currentNetworkId, globalFilter, tagsFilter),
+  deviceQuery.userDevices({
+    networkId: currentNetworkId,
+    q: globalFilter,
+    tags: tagsFilter,
+    owner_id: onwerFilter,
+  }),
 );
 
 // TODO: в ожидании реализации bulk delete на бэке
@@ -40,17 +50,16 @@ function bulkRemoveSelected(_ids: string[]) {}
     <AddDeviceBtn bind:open={isAddDeviceDialogOpen} />
   </div>
 
-    <Card.Root>
-      <Card.Content class="p-6">
-        <DataTable
-          {columns}
-          data={userDevices.data || []}
-          filterPlaceholder="Search by name or ID..."
-          onDeleteSelected={bulkRemoveSelected}
-          onGlobalFilterChange={(value) => (globalFilter = value)}
-          onColumnFiltersChange={(filters) => (columnFilters = filters)}
-        />
-      </Card.Content>
-    </Card.Root>
-
+  <Card.Root>
+    <Card.Content class="p-6">
+      <DataTable
+        {columns}
+        data={userDevices.data || []}
+        filterPlaceholder="Search by name or ID..."
+        onDeleteSelected={bulkRemoveSelected}
+        onGlobalFilterChange={(value) => (globalFilter = value)}
+        onColumnFiltersChange={(filters) => (columnFilters = filters)}
+      />
+    </Card.Content>
+  </Card.Root>
 </div>
