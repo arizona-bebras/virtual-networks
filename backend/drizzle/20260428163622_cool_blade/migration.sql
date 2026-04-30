@@ -1,0 +1,1 @@
+ALTER TABLE "devices" ALTER COLUMN "owner_id" DROP NOT NULL;
