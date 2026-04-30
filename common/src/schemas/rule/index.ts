@@ -1,16 +1,27 @@
 import { z } from "zod";
 import { TagRelationsSchema } from "../tag/index.js";
 
+export const ProtocolSchema = z.enum([
+  "TCP",
+  "UDP",
+  "ICMP",
+  "SCTP",
+  "DCCP",
+  "UDP-Lite",
+  "AH",
+  "ESP",
+]);
+
 export const RuleSchema = z.object({
   id: z.uuid().describe("The unique identifier of the rule"),
   sourceId: z.uuid().describe("The source tag identifier").nullable(),
   destId: z.uuid().describe("The destination tag identifier").nullable(),
-  protocol: z
+  description: z
     .string()
-    .min(1)
-    .max(32)
-    .describe("The network protocol")
-    .nullable(),
+    .max(255)
+    .describe("A description of the rule")
+    .optional(),
+  protocol: ProtocolSchema.describe("The network protocol").optional(),
   port: z
     .number()
     .int()
