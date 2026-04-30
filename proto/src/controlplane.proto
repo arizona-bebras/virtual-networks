@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package virtualnetworks.controlplane.v1;
+package controlplane;
 
 import "google/protobuf/timestamp.proto";
 

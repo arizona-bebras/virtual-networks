@@ -6,20 +6,35 @@ import { fileURLToPath } from "node:url";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const protoDir = resolve(scriptDir, "..");
+const protoSrcDir = resolve(protoDir, "src");
 const tsOutDir = resolve(protoDir, "gen", "ts");
 const goOutDir = resolve(protoDir, "gen", "go");
 const tsModuleName = "controlplane";
 
 const target = process.argv[2] ?? "all";
 
+const collectProtoFiles = (directory) =>
+  readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = resolve(directory, entry.name);
+
+    if (entry.isDirectory()) {
+      return collectProtoFiles(entryPath);
+    }
+
+    if (entry.isFile() && entry.name.endsWith(".proto")) {
+      return [entryPath];
+    }
+
+    return [];
+  });
+
 const getProtoFiles = () => {
-  const files = readdirSync(protoDir)
-    .filter((file) => file.endsWith(".proto"))
-    .sort()
-    .map((file) => resolve(protoDir, file));
+  const files = collectProtoFiles(protoSrcDir).sort((left, right) =>
+    left.localeCompare(right),
+  );
 
   if (files.length === 0) {
-    console.error("Error: no .proto files found.");
+    console.error("Error: no .proto files found in src/.");
     process.exit(1);
   }
 
@@ -92,7 +107,7 @@ const generateTs = () => {
       "-o",
       jsOut,
       "-p",
-      protoDir,
+      protoSrcDir,
       ...protoFiles,
     ],
     { cwd: protoDir },
@@ -147,7 +162,7 @@ const generateGo = () => {
       "--go_opt=module=proto",
       `--go-grpc_out=${protoDir}`,
       "--go-grpc_opt=module=proto",
-      `-I${protoDir}`,
+      `-I${protoSrcDir}`,
       ...protoFiles,
     ],
     { cwd: protoDir, env },

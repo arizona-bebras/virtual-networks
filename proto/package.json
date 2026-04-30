@@ -27,7 +27,7 @@
   "files": [
     "gen/ts",
     "gen/go",
-    "controlplane.proto"
+    "src"
   ],
   "exports": {
     ".": {

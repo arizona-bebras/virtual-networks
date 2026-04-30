@@ -4,6 +4,7 @@
 
 ## Generated outputs
 
+- Source schema: `proto/src`
 - TypeScript: `proto/gen/ts`
 - Go: `proto/gen/go`
 
