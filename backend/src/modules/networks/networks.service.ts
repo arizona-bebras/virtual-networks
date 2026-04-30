@@ -1,9 +1,9 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import type { CreateNetworkDto } from "common/dto/network/create-network";
 import type { NetworkEnterCredentialsDto } from "common/dto/network/enter-credentials";
 import { NetworkDto } from "common/dto/network/index";
 import type { UpdateNetworkDto } from "common/dto/network/update-network";
-import { eq } from "drizzle-orm/sql/expressions/conditions";
+import { and, eq } from "drizzle-orm/sql/expressions/conditions";
 import { type Database, DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
 
@@ -14,7 +14,7 @@ export class NetworksService {
   async create(
     networkData: CreateNetworkDto,
     userId: string,
-  ): Promise<NetworkDto> {
+  ): Promise<NetworkDto | undefined> {
     return this.db.transaction(async (tx) => {
       const [network] = await tx
         .insert(schema.networks)
@@ -27,7 +27,22 @@ export class NetworksService {
         role: "admin",
       });
 
-      return network;
+      const admin = await tx.query.user.findFirst({
+        columns: {
+          id: true,
+          name: true,
+          email: true,
+        },
+        where: {
+          id: userId,
+        },
+      });
+
+      if (!admin) {
+        throw new BadRequestException(`User with ID ${userId} not found`);
+      }
+
+      return { ...network, admin: admin };
     });
   }
 
@@ -43,12 +58,38 @@ export class NetworksService {
     });
   }
 
-  async read(id: string) {
-    return this.db.query.networks.findFirst({
+  async read(id: string): Promise<NetworkDto | undefined> {
+    const network = await this.db.query.networks.findFirst({
       where: {
         id,
       },
     });
+
+    if (!network) return undefined;
+    const admin = await this.db
+      .select({
+        id: schema.user.id,
+        name: schema.user.name,
+        email: schema.user.email,
+      })
+      .from(schema.user)
+      .leftJoin(
+        schema.networkUsers,
+        eq(schema.networkUsers.userId, schema.user.id),
+      )
+      .where(
+        and(
+          eq(schema.networkUsers.networkId, network.id),
+          eq(schema.networkUsers.role, "admin"),
+          eq(schema.networkUsers.userId, schema.user.id),
+        ),
+      );
+
+    if (!admin[0]) {
+      throw new BadRequestException(`Admin for network ${id} not found`);
+    }
+
+    return { ...network, admin: admin[0] };
   }
 
   async getMyNetworks(

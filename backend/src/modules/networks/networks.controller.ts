@@ -55,7 +55,7 @@ export class NetworksController {
     type: NetworkDto,
     isArray: true,
   })
-  async getMyNetworks(@Session() session: UserSession): Promise<NetworkDto[]> {
+  async getMyNetworks(@Session() session: UserSession) {
     return await this.networksService.getMyNetworks(session.user.id);
   }
 
@@ -69,7 +69,7 @@ export class NetworksController {
   })
   @ApiResponse({ status: 200, description: "Сеть найдена", type: NetworkDto })
   @ApiResponse({ status: 404, description: "Сеть не найдена" })
-  async get(@Param("network_id") id: string) {
+  async get(@Param("network_id") id: string): Promise<NetworkDto> {
     const network = await this.networksService.read(id);
     if (!network) {
       throw new NotFoundException(`Network with ID ${id} not found`);
