@@ -20,7 +20,7 @@ export const RuleSchema = z.object({
     .describe("The destination port")
     .nullable()
     .optional(),
-})
+});
 
 export const RuleRelationsSchema = RuleSchema.omit({
   sourceId: true,
