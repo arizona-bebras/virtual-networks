@@ -62,7 +62,7 @@ export class DevicesService {
     return filters;
   }
 
-  async create(device: CreateDeviceDto, networkId: string) {
+  async create(device: Required<CreateDeviceDto>, networkId: string) {
     await this.db.insert(schema.devices).values({ ...device, networkId });
   }
 
@@ -143,24 +143,23 @@ export class DevicesService {
   }
 
   async addTag(deviceId: string, tagId: string) {
-    const tagRes = await this.db
-      .select()
-      .from(schema.tags)
-      .where(eq(schema.tags.id, tagId));
-    if (tagRes.length === 0) {
-      throw new NotFoundException("Tag doesn't exists");
+    const tag = await this.db.query.tags.findFirst({
+      where: {
+        id: tagId,
+      },
+    });
+    if (!tag) {
+      throw new NotFoundException(`Tag with id ${tagId} not found`);
     }
-
-    const deviceRes = await this.db
-      .select()
-      .from(schema.devices)
-      .where(eq(schema.devices.id, deviceId));
-    if (deviceRes.length === 0) {
-      throw new NotFoundException("Device doesn't exists");
+    
+    const device = await this.db.query.devices.findFirst({
+      where: {
+        id: deviceId,
+      },
+    });
+    if (!device) {
+      throw new NotFoundException(`Device with id ${deviceId} not found`);
     }
-
-    const tag = tagRes[0];
-    const device = deviceRes[0];
 
     if (tag.networkId !== device.networkId) {
       throw new BadRequestException("Tag and device must be in one network");

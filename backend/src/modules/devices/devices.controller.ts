@@ -18,7 +18,8 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { AuthGuard } from "@thallesp/nestjs-better-auth";
+import type { UserSession } from "@thallesp/nestjs-better-auth";
+import { AuthGuard, Session } from "@thallesp/nestjs-better-auth";
 import { CreateDeviceDto } from "common/dto/device/create-device";
 import { DeviceRelationsDto } from "common/dto/device/index";
 import { UpdateDeviceDto } from "common/dto/device/update-device";
@@ -41,8 +42,12 @@ export class DevicesController {
   async createDevice(
     @Param("network_id") network_id: string,
     @Body() device: CreateDeviceDto,
+    @Session() session: UserSession,
   ) {
-    await this.devicesService.create(device, network_id);
+    await this.devicesService.create(
+      { ownerId: session.user.id, ...device },
+      network_id,
+    );
   }
 
   @Get("")
