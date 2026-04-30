@@ -3,6 +3,7 @@ import type { CreateNetworkDto } from "common/dto/network/create-network";
 import type { NetworkEnterCredentialsDto } from "common/dto/network/enter-credentials";
 import { NetworkDto } from "common/dto/network/index";
 import type { UpdateNetworkDto } from "common/dto/network/update-network";
+import { sql } from "drizzle-orm";
 import { eq } from "drizzle-orm/sql/expressions/conditions";
 import { type Database, DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
@@ -19,7 +20,13 @@ export class NetworksService {
       const [network] = await tx
         .insert(schema.networks)
         .values(networkData)
-        .returning();
+        .returning({
+          id: schema.networks.id,
+          name: schema.networks.name,
+          description: schema.networks.description,
+          cidr: schema.networks.cidr,
+          devicesCount: sql<number>`0`.as("devices_count"),
+        });
 
       await tx.insert(schema.networkUsers).values({
         networkId: network.id,
@@ -43,24 +50,37 @@ export class NetworksService {
     });
   }
 
-  async read(id: string) {
+  async read(id: string): Promise<NetworkDto | undefined> {
     return this.db.query.networks.findFirst({
       where: {
         id,
       },
+      extras: {
+        devicesCount:
+          sql<number>`(SELECT COUNT(*) FROM ${schema.devices} WHERE ${schema.devices.networkId} = ${id})`.as(
+            "devices_count",
+          ),
+      },
     });
   }
 
-  async getMyNetworks(
-    userId: string,
-  ): Promise<(typeof schema.networks.$inferSelect)[]> {
+  async getMyNetworks(userId: string): Promise<NetworkDto[]> {
     const user = await this.db.query.user.findFirst({
       columns: {},
       where: {
         id: userId,
       },
       with: {
-        networks: true,
+        networks: {
+          extras: {
+            devicesCount: (networks, { sql }) =>
+              sql<number>`(
+              SELECT COUNT(*)::int 
+              FROM ${schema.devices} 
+              WHERE ${schema.devices.networkId} = ${networks.id}
+            )`.as("devices_count"),
+          },
+        },
       },
     });
 
