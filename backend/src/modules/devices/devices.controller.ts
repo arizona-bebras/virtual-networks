@@ -81,6 +81,7 @@ export class DevicesController {
     @Param("network_id") networkId: string,
     @Query("q") q: string,
     @Query("tags") tags: string[],
+    @Query("tags") tags: string[],
     @Query("owner_id") ownerId: string,
   ): Promise<DeviceRelationsDto[]> {
     return await this.devicesService.read(
@@ -149,6 +150,38 @@ export class DevicesController {
   @ApiResponse({ status: 404, description: "Устройство не найдено" })
   async deleteDevice(@Param("device_id") id: string) {
     await this.devicesService.delete(id);
+  }
+
+  @Post(":device_id/add_tag/:tag_id")
+  @Roles(Role.Admin)
+  @ApiOperation({ summary: "Добавить тег на устройство" })
+  @ApiBody({ type: DeviceRelationsDto })
+  @ApiResponse({
+    status: 201,
+    description: "Тег успешно добавлен к устройству",
+  })
+  @ApiResponse({ status: 404, description: "Устройство не найдено" })
+  async addTagOnDevice(
+    @Param("device_id") deviceId: string,
+    @Param("tag_id") tagId: string,
+  ) {
+    await this.devicesService.addTag(deviceId, tagId);
+  }
+
+  @Delete(":device_id/add_tag/:tag_id")
+  @Roles(Role.Admin)
+  @ApiOperation({ summary: "Добавить тег на устройство" })
+  @ApiBody({ type: DeviceRelationsDto })
+  @ApiResponse({
+    status: 201,
+    description: "Тег успешно добавлен к устройству",
+  })
+  @ApiResponse({ status: 404, description: "Устройство не найдено" })
+  async deleteTagFromDevice(
+    @Param("device_id") deviceId: string,
+    @Param("tag_id") tagId: string,
+  ) {
+    await this.devicesService.deleteTag(deviceId, tagId);
   }
 
   @Post(":device_id/add_tag/:tag_id")
