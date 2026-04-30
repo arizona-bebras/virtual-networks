@@ -9,7 +9,7 @@ import type { UpdateDeviceDto } from "common/dto/device/update-device";
 import type { DeviceRelations } from "common/schemas/device/index";
 import type { SQL } from "drizzle-orm";
 import { and, eq, inArray } from "drizzle-orm";
-import { sql } from "drizzle-orm/sql";
+import { ilike, sql } from "drizzle-orm/sql";
 import { type Database, DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
 
@@ -22,6 +22,11 @@ export class DevicesService {
     networkId: string,
     tags: string[],
   ): SQL {
+    if (!Array.isArray(tags)) {
+      tags = [tags];
+    }
+    const tagsFilter = inArray(schema.tags.id, tags);
+
     return sql`exists (
       select 1
       from ${schema.devicesTags}
@@ -29,7 +34,7 @@ export class DevicesService {
         on ${schema.devicesTags.tagId} = ${schema.tags.id}
       where ${schema.devicesTags.deviceId} = ${deviceId}
         and ${schema.tags.networkId} = ${networkId}
-        and ${inArray(schema.tags.name, tags)}
+        and ${tagsFilter}
     )`;
   }
 
@@ -56,7 +61,7 @@ export class DevicesService {
     }
 
     if (q) {
-      filters.push(sql`${devices.name} % ${q}`);
+      filters.push(ilike(devices.name, `${q}%`));
     }
 
     return filters;
@@ -73,18 +78,17 @@ export class DevicesService {
   async read(
     networkId: string,
     id?: undefined,
-    tagsStr?: string,
+    tags?: string[],
     ownerId?: string,
     q?: string,
   ): Promise<DeviceRelations[]>;
   async read(
     networkId: string,
     id?: string,
-    tagsStr?: string,
+    tags?: string[],
     ownerId?: string,
     q?: string,
   ): Promise<DeviceRelations | DeviceRelations[] | undefined> {
-    const tags = tagsStr?.split(",").filter(Boolean);
     const withTags = {
       tags: {
         columns: {
@@ -122,8 +126,7 @@ export class DevicesService {
       with: withTags,
       ...(q
         ? {
-            orderBy: (devices, { desc }) =>
-              desc(sql`similarity(${devices.name}, ${q})`),
+            orderBy: (devices, { asc }) => asc(sql`length(${devices.name})`),
           }
         : {}),
     });
