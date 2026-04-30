@@ -36,7 +36,10 @@ export class TagsService {
         id,
       },
       extras: {
-        devicesCount: sql<number>`SELECT COUNT(1) FROM ${schema.devicesTags} WHERE ${schema.devicesTags.tagId} = ${id}`,
+        devicesCount:
+          sql<number>`SELECT COUNT(1) FROM ${schema.devicesTags} WHERE ${schema.devicesTags.tagId} = ${id}`.mapWith(
+            Number,
+          ),
       },
     });
   }

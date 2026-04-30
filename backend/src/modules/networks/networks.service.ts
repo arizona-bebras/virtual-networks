@@ -57,9 +57,9 @@ export class NetworksService {
       },
       extras: {
         devicesCount:
-          sql<number>`(SELECT COUNT(*) FROM ${schema.devices} WHERE ${schema.devices.networkId} = ${id})`.as(
-            "devices_count",
-          ),
+          sql<number>`(SELECT COUNT(*) FROM ${schema.devices} WHERE ${schema.devices.networkId} = ${id})`
+            .mapWith(Number)
+            .as("devices_count"),
       },
     });
   }
@@ -78,7 +78,9 @@ export class NetworksService {
               SELECT COUNT(*)::int 
               FROM ${schema.devices} 
               WHERE ${schema.devices.networkId} = ${networks.id}
-            )`.as("devices_count"),
+            )`
+                .mapWith(Number)
+                .as("devices_count"),
           },
         },
       },
