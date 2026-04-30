@@ -1,11 +1,18 @@
 # Proto package
 
-`proto` is a shared package that contains generated protobuf code for both TypeScript and Go so other workspace members can import it directly.
+`proto` is a shared package that contains the control-plane protobuf contract and generated code for both TypeScript and Go so other workspace members can import it directly.
 
 ## Generated outputs
 
+- Source schema: `proto/src`
 - TypeScript: `proto/gen/ts`
 - Go: `proto/gen/go`
+
+## Contract
+
+- `GetRouterConfiguration`: startup fetch for the router's desired networks, protocol instances, and peers.
+- `WatchRouterConfiguration`: server stream of full configuration snapshots with revision and change hints.
+- `ReportRouterEvents`: client stream used by routers to report WireGuard handshake and connection activity.
 
 ## Commands
 
@@ -32,4 +39,4 @@ require proto v0.0.0
 replace proto => ../proto
 ```
 
-and import generated packages such as `proto/gen/go/helloworld`.
+and import generated packages such as `proto/gen/go/controlplane`.

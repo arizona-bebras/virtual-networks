@@ -1,15 +1,52 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const protoDir = resolve(scriptDir, "..");
+const protoSrcDir = resolve(protoDir, "src");
 const tsOutDir = resolve(protoDir, "gen", "ts");
 const goOutDir = resolve(protoDir, "gen", "go");
+const tsModuleName = "controlplane";
 
 const target = process.argv[2] ?? "all";
+
+const collectProtoFiles = (directory) =>
+  readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = resolve(directory, entry.name);
+
+    if (entry.isDirectory()) {
+      return collectProtoFiles(entryPath);
+    }
+
+    if (entry.isFile() && entry.name.endsWith(".proto")) {
+      return [entryPath];
+    }
+
+    return [];
+  });
+
+const getProtoFiles = () => {
+  const files = collectProtoFiles(protoSrcDir).sort((left, right) =>
+    left.localeCompare(right),
+  );
+
+  if (files.length === 0) {
+    console.error("Error: no .proto files found in src/.");
+    process.exit(1);
+  }
+
+  return files;
+};
+
+const recreateDir = (path) => {
+  if (existsSync(path)) {
+    rmSync(path, { recursive: true, force: true });
+  }
+  mkdirSync(path, { recursive: true });
+};
 
 const run = (command, args, options = {}) => {
   const result = spawnSync(command, args, {
@@ -54,7 +91,9 @@ const ensureGoPlugins = () => {
 };
 
 const generateTs = () => {
-  mkdirSync(tsOutDir, { recursive: true });
+  recreateDir(tsOutDir);
+  const protoFiles = getProtoFiles();
+  const jsOut = resolve(tsOutDir, `${tsModuleName}.js`);
 
   run(
     "pnpm",
@@ -66,8 +105,10 @@ const generateTs = () => {
       "-w",
       "commonjs",
       "-o",
-      resolve(tsOutDir, "helloworld.js"),
-      resolve(protoDir, "helloworld.proto"),
+      jsOut,
+      "-p",
+      protoSrcDir,
+      ...protoFiles,
     ],
     { cwd: protoDir },
   );
@@ -78,8 +119,8 @@ const generateTs = () => {
       "exec",
       "pbts",
       "-o",
-      resolve(tsOutDir, "helloworld.d.ts"),
-      resolve(tsOutDir, "helloworld.js"),
+      resolve(tsOutDir, `${tsModuleName}.d.ts`),
+      jsOut,
     ],
     { cwd: protoDir },
   );
@@ -94,7 +135,8 @@ const generateGo = () => {
   }
 
   ensureGoPlugins();
-  mkdirSync(goOutDir, { recursive: true });
+  recreateDir(goOutDir);
+  const protoFiles = getProtoFiles();
 
   const gopathResult = spawnSync("go", ["env", "GOPATH"], {
     encoding: "utf8",
@@ -116,12 +158,12 @@ const generateGo = () => {
   run(
     "protoc",
     [
-      `--go_out=${goOutDir}`,
-      "--go_opt=paths=source_relative",
-      `--go-grpc_out=${goOutDir}`,
-      "--go-grpc_opt=paths=source_relative",
-      `-I${protoDir}`,
-      resolve(protoDir, "helloworld.proto"),
+      `--go_out=${protoDir}`,
+      "--go_opt=module=proto",
+      `--go-grpc_out=${protoDir}`,
+      "--go-grpc_opt=module=proto",
+      `-I${protoSrcDir}`,
+      ...protoFiles,
     ],
     { cwd: protoDir, env },
   );

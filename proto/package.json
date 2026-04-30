@@ -23,17 +23,17 @@
   "devDependencies": {
     "protobufjs-cli": "^2.0.1"
   },
-  "main": "gen/ts/helloworld.js",
-  "types": "gen/ts/helloworld.d.ts",
+  "main": "gen/ts/controlplane.js",
+  "types": "gen/ts/controlplane.d.ts",
   "files": [
     "gen/ts",
     "gen/go",
-    "helloworld.proto"
+    "src"
   ],
   "exports": {
     ".": {
-      "types": "./gen/ts/helloworld.d.ts",
-      "default": "./gen/ts/helloworld.js"
+      "types": "./gen/ts/controlplane.d.ts",
+      "default": "./gen/ts/controlplane.js"
     }
   }
 }
