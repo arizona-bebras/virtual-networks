@@ -11,7 +11,6 @@ export class RulesService {
   constructor(@Inject(DRIZZLE) private readonly db: Database) {}
 
   async create(rule: CreateRuleDto, networkId: string) {
-    console.log(rule);
     await this.db.insert(schema.rules).values({ ...rule, networkId });
   }
 
