@@ -1,5 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import type { CreateTagDto } from "common/dto/tag/create-tag";
+import { TagDto } from "common/dto/tag/index";
 import type { UpdateTagDto } from "common/dto/tag/update-tag";
 import type { SQL } from "drizzle-orm";
 import { and, eq } from "drizzle-orm";
@@ -29,19 +30,34 @@ export class TagsService {
     await this.db.insert(schema.tags).values({ ...tag, networkId });
   }
 
-  async read(id: string) {
+  async read(id: string): Promise<TagDto | undefined> {
     return this.db.query.tags.findFirst({
       where: {
         id,
       },
+      extras: {
+        devicesCount: sql<number>`SELECT COUNT(1) FROM ${schema.devicesTags} WHERE ${schema.devicesTags.tagId} = ${id}`,
+      },
     });
   }
 
-  async getAllTags(networkId: string, q?: string) {
+  async getAllTags(networkId: string, q?: string): Promise<TagDto[]> {
     return this.db
-      .select()
+      .select({
+        id: schema.tags.id,
+        name: schema.tags.name,
+        color: schema.tags.color,
+        devicesCount: sql<number>`count(${schema.devicesTags.tagId})`.mapWith(
+          Number,
+        ),
+      })
       .from(schema.tags)
+      .leftJoin(
+        schema.devicesTags,
+        eq(schema.devicesTags.tagId, schema.tags.id),
+      )
       .where(and(...this.buildReadFilters(networkId, q)))
+      .groupBy(schema.tags.id)
       .orderBy(q ? sql`length(${schema.tags.name}) ASC` : schema.tags.name);
   }
 
