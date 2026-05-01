@@ -95,6 +95,24 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/networks/{network_id}/devices/{device_id}/add_tag/{tag_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Добавить тег на устройство */
+    post: operations["DevicesController_addTagOnDevice"];
+    /** Добавить тег на устройство */
+    delete: operations["DevicesController_deleteTagFromDevice"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/networks/{network_id}/tags": {
     parameters: {
       query?: never;
@@ -199,6 +217,18 @@ export interface components {
        * @description The IP address range of the network
        */
       cidr: string;
+      /** @description The unique identifier of the network creator */
+      creatorId: string | null;
+      /** @description The data of user who created network */
+      creator: {
+        /** @description The unique identifier of the user */
+        id: string;
+        /** @description The name of the user */
+        name: string;
+        /** @description The email of the user */
+        email: string;
+      } | null;
+      devicesCount: number;
     };
     NetworkEnterCredentialsDto: {
       /** @description The network access key */
@@ -283,6 +313,8 @@ export interface components {
       name: string;
       /** @description The display color of the tag */
       color: ("red" | "blue" | "green" | "yellow" | "purple" | "orange") | null;
+      /** @description The number of devices with this tag */
+      devicesCount: number;
     };
     UpdateTagDto: {
       /** @description The name of the tag */
@@ -293,20 +325,10 @@ export interface components {
         | null;
     };
     CreateRuleDto: {
-      /**
-       * Format: uuid
-       * @description The source tag identifier
-       */
-      source?: string;
-      /**
-       * Format: uuid
-       * @description The destination tag identifier
-       */
-      dest?: string;
-      /** @description The network protocol */
-      protocol?: string;
-      /** @description The destination port */
-      port?: number;
+      sourceId: string | null;
+      destId: string | null;
+      protocol: string | null;
+      port: number | null;
     };
     RuleDto: {
       /**
@@ -314,36 +336,48 @@ export interface components {
        * @description The unique identifier of the rule
        */
       id: string;
-      /**
-       * Format: uuid
-       * @description The source tag identifier
-       */
-      source?: string;
-      /**
-       * Format: uuid
-       * @description The destination tag identifier
-       */
-      dest?: string;
-      /** @description The network protocol */
-      protocol?: string;
-      /** @description The destination port */
-      port?: number;
+      sourceId: string | null;
+      destId: string | null;
+      protocol: string | null;
+      port: number | null;
+      /** @description The source tag */
+      source: {
+        /**
+         * Format: uuid
+         * @description The unique identifier of the tag
+         */
+        id: string;
+        /** @description The name of the tag */
+        name: string;
+        /** @description The display color of the tag */
+        color:
+          | ("red" | "blue" | "green" | "yellow" | "purple" | "orange")
+          | null;
+        /** @description The number of devices with this tag */
+        devicesCount: number;
+      } | null;
+      /** @description The destination tag */
+      dest: {
+        /**
+         * Format: uuid
+         * @description The unique identifier of the tag
+         */
+        id: string;
+        /** @description The name of the tag */
+        name: string;
+        /** @description The display color of the tag */
+        color:
+          | ("red" | "blue" | "green" | "yellow" | "purple" | "orange")
+          | null;
+        /** @description The number of devices with this tag */
+        devicesCount: number;
+      } | null;
     };
     UpdateRuleDto: {
-      /**
-       * Format: uuid
-       * @description The source tag identifier
-       */
-      source?: string;
-      /**
-       * Format: uuid
-       * @description The destination tag identifier
-       */
-      dest?: string;
-      /** @description The network protocol */
-      protocol?: string;
-      /** @description The destination port */
-      port?: number;
+      sourceId?: string | null;
+      destId?: string | null;
+      protocol?: string | null;
+      port?: number | null;
     };
   };
   responses: never;
@@ -543,7 +577,7 @@ export interface operations {
         /** @description Пойсковой запрос по названию */
         q?: string;
         /** @description Названия тэгов, повешенных на устройство */
-        tags?: string;
+        tags?: string[];
         /** @description UUID владельца устройства */
         owner_id?: string;
       };
@@ -633,6 +667,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
+        network_id: string;
         /** @description UUID устройства */
         device_id: string;
       };
@@ -674,6 +709,70 @@ export interface operations {
     responses: {
       /** @description Устройство успешно удалено */
       200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Устройство не найдено */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  DevicesController_addTagOnDevice: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        device_id: string;
+        tag_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DeviceRelationsDto"];
+      };
+    };
+    responses: {
+      /** @description Тег успешно добавлен к устройству */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Устройство не найдено */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  DevicesController_deleteTagFromDevice: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        device_id: string;
+        tag_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DeviceRelationsDto"];
+      };
+    };
+    responses: {
+      /** @description Тег успешно добавлен к устройству */
+      201: {
         headers: {
           [name: string]: unknown;
         };

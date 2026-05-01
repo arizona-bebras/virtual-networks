@@ -103,6 +103,9 @@ export const networks = pgTable("networks", {
   name: varchar({ length: 255 }).notNull(),
   description: varchar({ length: 255 }).notNull(),
   cidr: cidr().default("192.168.123.0/24").notNull(),
+  creatorId: text(`creator_id`).references(() => user.id, {
+    onDelete: "no action",
+  }),
 });
 
 export const devices = pgTable("devices", {
@@ -219,6 +222,10 @@ export const relations = defineRelations(
       devices: r.many.devices(),
       tags: r.many.tags(),
       rules: r.many.rules(),
+      creator: r.one.user({
+        from: r.networks.creatorId,
+        to: r.user.id,
+      }),
     },
 
     devices: {

@@ -43,7 +43,7 @@ export class NetworksController {
   async create(
     @Body() network: CreateNetworkDto,
     @Session() session: UserSession,
-  ) {
+  ): Promise<NetworkDto | undefined> {
     return await this.networksService.create(network, session.user.id);
   }
 
@@ -69,7 +69,7 @@ export class NetworksController {
   })
   @ApiResponse({ status: 200, description: "Сеть найдена", type: NetworkDto })
   @ApiResponse({ status: 404, description: "Сеть не найдена" })
-  async get(@Param("network_id") id: string) {
+  async get(@Param("network_id") id: string): Promise<NetworkDto | undefined> {
     const network = await this.networksService.read(id);
     if (!network) {
       throw new NotFoundException(`Network with ID ${id} not found`);
