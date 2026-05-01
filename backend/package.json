@@ -74,15 +74,32 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
+    "rootDir": "..",
+    "testRegex": "backend/src/.*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)s$": [
+        "ts-jest",
+        {
+          "tsconfig": "<rootDir>/backend/tsconfig.spec.json"
+        }
+      ]
+    },
+    "moduleNameMapper": {
+      "^@thallesp/nestjs-better-auth$": "<rootDir>/backend/src/test-utils/nestjs-better-auth.mock.ts",
+      "^common/dto/(.*)$": "<rootDir>/common/src/dto/$1",
+      "^common/schemas/(.*)$": "<rootDir>/common/src/schemas/$1",
+      "^(\\.{1,2}/.*)\\.js$": "$1"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "backend/src/**/*.(t|j)s",
+      "!backend/src/**/*.spec.ts",
+      "!backend/src/**/*.module.ts",
+      "!backend/src/main.ts",
+      "!backend/src/auth.ts",
+      "!backend/src/db/schema.ts",
+      "!backend/src/test-utils/**"
     ],
-    "coverageDirectory": "../coverage",
+    "coverageDirectory": "backend/coverage",
     "testEnvironment": "node"
   }
 }
