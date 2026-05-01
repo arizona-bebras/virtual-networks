@@ -6,13 +6,15 @@ export const NetworkSchema = z.object({
   name: z.string().min(1).max(255).describe("The name of the network"),
   description: z.string().max(255).describe("A description of the network"),
   cidr: z.cidrv4().describe("The IP address range of the network"),
-  creatorId: z.uuid().describe("The unique identifier of the network creator")
+  creatorId: z.uuid().describe("The unique identifier of the network creator"),
 });
 
 export const NetworkRelationsSchema = NetworkSchema.omit({
-  creatorId: true
+  creatorId: true,
 }).extend({
-  creator: UserSchema.nullable().describe("The data of user who created network")
-})
+  creator: UserSchema.nullable().describe(
+    "The data of user who created network",
+  ),
+});
 
 export type Network = z.infer<typeof NetworkSchema>;
