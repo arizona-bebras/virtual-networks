@@ -25,6 +25,7 @@ export class NetworksService {
           name: schema.networks.name,
           description: schema.networks.description,
           cidr: schema.networks.cidr,
+          creatorId: schema.networks.creatorId,
           devicesCount: sql<number>`0`.as("devices_count"),
         });
 
@@ -49,7 +50,7 @@ export class NetworksService {
         throw new BadRequestException("bad creator id: user doesn't exists");
       }
 
-      return { ...network, creator: creator };
+      return { ...network, creator };
     });
   }
 
@@ -72,6 +73,7 @@ export class NetworksService {
         name: true,
         description: true,
         cidr: true,
+        creatorId: true,
       },
       where: {
         id,
@@ -117,6 +119,7 @@ export class NetworksService {
             name: true,
             description: true,
             cidr: true,
+            creatorId: true,
           },
           with: {
             creator: {

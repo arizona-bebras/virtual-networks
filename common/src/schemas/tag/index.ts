@@ -15,5 +15,9 @@ export const TagSchema = z.object({
   color: TagColorSchema.nullable().describe("The display color of the tag"),
 });
 
+export const TagRelationsSchema = TagSchema.extend({
+  devicesCount: z.number().describe("The number of devices with this tag"),
+});
+
 export type TagColor = z.infer<typeof TagColorSchema>;
-export type Tag = z.infer<typeof TagSchema>;
+export type Tag = z.infer<typeof TagRelationsSchema>;
