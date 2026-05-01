@@ -166,8 +166,8 @@ export const networkUsers = pgTable(
 
 export const rules = pgTable("rules", {
   id: uuid(`id`).primaryKey().defaultRandom(),
-  source: uuid().references(() => tags.id),
-  dest: uuid().references(() => tags.id),
+  sourceId: uuid("source_id").references(() => tags.id),
+  destId: uuid("dest_id").references(() => tags.id),
   protocol: varchar({ length: 32 }),
   port: integer(),
   networkId: uuid("network_id")
@@ -244,11 +244,11 @@ export const relations = defineRelations(
       devices: r.many.devices(),
       sourceRules: r.many.rules({
         from: r.tags.id,
-        to: r.rules.source,
+        to: r.rules.sourceId,
       }),
       destRules: r.many.rules({
         from: r.tags.id,
-        to: r.rules.dest,
+        to: r.rules.destId,
       }),
     },
 
@@ -257,12 +257,12 @@ export const relations = defineRelations(
         from: r.rules.networkId,
         to: r.networks.id,
       }),
-      sourceTag: r.one.tags({
-        from: r.rules.source,
+      source: r.one.tags({
+        from: r.rules.sourceId,
         to: r.tags.id,
       }),
-      destTag: r.one.tags({
-        from: r.rules.dest,
+      dest: r.one.tags({
+        from: r.rules.destId,
         to: r.tags.id,
       }),
     },

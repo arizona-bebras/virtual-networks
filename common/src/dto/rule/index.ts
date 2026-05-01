@@ -1,4 +1,4 @@
 import { createZodDto } from "nestjs-zod";
-import { RuleSchema } from "../../schemas/rule/index.js";
+import { RuleRelationsSchema } from "../../schemas/rule/index.js";
 
-export class RuleDto extends createZodDto(RuleSchema) {}
+export class RuleDto extends createZodDto(RuleRelationsSchema) {}

@@ -51,7 +51,9 @@ export class RulesController {
     type: RuleDto,
     isArray: true,
   })
-  async getAllRules(@Param("network_id") networkId: string) {
+  async getAllRules(
+    @Param("network_id") networkId: string,
+  ): Promise<RuleDto[]> {
     return await this.rulesService.getAllRules(networkId);
   }
 
@@ -64,7 +66,7 @@ export class RulesController {
   })
   @ApiResponse({ status: 200, description: "Правило найдено", type: RuleDto })
   @ApiResponse({ status: 404, description: "Правило не найдено" })
-  async get(@Param("rule_id") rule_id: string) {
+  async get(@Param("rule_id") rule_id: string): Promise<RuleDto | undefined> {
     return await this.rulesService.get(rule_id);
   }
 
