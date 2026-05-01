@@ -111,19 +111,19 @@ export class NetworksService {
             )`
                 .mapWith(Number)
                 .as("devices_count"),
-            columns: {
-              id: true,
-              name: true,
-              description: true,
-              cidr: true,
-            },
-            with: {
-              creator: {
-                columns: {
-                  id: true,
-                  name: true,
-                  email: true,
-                },
+          },
+          columns: {
+            id: true,
+            name: true,
+            description: true,
+            cidr: true,
+          },
+          with: {
+            creator: {
+              columns: {
+                id: true,
+                name: true,
+                email: true,
               },
             },
           },
