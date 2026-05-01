@@ -67,7 +67,7 @@ export class TagsController {
   async getAllTags(
     @Param("network_id") network_id: string,
     @Query("q") q: string,
-  ) {
+  ): Promise<TagDto[]> {
     return await this.tagsService.getAllTags(network_id, q);
   }
 
@@ -80,7 +80,7 @@ export class TagsController {
   })
   @ApiResponse({ status: 200, description: "Тег найден", type: TagDto })
   @ApiResponse({ status: 404, description: "Тег не найден" })
-  async getTag(@Param("tag_id") id: string) {
+  async getTag(@Param("tag_id") id: string): Promise<TagDto | undefined> {
     return await this.tagsService.read(id);
   }
 
