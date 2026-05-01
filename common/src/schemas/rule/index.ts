@@ -5,11 +5,6 @@ export const ProtocolSchema = z.enum([
   "TCP",
   "UDP",
   "ICMP",
-  "SCTP",
-  "DCCP",
-  "UDP-Lite",
-  "AH",
-  "ESP",
 ]);
 
 export const RuleSchema = z.object({

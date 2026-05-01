@@ -171,11 +171,6 @@ export const protocolEnum = pgEnum("protocol", [
   "TCP",
   "UDP",
   "ICMP",
-  "SCTP",
-  "DCCP",
-  "UDP-Lite",
-  "AH",
-  "ESP",
 ]);
 
 export const rules = pgTable("rules", {
