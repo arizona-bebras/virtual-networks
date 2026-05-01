@@ -167,11 +167,7 @@ export const networkUsers = pgTable(
   (t) => [primaryKey({ columns: [t.networkId, t.userId] })],
 );
 
-export const protocolEnum = pgEnum("protocol", [
-  "TCP",
-  "UDP",
-  "ICMP",
-]);
+export const protocolEnum = pgEnum("protocol", ["TCP", "UDP", "ICMP"]);
 
 export const rules = pgTable("rules", {
   id: uuid(`id`).primaryKey().defaultRandom(),
