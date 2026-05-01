@@ -11,8 +11,8 @@ export const RuleSchema = z.object({
     .string()
     .max(255)
     .describe("A description of the rule")
-    .optional(),
-  protocol: ProtocolSchema.describe("The network protocol").optional(),
+    .nullable(),
+  protocol: ProtocolSchema.describe("The network protocol").nullable(),
   port: z
     .number()
     .int()
