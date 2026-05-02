@@ -8,8 +8,11 @@ import {
 } from "@xyflow/svelte";
 import "@xyflow/svelte/dist/style.css";
 import { Activity, ArrowRight, ShieldCheck, Zap } from "@lucide/svelte";
-import { useQueryClient } from "@tanstack/svelte-query";
+import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import type { Tag } from "common/schemas/tag/index";
+import { untrack } from "svelte";
+import { userRules } from "$pages/app/network/[slug]/rules/api/query";
+import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { Badge } from "$shared/ui/badge/index.js";
 import * as Dialog from "$shared/ui/dialog/index.js";
@@ -18,29 +21,46 @@ import {
   initialNodes,
 } from "$widgets/dashboard-network/model/mock";
 import { resolveCollisions } from "$widgets/dashboard-network/model/resolve-collisions";
-import { tagDataToNode } from "../model/mapper";
+import { generateEdges } from "../model/edges-generation";
+import { ruleDataToNode, tagDataToNode } from "../model/mapper";
 import DeviceNode from "./device-node.svelte";
+import FolderNode from "./folder-node.svelte";
 import RuleNode from "./rule-node.svelte";
+import TagNode from "./tag-node.svelte";
 
 const queryClient = useQueryClient();
 let currentNetworkId = $derived(getNetworkId().id);
-let networkTagsQuery: Tag[] = $derived(
-  queryClient.getQueryData(["userTags", currentNetworkId])!,
-);
+let networkTagsQuery = createQuery(() => deviceTags.userTags(currentNetworkId));
+let networkRulesQuery = createQuery(() => userRules(currentNetworkId));
 
 const nodeTypes = {
   device: DeviceNode,
   rule: RuleNode,
+  tag: TagNode,
+  folder: FolderNode,
 };
 
 let nodes = $state.raw<Node[]>([]);
-let edges = $state.raw<Edge[]>(initialEdges);
+let edges = $state.raw<Edge[]>([
+  {
+    id: "test",
+    source: "5b5778bc-edd3-4524-bfb0-72167264e54b",
+    target: "95d505d3-459b-4251-8bf4-8f557fea3dee",
+  },
+]);
 let selectedEdge = $state<Edge | null>(null);
 let isDialogOpen = $state(false);
 
 $effect(() => {
-  if (networkTagsQuery) {
-    nodes = tagDataToNode(networkTagsQuery);
+  if (networkTagsQuery.isSuccess && networkRulesQuery.isSuccess) {
+    untrack(() => {
+      const sourceTagNodes = tagDataToNode(networkTagsQuery.data);
+      const ruleNodes = ruleDataToNode(networkRulesQuery.data);
+      const destTagNodes = tagDataToNode(networkTagsQuery.data, 650, true);
+      nodes = [...sourceTagNodes, ...ruleNodes, ...destTagNodes];
+      edges = generateEdges(networkRulesQuery.data);
+      console.log(nodes);
+    });
   }
 });
 

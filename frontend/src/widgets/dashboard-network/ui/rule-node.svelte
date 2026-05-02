@@ -1,28 +1,33 @@
 <script lang="ts">
-import { ShieldAlert, ShieldCheck } from "@lucide/svelte";
+import { ShieldAlert, ShieldCheck, Lock } from "@lucide/svelte";
 import { Handle, Position } from "@xyflow/svelte";
 import * as Card from "$shared/ui/card/index.js";
 
 let { data } = $props();
 </script>
 
-<Card.Root class="w-28 bg-muted/30 border-dashed border-border shadow-none">
-  <div class="px-1 py-0.5 flex items-center gap-1 h-6">
-    {#if data.action === 'allow'}
-      <ShieldCheck class="size-3 text-green-500 flex-shrink-0" />
-    {:else}
-      <ShieldAlert class="size-3 text-red-500 flex-shrink-0" />
-    {/if}
+<Card.Root class="w-36 bg-background border-border border-2 shadow-sm">
+  <div class="p-2 flex items-center gap-2">
+    <div class="p-1.5 rounded-md bg-secondary flex-shrink-0">
+      {#if data.action === 'allow'}
+        <ShieldCheck size={16} class="text-green-500" />
+      {:else if data.action === 'deny'}
+        <ShieldAlert size={16} class="text-red-500" />
+      {:else}
+        <Lock size={16} class="text-primary" />
+      {/if}
+    </div>
     <div class="flex flex-col min-w-0">
-      <span
-        class="text-[7px] font-bold text-muted-foreground uppercase leading-none"
-      >
-        RULE
-      </span>
-      <span
-        class="text-[9px] font-mono font-bold truncate tracking-tight leading-none"
-      >
-        {data.rule}
+      <div class="flex items-center gap-1.5">
+        <span class="text-[9px] font-black uppercase text-muted-foreground leading-none">
+          {data.protocol || 'TCP'}
+        </span>
+        <span class="text-[9px] font-mono font-bold leading-none bg-muted px-1 rounded">
+          {data.port || '*'}
+        </span>
+      </div>
+      <span class="text-[10px] truncate font-semibold mt-0.5">
+        {data.name || data.rule || 'Default Rule'}
       </span>
     </div>
   </div>
