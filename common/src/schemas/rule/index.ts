@@ -28,3 +28,4 @@ export const RuleRelationsSchema = RuleSchema.extend({
 });
 
 export type Rule = z.infer<typeof RuleSchema>;
+export type RuleRelation = z.infer<typeof RuleRelationsSchema>;
