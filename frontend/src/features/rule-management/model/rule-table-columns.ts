@@ -1,30 +1,12 @@
 import type { ColumnDef } from "@tanstack/table-core";
+import type { RuleRelation } from "common/schemas/rule/index";
+import TagBadge from "$entities/tag/ui/tag-badge.svelte";
 import DataTableCheckbox from "$shared/ui/data-table/data-table-checkbox.svelte";
 import DataTableSortButton from "$shared/ui/data-table/data-table-sort-button.svelte";
 import { renderComponent } from "$shared/ui/data-table/index.js";
 import RuleActionsCell from "../ui/rule-actions-cell.svelte";
 
-// TODO: удалить после переделки endpoint, схему брать из папки common
-export interface RuleMock {
-  id: string;
-  description: string;
-  source: {
-    id: string;
-    name: string;
-    color: string;
-    devices_count: number;
-  };
-  dest: {
-    id: string;
-    name: string;
-    color: string;
-    devices_count: number;
-  };
-  protocol: string;
-  port: number | string;
-}
-
-export const columns: ColumnDef<RuleMock>[] = [
+export const columns: ColumnDef<RuleRelation>[] = [
   {
     id: "select",
     header: ({ table }) => {
@@ -55,7 +37,7 @@ export const columns: ColumnDef<RuleMock>[] = [
       });
     },
     cell: ({ row }) => {
-      return row.getValue("description");
+      return row.original.description || "";
     },
   },
   {
@@ -67,7 +49,9 @@ export const columns: ColumnDef<RuleMock>[] = [
       });
     },
     cell: ({ row }) => {
-      return row.original.source.name;
+      const tag = row.original.source;
+      if (!tag) return "Any";
+      return renderComponent(TagBadge, { name: tag.name, color: tag.color });
     },
   },
   {
@@ -79,7 +63,9 @@ export const columns: ColumnDef<RuleMock>[] = [
       });
     },
     cell: ({ row }) => {
-      return row.original.dest.name;
+      const tag = row.original.dest;
+      if (!tag) return "Any";
+      return renderComponent(TagBadge, { name: tag.name, color: tag.color });
     },
   },
   {
@@ -91,7 +77,7 @@ export const columns: ColumnDef<RuleMock>[] = [
       });
     },
     cell: ({ row }) => {
-      return (row.getValue("protocol") as string).toUpperCase();
+      return row.original?.protocol || "Any";
     },
   },
   {
@@ -103,7 +89,7 @@ export const columns: ColumnDef<RuleMock>[] = [
       });
     },
     cell: ({ row }) => {
-      return row.getValue("port") || "Any";
+      return row.original?.port || "Any";
     },
   },
   {

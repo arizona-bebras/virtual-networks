@@ -327,7 +327,8 @@ export interface components {
     CreateRuleDto: {
       sourceId: string | null;
       destId: string | null;
-      protocol: string | null;
+      description: string | null;
+      protocol: ("TCP" | "UDP" | "ICMP") | null;
       port: number | null;
     };
     RuleDto: {
@@ -338,7 +339,8 @@ export interface components {
       id: string;
       sourceId: string | null;
       destId: string | null;
-      protocol: string | null;
+      description: string | null;
+      protocol: ("TCP" | "UDP" | "ICMP") | null;
       port: number | null;
       /** @description The source tag */
       source: {
@@ -376,7 +378,8 @@ export interface components {
     UpdateRuleDto: {
       sourceId?: string | null;
       destId?: string | null;
-      protocol?: string | null;
+      description?: string | null;
+      protocol?: ("TCP" | "UDP" | "ICMP") | null;
       port?: number | null;
     };
   };
@@ -576,7 +579,7 @@ export interface operations {
       query?: {
         /** @description Пойсковой запрос по названию */
         q?: string;
-        /** @description Названия тэгов, повешенных на устройство */
+        /** @description ID тэгов, по которым происходит фильтрация */
         tags?: string[];
         /** @description UUID владельца устройства */
         owner_id?: string;

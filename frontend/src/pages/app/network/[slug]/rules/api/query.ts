@@ -41,21 +41,6 @@ export const userRules = (networkId: string) =>
         },
       });
       if (error) throw error;
-      return data.map((rule) => ({
-        ...rule,
-        description: "some description",
-        source: {
-          id: rule.source,
-          name: "Mock-Web",
-          color: "red",
-          devices_count: 5,
-        },
-        dest: {
-          id: rule.dest,
-          name: "Mock-Admin",
-          color: "red",
-          devices_count: 10,
-        },
-      }));
+      return data;
     },
   });

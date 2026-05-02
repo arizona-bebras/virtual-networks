@@ -1,26 +1,26 @@
 import { mutationOptions } from "@tanstack/svelte-query";
-import type { CreateDevice } from "common/schemas/device/create-device";
-import type { UpdateDevice } from "common/schemas/device/update-device";
+import type { CreateRule } from "common/schemas/rule/create-rule";
+import type { UpdateRule } from "common/schemas/rule/update-rule";
 import { client } from "$shared/api/openapi-client";
 
-export const deviceСreationQuery = (onSuccess: () => void) =>
+export const ruleCreationMutation = (onSuccess: () => void) =>
   mutationOptions({
     mutationFn: async ({
       networkId,
-      deviceInfo,
+      ruleInfo,
     }: {
       networkId: string;
-      deviceInfo: CreateDevice;
+      ruleInfo: CreateRule;
     }) => {
       const { data, error } = await client.POST(
-        "/networks/{network_id}/devices",
+        "/networks/{network_id}/rules",
         {
           params: {
             path: {
               network_id: networkId,
             },
           },
-          body: deviceInfo,
+          body: ruleInfo,
         },
       );
       if (error) throw error;
@@ -29,22 +29,22 @@ export const deviceСreationQuery = (onSuccess: () => void) =>
     onSuccess,
   });
 
-export const deviceDeletionMutation = (onSuccess: () => void) =>
+export const ruleDeletionMutation = (onSuccess: () => void) =>
   mutationOptions({
     mutationFn: async ({
       networkId,
-      deviceId,
+      ruleId,
     }: {
       networkId: string;
-      deviceId: string;
+      ruleId: string;
     }) => {
       const { error } = await client.DELETE(
-        "/networks/{network_id}/devices/{device_id}",
+        "/networks/{network_id}/rules/{rule_id}",
         {
           params: {
             path: {
               network_id: networkId,
-              device_id: deviceId,
+              rule_id: ruleId,
             },
           },
         },
@@ -54,27 +54,27 @@ export const deviceDeletionMutation = (onSuccess: () => void) =>
     onSuccess,
   });
 
-export const deviceUpdateMutation = (onSuccess: () => void) =>
+export const ruleUpdateMutation = (onSuccess: () => void) =>
   mutationOptions({
     mutationFn: async ({
       networkId,
-      deviceId,
-      deviceInfo,
+      ruleId,
+      ruleInfo,
     }: {
       networkId: string;
-      deviceId: string;
-      deviceInfo: UpdateDevice;
+      ruleId: string;
+      ruleInfo: UpdateRule;
     }) => {
       const { error } = await client.PUT(
-        "/networks/{network_id}/devices/{device_id}",
+        "/networks/{network_id}/rules/{rule_id}",
         {
           params: {
             path: {
               network_id: networkId,
-              device_id: deviceId,
+              rule_id: ruleId,
             },
           },
-          body: deviceInfo,
+          body: ruleInfo,
         },
       );
       if (error) throw error;

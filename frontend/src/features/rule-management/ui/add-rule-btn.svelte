@@ -21,6 +21,6 @@ let { open = $bindable() }: { open: boolean } = $props();
         Create a new network access control rule.
       </Dialog.Description>
     </Dialog.Header>
-    <RuleForm />
+    <RuleForm bind:dialogState={open} />
   </Dialog.Content>
 </Dialog.Root>

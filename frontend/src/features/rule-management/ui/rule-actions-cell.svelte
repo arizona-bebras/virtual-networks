@@ -1,19 +1,28 @@
 <script lang="ts">
 import { Edit, MoreHorizontal, Trash } from "@lucide/svelte";
+import { createMutation, useQueryClient } from "@tanstack/svelte-query";
+import type { RuleRelation } from "common/schemas/rule/index";
+import { getNetworkId } from "$shared/lib/network-id-context";
 import { Button } from "$shared/ui/button/index.js";
 import * as Dialog from "$shared/ui/dialog/index.js";
 import * as DropdownMenu from "$shared/ui/dropdown-menu/index.js";
-import type { RuleMock } from "../model/rule-table-columns";
+import { ruleDeletionMutation } from "../api/query";
 import RuleForm from "./rule-form.svelte";
 
+let { rule }: { rule: RuleRelation } = $props();
 
-let { rule }: { rule: RuleMock } = $props();
+const networkId = $derived(getNetworkId().id);
+const queryClient = useQueryClient();
+const deleteMutation = createMutation(() =>
+  ruleDeletionMutation(() => {
+    queryClient.invalidateQueries({ queryKey: ["userRules"] });
+  }),
+);
 
 let isEditDialogOpen = $state(false);
 
-
 function handleDelete() {
-  console.log("Delete rule:", rule.id);
+  deleteMutation.mutate({ networkId, ruleId: rule.id });
 }
 </script>
 
@@ -45,6 +54,6 @@ function handleDelete() {
         Update the details for this network rule.
       </Dialog.Description>
     </Dialog.Header>
-    <RuleForm pageData={{...rule}} />
+    <RuleForm pageData={{...rule}} bind:dialogState={isEditDialogOpen} />
   </Dialog.Content>
 </Dialog.Root>
