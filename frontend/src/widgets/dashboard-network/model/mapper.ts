@@ -73,7 +73,8 @@ export function deviceDataToNode(
   const nodes: Node<FolderNodeData>[] = [];
 
   for (const device of devices) {
-    const deviceTagId = device.tags[0]?.id;
+    for (const tag of device.tags) {
+      const deviceTagId = tag.id;
     const nodeId = isDestFolders
       ? `dest-folder-${deviceTagId}`
       : `source-folder-${deviceTagId}`;
@@ -81,8 +82,8 @@ export function deviceDataToNode(
     const deviceData = {
       name: device.name,
       ip: device.ip,
-      tag: device.tags[0]?.name,
-      tagId: device.tags[0]?.id,
+        tag: tag.name,
+        tagId: tag.id,
     };
     if (existingNode) {
       existingNode.data?.devices?.push(deviceData);
@@ -96,7 +97,7 @@ export function deviceDataToNode(
         id: nodeId,
         type: "folder",
         data: {
-          label: device.tags[0]?.name || "Unknown",
+            label: tag.name || "Unknown",
           devices: [deviceData],
           connectingTagId: deviceTagId,
           folderType: isDestFolders ? "dest" : "source",
@@ -106,7 +107,7 @@ export function deviceDataToNode(
       });
     }
   }
-  console.log("Итоговые папки:", nodes);
+  }
   return nodes;
 }
 
