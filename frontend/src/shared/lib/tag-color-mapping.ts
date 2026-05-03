@@ -1,7 +1,7 @@
 import type { TagColor } from "common/schemas/tag/index";
 
 export const colorVariants: Record<
-  TagColor,
+  NonNullable<TagColor>,
   { backgroundColor: string; borderColor: string }
 > = {
   red: {

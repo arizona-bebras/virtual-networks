@@ -5,12 +5,10 @@ import {
   type Edge,
   type Node,
   SvelteFlow,
-  useSvelteFlow,
 } from "@xyflow/svelte";
 import "@xyflow/svelte/dist/style.css";
 import { Activity, ArrowRight, ShieldCheck, Zap } from "@lucide/svelte";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-import type { Tag } from "common/schemas/tag/index";
 import { untrack } from "svelte";
 import {
   deviceQuery,
@@ -20,15 +18,8 @@ import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { Badge } from "$shared/ui/badge/index.js";
 import * as Dialog from "$shared/ui/dialog/index.js";
-import {
-  initialEdges,
-  initialNodes,
-} from "$widgets/dashboard-network/model/mock";
 import { resolveCollisions } from "$widgets/dashboard-network/model/resolve-collisions";
-import {
-  deviceFolderToTagEdges,
-  generateEdges,
-} from "../model/edges-generation";
+import { deviceFolderToTagEdges, ruleEdges } from "../model/edges-generation";
 import {
   deviceDataToNode,
   ruleDataToNode,
@@ -39,7 +30,6 @@ import FolderNode from "./folder-node.svelte";
 import RuleNode from "./rule-node.svelte";
 import TagNode from "./tag-node.svelte";
 
-const queryClient = useQueryClient();
 let currentNetworkId = $derived(getNetworkId().id);
 let networkTagsQuery = createQuery(() => deviceTags.userTags(currentNetworkId));
 let networkRulesQuery = createQuery(() => userRules(currentNetworkId));
@@ -55,13 +45,7 @@ const nodeTypes = {
 };
 
 let nodes = $state.raw<Node[]>([]);
-let edges = $state.raw<Edge[]>([
-  {
-    id: "test",
-    source: "5b5778bc-edd3-4524-bfb0-72167264e54b",
-    target: "95d505d3-459b-4251-8bf4-8f557fea3dee",
-  },
-]);
+let edges = $state.raw<Edge[]>([]);
 let selectedEdge = $state<Edge | null>(null);
 let isDialogOpen = $state(false);
 
@@ -72,7 +56,6 @@ $effect(() => {
     networkDeviceQuery.isSuccess
   ) {
     untrack(() => {
-      console.log(networkDeviceQuery.data);
       const sourceTagNodes = tagDataToNode(networkTagsQuery.data);
       const destTagNodes = tagDataToNode(networkTagsQuery.data, 650, true);
       const ruleNodes = ruleDataToNode(networkRulesQuery.data);
@@ -93,21 +76,11 @@ $effect(() => {
         ...sourceDeviceNodes,
         ...destDeviceNodes,
         ...destTagNodes,
-        // {
-        //   id: "123",
-        //   type: "folder",
-        //   data: {
-        //     label: "Устройства",
-        //     count: 5,
-        //   },
-        //   position: { x: 25, y: 100 * 1 },
-        // },
       ];
       edges = [
-        ...generateEdges(networkRulesQuery.data),
+        ...ruleEdges(networkRulesQuery.data),
         ...deviceFolderToTagEdges(sourceDeviceNodes.concat(destDeviceNodes)),
       ];
-      console.log(edges);
     });
   }
 });

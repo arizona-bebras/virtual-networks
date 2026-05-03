@@ -1,9 +1,16 @@
 <script lang="ts">
 import { Lock, ShieldAlert, ShieldCheck } from "@lucide/svelte";
-import { Handle, type NodeProps, NodeToolbar, Position } from "@xyflow/svelte";
+import {
+  Handle,
+  type Node,
+  type NodeProps,
+  NodeToolbar,
+  Position,
+} from "@xyflow/svelte";
+import type { RuleNodeData } from "$entities/node/model/types";
 import * as Card from "$shared/ui/card/index.js";
 
-let { id, data }: NodeProps = $props();
+let { id, data }: NodeProps<Node<RuleNodeData>> = $props();
 </script>
 
 <Card.Root class="w-36 bg-background border-border border-2 shadow-sm">
@@ -31,7 +38,7 @@ let { id, data }: NodeProps = $props();
         </span>
       </div>
       <span class="text-[10px] truncate font-semibold mt-0.5">
-        {data.name || data.rule || 'Default Rule'}
+        {data.name || 'Default Rule'}
       </span>
     </div>
   </div>

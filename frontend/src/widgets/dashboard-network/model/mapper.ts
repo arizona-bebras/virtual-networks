@@ -2,13 +2,17 @@ import type { Node } from "@xyflow/svelte";
 import type { DeviceRelations } from "common/schemas/device/index";
 import type { RuleRelation } from "common/schemas/rule/index";
 import type { Tag } from "common/schemas/tag/index";
-import type { FolderNodeData } from "$entities/node/model/types";
+import type {
+  FolderNodeData,
+  RuleNodeData,
+  TagNodeData,
+} from "$entities/node/model/types";
 
 export function tagDataToNode(
   userTags: Tag[],
   positionX: number = 100,
   isDestNodes: boolean = false,
-): Node[] {
+): Node<TagNodeData>[] {
   return userTags.map((tag, index) => ({
     id: isDestNodes ? `dest-${tag.id}` : `source-${tag.id}`,
     type: "tag",
@@ -22,6 +26,8 @@ export function tagDataToNode(
     position: { x: positionX, y: 100 * index },
   }));
 }
+
+// Прекрасная функция
 
 // export function deviceDataToNode(
 //   devices: DeviceRelations[],
@@ -75,43 +81,43 @@ export function deviceDataToNode(
   for (const device of devices) {
     for (const tag of device.tags) {
       const deviceTagId = tag.id;
-    const nodeId = isDestFolders
-      ? `dest-folder-${deviceTagId}`
-      : `source-folder-${deviceTagId}`;
-    const existingNode = nodes.find((node) => node.id === nodeId);
-    const deviceData = {
-      name: device.name,
-      ip: device.ip,
+      const nodeId = isDestFolders
+        ? `dest-folder-${deviceTagId}`
+        : `source-folder-${deviceTagId}`;
+      const existingNode = nodes.find((node) => node.id === nodeId);
+      const deviceData = {
+        name: device.name,
+        ip: device.ip,
         tag: tag.name,
         tagId: tag.id,
-    };
-    if (existingNode) {
-      existingNode.data?.devices?.push(deviceData);
-      existingNode.data.count += 1;
-    } else {
-      const tagNode = tagNodes.find((n) => n.data.id === deviceTagId);
-      const positionY = tagNode ? tagNode.position.y : 100;
-      const positionX = isDestFolders ? -150 : 850;
+      };
+      if (existingNode) {
+        existingNode.data?.devices?.push(deviceData);
+        existingNode.data.count += 1;
+      } else {
+        const tagNode = tagNodes.find((n) => n.data.id === deviceTagId);
+        const positionY = tagNode ? tagNode.position.y : 100;
+        const positionX = isDestFolders ? -150 : 850;
 
-      nodes.push({
-        id: nodeId,
-        type: "folder",
-        data: {
+        nodes.push({
+          id: nodeId,
+          type: "folder",
+          data: {
             label: tag.name || "Unknown",
-          devices: [deviceData],
-          connectingTagId: deviceTagId,
-          folderType: isDestFolders ? "dest" : "source",
-          count: 1,
-        },
-        position: { x: positionX, y: positionY },
-      });
+            devices: [deviceData],
+            connectingTagId: deviceTagId,
+            folderType: isDestFolders ? "dest" : "source",
+            count: 1,
+          },
+          position: { x: positionX, y: positionY },
+        });
+      }
     }
-  }
   }
   return nodes;
 }
 
-export function ruleDataToNode(rules: RuleRelation[]): Node[] {
+export function ruleDataToNode(rules: RuleRelation[]): Node<RuleNodeData>[] {
   return rules.map((rule, index) => ({
     id: rule.id,
     type: "rule",

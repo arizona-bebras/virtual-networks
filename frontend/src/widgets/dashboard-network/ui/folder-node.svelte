@@ -3,7 +3,7 @@ import {
   ChevronRight,
   Folder,
   LayoutGrid,
-  List as ListIcon,
+  List,
   Monitor,
   Search,
   Ungroup,
@@ -36,19 +36,9 @@ let filteredDevices = $derived(
     : data.devices,
 );
 
-function handleClick(e: MouseEvent) {
-  if (data.onClick) {
-    data.onClick(data);
-  } else {
-    console.log("Folder clicked:", data);
-  }
-}
+function handleClick(e: MouseEvent) {}
 
-function handleBurst() {
-  if (data.onBurst) {
-    data.onBurst(id, data.devices);
-  }
-}
+function handleBurst() {}
 </script>
 
 <NodeToolbar {id} isVisible={selected} position={Position.Top}>
@@ -69,7 +59,7 @@ function handleBurst() {
       class="size-9 rounded-xl transition-all"
       onclick={() => (displayMode = "list")}
     >
-      <ListIcon size={18} />
+      <List size={18} />
     </Button>
     <div class="w-px h-5 bg-border mx-1.5"></div>
     <Button
