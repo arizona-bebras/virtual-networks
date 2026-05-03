@@ -1,9 +1,9 @@
 <script lang="ts">
-import { ShieldAlert, ShieldCheck, Lock } from "@lucide/svelte";
-import { Handle, Position } from "@xyflow/svelte";
+import { Lock, ShieldAlert, ShieldCheck } from "@lucide/svelte";
+import { Handle, type NodeProps, NodeToolbar, Position } from "@xyflow/svelte";
 import * as Card from "$shared/ui/card/index.js";
 
-let { data } = $props();
+let { id, data }: NodeProps = $props();
 </script>
 
 <Card.Root class="w-36 bg-background border-border border-2 shadow-sm">
@@ -19,10 +19,14 @@ let { data } = $props();
     </div>
     <div class="flex flex-col min-w-0">
       <div class="flex items-center gap-1.5">
-        <span class="text-[9px] font-black uppercase text-muted-foreground leading-none">
+        <span
+          class="text-[9px] font-black uppercase text-muted-foreground leading-none"
+        >
           {data.protocol || 'TCP'}
         </span>
-        <span class="text-[9px] font-mono font-bold leading-none bg-muted px-1 rounded">
+        <span
+          class="text-[9px] font-mono font-bold leading-none bg-muted px-1 rounded"
+        >
           {data.port || '*'}
         </span>
       </div>
@@ -32,6 +36,10 @@ let { data } = $props();
     </div>
   </div>
 </Card.Root>
+
+{#if (import.meta.env.DEV)}
+  <NodeToolbar>{id}</NodeToolbar>
+{/if}
 
 <Handle type="target" position={Position.Left} />
 <Handle type="source" position={Position.Right} />

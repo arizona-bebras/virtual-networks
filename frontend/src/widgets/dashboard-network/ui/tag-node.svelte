@@ -1,9 +1,9 @@
 <script lang="ts">
 import { Tag as TagIcon } from "@lucide/svelte";
-import { Handle, NodeToolbar, Position } from "@xyflow/svelte";
+import { Handle, NodeToolbar, Position, type NodeProps } from "@xyflow/svelte";
 import * as Card from "$shared/ui/card/index.js";
 
-let { data } = $props();
+let { id, data }: NodeProps = $props();
 </script>
 
 <Card.Root class="w-32 bg-card border-border shadow-sm overflow-hidden">
@@ -29,9 +29,9 @@ let { data } = $props();
   </div>
 </Card.Root>
 
-<!-- <NodeToolbar>
-  {data.id}
-</NodeToolbar> -->
+{#if import.meta.env.DEV}
+<NodeToolbar>{id}</NodeToolbar> 
+{/if}
 
 <Handle type="target" position={Position.Left} />
 <Handle type="source" position={Position.Right} />

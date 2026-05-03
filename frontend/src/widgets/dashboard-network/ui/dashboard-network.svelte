@@ -5,13 +5,17 @@ import {
   type Edge,
   type Node,
   SvelteFlow,
+  useSvelteFlow,
 } from "@xyflow/svelte";
 import "@xyflow/svelte/dist/style.css";
 import { Activity, ArrowRight, ShieldCheck, Zap } from "@lucide/svelte";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import type { Tag } from "common/schemas/tag/index";
 import { untrack } from "svelte";
-import { userRules } from "$pages/app/network/[slug]/rules/api/query";
+import {
+  deviceQuery,
+  userRules,
+} from "$pages/app/network/[slug]/rules/api/query";
 import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { Badge } from "$shared/ui/badge/index.js";
@@ -21,8 +25,15 @@ import {
   initialNodes,
 } from "$widgets/dashboard-network/model/mock";
 import { resolveCollisions } from "$widgets/dashboard-network/model/resolve-collisions";
-import { generateEdges } from "../model/edges-generation";
-import { ruleDataToNode, tagDataToNode } from "../model/mapper";
+import {
+  deviceFolderToTagEdges,
+  generateEdges,
+} from "../model/edges-generation";
+import {
+  deviceDataToNode,
+  ruleDataToNode,
+  tagDataToNode,
+} from "../model/mapper";
 import DeviceNode from "./device-node.svelte";
 import FolderNode from "./folder-node.svelte";
 import RuleNode from "./rule-node.svelte";
@@ -32,6 +43,9 @@ const queryClient = useQueryClient();
 let currentNetworkId = $derived(getNetworkId().id);
 let networkTagsQuery = createQuery(() => deviceTags.userTags(currentNetworkId));
 let networkRulesQuery = createQuery(() => userRules(currentNetworkId));
+let networkDeviceQuery = createQuery(() =>
+  deviceQuery.userDevices(currentNetworkId),
+);
 
 const nodeTypes = {
   device: DeviceNode,
@@ -52,14 +66,48 @@ let selectedEdge = $state<Edge | null>(null);
 let isDialogOpen = $state(false);
 
 $effect(() => {
-  if (networkTagsQuery.isSuccess && networkRulesQuery.isSuccess) {
+  if (
+    networkTagsQuery.isSuccess &&
+    networkRulesQuery.isSuccess &&
+    networkDeviceQuery.isSuccess
+  ) {
     untrack(() => {
+      console.log(networkDeviceQuery.data);
       const sourceTagNodes = tagDataToNode(networkTagsQuery.data);
-      const ruleNodes = ruleDataToNode(networkRulesQuery.data);
       const destTagNodes = tagDataToNode(networkTagsQuery.data, 650, true);
-      nodes = [...sourceTagNodes, ...ruleNodes, ...destTagNodes];
-      edges = generateEdges(networkRulesQuery.data);
-      console.log(nodes);
+      const ruleNodes = ruleDataToNode(networkRulesQuery.data);
+      const sourceDeviceNodes = deviceDataToNode(
+        networkDeviceQuery.data,
+        false,
+        sourceTagNodes,
+      );
+      const destDeviceNodes = deviceDataToNode(
+        networkDeviceQuery.data,
+        true,
+        destTagNodes,
+      );
+
+      nodes = [
+        ...sourceTagNodes,
+        ...ruleNodes,
+        ...sourceDeviceNodes,
+        ...destDeviceNodes,
+        ...destTagNodes,
+        // {
+        //   id: "123",
+        //   type: "folder",
+        //   data: {
+        //     label: "Устройства",
+        //     count: 5,
+        //   },
+        //   position: { x: 25, y: 100 * 1 },
+        // },
+      ];
+      edges = [
+        ...generateEdges(networkRulesQuery.data),
+        ...deviceFolderToTagEdges(sourceDeviceNodes.concat(destDeviceNodes)),
+      ];
+      console.log(edges);
     });
   }
 });
