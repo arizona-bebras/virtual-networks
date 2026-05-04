@@ -14,8 +14,8 @@ function setFilter(value: string | undefined) {
 </script>
 
 <div class="flex items-center gap-1">
-  <Button 
-    variant="ghost" 
+  <Button
+    variant="ghost"
     size="sm"
     class="-ml-3 h-8 gap-2 px-2"
     onclick={() => column.toggleSorting(column.getIsSorted() === "asc")}
@@ -26,9 +26,9 @@ function setFilter(value: string | undefined) {
 
   <DropdownMenu.Root>
     <DropdownMenu.Trigger>
-      <Button 
-        variant="ghost" 
-        size="icon" 
+      <Button
+        variant="ghost"
+        size="icon"
         class="h-8 w-8 {filterValue ? 'text-primary' : 'text-muted-foreground'}"
       >
         <Filter class="h-3.5 w-3.5" />
@@ -37,20 +37,20 @@ function setFilter(value: string | undefined) {
     <DropdownMenu.Content align="start">
       <DropdownMenu.Label>Filter by Status</DropdownMenu.Label>
       <DropdownMenu.Separator />
-      <DropdownMenu.CheckboxItem 
-        checked={filterValue === undefined} 
+      <DropdownMenu.CheckboxItem
+        checked={filterValue === undefined}
         onCheckedChange={() => setFilter(undefined)}
       >
         All
       </DropdownMenu.CheckboxItem>
-      <DropdownMenu.CheckboxItem 
-        checked={filterValue === "online"} 
+      <DropdownMenu.CheckboxItem
+        checked={filterValue === "online"}
         onCheckedChange={() => setFilter("online")}
       >
         Online
       </DropdownMenu.CheckboxItem>
-      <DropdownMenu.CheckboxItem 
-        checked={filterValue === "offline"} 
+      <DropdownMenu.CheckboxItem
+        checked={filterValue === "offline"}
         onCheckedChange={() => setFilter("offline")}
       >
         Offline

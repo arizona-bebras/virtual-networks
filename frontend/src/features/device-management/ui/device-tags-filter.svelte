@@ -36,7 +36,8 @@ let availableTags = $derived(
 );
 
 function toggleTag(tag: { id: string; name: string }) {
-  const current = (column.getFilterValue() as { id: string; name: string }[]) ?? [];
+  const current =
+    (column.getFilterValue() as { id: string; name: string }[]) ?? [];
   let next;
   if (current.some((t) => t.id === tag.id)) {
     next = current.filter((t) => t.id !== tag.id);
@@ -83,16 +84,16 @@ function clearFilters() {
           <p class="text-sm text-muted-foreground">
             Select tag names to filter devices.
           </p>
-          <Input
-            placeholder="Search tags..."
-            bind:value={search}
-            class="h-8"
-          />
+          <Input placeholder="Search tags..." bind:value={search} class="h-8" />
         </div>
 
         {#if selectedTags.length > 0}
           <div class="space-y-2">
-            <p class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Selected</p>
+            <p
+              class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+            >
+              Selected
+            </p>
             <DeviceCell
               tags={selectedTags}
               onclick={(name) => {
@@ -106,7 +107,11 @@ function clearFilters() {
 
         <div class="space-y-2">
           {#if selectedTags.length > 0}
-            <p class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Available</p>
+            <p
+              class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+            >
+              Available
+            </p>
           {/if}
           {#if availableTags.length > 0}
             <DeviceCell
@@ -117,11 +122,12 @@ function clearFilters() {
               }}
             />
           {:else}
-            <p class="text-xs text-muted-foreground italic">No more tags found.</p>
+            <p class="text-xs text-muted-foreground italic">
+              No more tags found.
+            </p>
           {/if}
         </div>
       </div>
     </Popover.Content>
   </Popover.Root>
 </div>
-

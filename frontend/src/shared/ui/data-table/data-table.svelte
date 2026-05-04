@@ -165,7 +165,10 @@ function handleDeleteSelected() {
                 {#if Icon}
                   <Icon class="mr-1 size-3 text-muted-foreground" />
                 {/if}
-                <span class="text-muted-foreground capitalize">{filter.id}:</span>
+                <span class="text-muted-foreground capitalize">
+                  {filter.id}
+                  :
+                </span>
                 <span class="capitalize">
                   {typeof value === 'object' && value?.name ? value.name : value}
                 </span>
@@ -178,7 +181,9 @@ function handleDeleteSelected() {
                     column?.setFilterValue(next.length > 0 ? next : undefined);
                   }}
                 >
-                  <X class="size-3 text-muted-foreground hover:text-foreground" />
+                  <X
+                    class="size-3 text-muted-foreground hover:text-foreground"
+                  />
                   <span class="sr-only">Remove filter</span>
                 </button>
               </Badge>

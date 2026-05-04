@@ -4,7 +4,11 @@ import type { TagColor } from "common/schemas/tag/index";
 import { colorVariants } from "$shared/lib/tag-color-mapping";
 import { Badge } from "$shared/ui/badge/index.js";
 
-let { tags, onclick }: { tags: DeviceRelations["tags"], onclick?: (name: string) => void } = $props();
+let {
+  tags,
+  onclick,
+}: { tags: DeviceRelations["tags"]; onclick?: (name: string) => void } =
+  $props();
 </script>
 
 <div class="flex flex-wrap gap-1">
