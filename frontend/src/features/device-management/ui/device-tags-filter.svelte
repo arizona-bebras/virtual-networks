@@ -17,7 +17,7 @@ let { column, label }: { column: Column<any, any>; label: string } = $props();
 let queryClient = useQueryClient();
 let networkID = $derived(getNetworkId().id);
 
-let filterValue = $state<{ id: string; name: string }[]>(
+let filterValue = $derived(
   (column.getFilterValue() as { id: string; name: string }[]) ?? [],
 );
 
@@ -36,16 +36,17 @@ let availableTags = $derived(
 );
 
 function toggleTag(tag: { id: string; name: string }) {
-  if (filterValue.some((t) => t.id === tag.id)) {
-    filterValue = filterValue.filter((t) => t.id !== tag.id);
+  const current = (column.getFilterValue() as { id: string; name: string }[]) ?? [];
+  let next;
+  if (current.some((t) => t.id === tag.id)) {
+    next = current.filter((t) => t.id !== tag.id);
   } else {
-    filterValue = [...filterValue, { id: tag.id, name: tag.name }];
+    next = [...current, { id: tag.id, name: tag.name }];
   }
-  column.setFilterValue(filterValue.length > 0 ? filterValue : undefined);
+  column.setFilterValue(next.length > 0 ? next : undefined);
 }
 
 function clearFilters() {
-  filterValue = [];
   column.setFilterValue(undefined);
 }
 </script>

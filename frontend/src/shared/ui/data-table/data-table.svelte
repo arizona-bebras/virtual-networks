@@ -156,34 +156,54 @@ function handleDeleteSelected() {
     {#if columnFilters.length > 0}
       <div class="flex flex-wrap gap-2" in:fade>
         {#each columnFilters as filter (filter.id)}
-          {console.log(filter)}
           {@const column = table.getColumn(filter.id)}
           {@const Icon = column?.columnDef.meta?.icon}
-          <Badge variant="secondary" class="h-7 gap-1 px-2 font-normal">
-            {#if Icon}
-              <Icon class="mr-1 size-3 text-muted-foreground" />
-            {/if}
-            <span class="text-muted-foreground capitalize">{filter.id}:</span>
-            <span class="capitalize">
-              {#if Array.isArray(filter.value)}
-                {#if typeof filter.value[0] === 'object' && filter.value[0]?.name}
-                  {filter.value.map((v) => v.name).join(', ')}
-                {:else}
-                  {filter.value.join(', ')}
+
+          {#if Array.isArray(filter.value)}
+            {#each filter.value as value}
+              <Badge variant="secondary" class="h-7 gap-1 px-2 font-normal">
+                {#if Icon}
+                  <Icon class="mr-1 size-3 text-muted-foreground" />
                 {/if}
-              {:else}
-                {filter.value?.name ?? filter.value}
+                <span class="text-muted-foreground capitalize">{filter.id}:</span>
+                <span class="capitalize">
+                  {typeof value === 'object' && value?.name ? value.name : value}
+                </span>
+                <button
+                  type="button"
+                  class="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  onclick={() => {
+                    const current = filter.value as any[];
+                    const next = current.filter((v) => v !== value);
+                    column?.setFilterValue(next.length > 0 ? next : undefined);
+                  }}
+                >
+                  <X class="size-3 text-muted-foreground hover:text-foreground" />
+                  <span class="sr-only">Remove filter</span>
+                </button>
+              </Badge>
+            {/each}
+          {:else}
+            <Badge variant="secondary" class="h-7 gap-1 px-2 font-normal">
+              {#if Icon}
+                <Icon class="mr-1 size-3 text-muted-foreground" />
               {/if}
-            </span>
-            <button
-              type="button"
-              class="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
-              onclick={() => table.getColumn(filter.id)?.setFilterValue(undefined)}
-            >
-              <X class="size-3 text-muted-foreground hover:text-foreground" />
-              <span class="sr-only">Remove filter</span>
-            </button>
-          </Badge>
+              <span class="text-muted-foreground capitalize">{filter.id}:</span>
+              <span class="capitalize">
+                {typeof filter.value === 'object' && filter.value?.name
+                  ? filter.value.name
+                  : filter.value}
+              </span>
+              <button
+                type="button"
+                class="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                onclick={() => column?.setFilterValue(undefined)}
+              >
+                <X class="size-3 text-muted-foreground hover:text-foreground" />
+                <span class="sr-only">Remove filter</span>
+              </button>
+            </Badge>
+          {/if}
         {/each}
         <Button
           variant="ghost"
