@@ -110,19 +110,27 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     cell: ({ row, column }) => {
       return renderComponent(DeviceTagsCell, {
         tags: row.original.tags,
-        onclick: (name: string) => column.setFilterValue(name),
+        onclick: (name: string) => {
+          const tag = row.original.tags.find((t) => t.name === name);
+          if (!tag) return;
+          const current =
+            (column.getFilterValue() as { id: string; name: string }[]) ?? [];
+          const next = current.some((t) => t.id === tag.id)
+            ? current.filter((t) => t.id !== tag.id)
+            : [...current, { id: tag.id, name: tag.name }];
+          column.setFilterValue(next.length > 0 ? next : undefined);
+        },
       });
     },
     enableGlobalFilter: false,
     meta: {
       icon: Tag,
     },
-    filterFn: (row, columnId, filterValue) => {
+    filterFn: (row, columnId, filterValue: { id: string; name: string }[]) => {
       const tags = row.getValue(columnId) as any[];
-      if (!filterValue) return true;
-      return tags.some(tag => 
-        tag.name.toLowerCase().includes(filterValue.toLowerCase())
-      );
+      if (!filterValue || filterValue.length === 0) return true;
+      const filterIds = filterValue.map((f) => f.id);
+      return tags.some((tag) => filterIds.includes(tag.id));
     },
   },
   {

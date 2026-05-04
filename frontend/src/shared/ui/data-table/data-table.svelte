@@ -156,6 +156,7 @@ function handleDeleteSelected() {
     {#if columnFilters.length > 0}
       <div class="flex flex-wrap gap-2" in:fade>
         {#each columnFilters as filter (filter.id)}
+          {console.log(filter)}
           {@const column = table.getColumn(filter.id)}
           {@const Icon = column?.columnDef.meta?.icon}
           <Badge variant="secondary" class="h-7 gap-1 px-2 font-normal">
@@ -163,7 +164,17 @@ function handleDeleteSelected() {
               <Icon class="mr-1 size-3 text-muted-foreground" />
             {/if}
             <span class="text-muted-foreground capitalize">{filter.id}:</span>
-            <span class="capitalize">{filter.value?.name ?? filter.value}</span>
+            <span class="capitalize">
+              {#if Array.isArray(filter.value)}
+                {#if typeof filter.value[0] === 'object' && filter.value[0]?.name}
+                  {filter.value.map((v) => v.name).join(', ')}
+                {:else}
+                  {filter.value.join(', ')}
+                {/if}
+              {:else}
+                {filter.value?.name ?? filter.value}
+              {/if}
+            </span>
             <button
               type="button"
               class="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"

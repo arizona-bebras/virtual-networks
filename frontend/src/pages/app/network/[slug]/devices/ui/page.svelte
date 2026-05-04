@@ -15,7 +15,11 @@ let globalFilter = $state("");
 let columnFilters = $state<ColumnFiltersState>([]);
 
 let tagsFilter = $derived(
-  columnFilters.find((f) => f.id === "tags")?.value as string | undefined,
+  (
+    columnFilters.find((f) => f.id === "tags")?.value as
+      | { id: string; name: string }[]
+      | undefined
+  )?.map((t) => t.id),
 );
 let onwerFilter = $derived(
   columnFilters.find((f) => f.id === "owner")?.value as string | undefined,
@@ -55,7 +59,7 @@ function bulkRemoveSelected(_ids: string[]) {}
       <DataTable
         {columns}
         data={userDevices.data || []}
-        filterPlaceholder="Search by name or ID..."
+        filterPlaceholder="Search by name..."
         onDeleteSelected={bulkRemoveSelected}
         onGlobalFilterChange={(value) => (globalFilter = value)}
         onColumnFiltersChange={(filters) => (columnFilters = filters)}

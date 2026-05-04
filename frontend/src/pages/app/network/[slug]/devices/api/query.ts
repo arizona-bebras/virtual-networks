@@ -11,7 +11,7 @@ export const deviceQuery = {
   }: {
     networkId: string;
     q?: string;
-    tags?: string;
+    tags?: string[];
     owner_id?: string;
   }) =>
     queryOptions({
