@@ -1,6 +1,7 @@
 import { Activity, Tag, User } from "@lucide/svelte";
 import type { ColumnDef } from "@tanstack/table-core";
 import type { DeviceRelations } from "common/schemas/device/index";
+import type { Tag as TagType } from "common/schemas/tag/index";
 import DeviceNameCell from "$entities/device/ui/device-name-cell.svelte";
 import DeviceStatusCell from "$entities/device/ui/device-status-cell.svelte";
 import DeviceTagsCell from "$entities/device/ui/device-tags-cell.svelte";
@@ -10,6 +11,7 @@ import { renderComponent } from "$shared/ui/data-table/index.js";
 import DeviceActionsCell from "../ui/device-actions-cell.svelte";
 import DeviceOwnerFilter from "../ui/device-owner-filter.svelte";
 import DeviceTagsFilter from "../ui/device-tags-filter.svelte";
+import type { DeviceTagsFilterValue } from "./types";
 
 export const columns: ColumnDef<DeviceRelations>[] = [
   {
@@ -78,7 +80,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
       });
     },
     cell: ({ row }) => {
-      return row.getValue("ip");
+      return row.getValue("ip") as string;
     },
     enableGlobalFilter: true,
     size: 150,
@@ -92,7 +94,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
       });
     },
     cell: ({ row }) => {
-      return row.getValue("owner") || "—";
+      return (row.getValue("owner") as string) || "—";
     },
     enableGlobalFilter: false,
     meta: {
@@ -114,7 +116,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
           const tag = row.original.tags.find((t) => t.name === name);
           if (!tag) return;
           const current =
-            (column.getFilterValue() as { id: string; name: string }[]) ?? [];
+            (column.getFilterValue() as DeviceTagsFilterValue) ?? [];
           const next = current.some((t) => t.id === tag.id)
             ? current.filter((t) => t.id !== tag.id)
             : [...current, { id: tag.id, name: tag.name }];
@@ -126,8 +128,8 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     meta: {
       icon: Tag,
     },
-    filterFn: (row, columnId, filterValue: { id: string; name: string }[]) => {
-      const tags = row.getValue(columnId) as any[];
+    filterFn: (row, columnId, filterValue: DeviceTagsFilterValue) => {
+      const tags = row.getValue(columnId) as TagType[];
       if (!filterValue || filterValue.length === 0) return true;
       const filterIds = filterValue.map((f) => f.id);
       return tags.some((tag) => filterIds.includes(tag.id));

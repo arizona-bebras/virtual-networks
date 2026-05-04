@@ -1,12 +1,16 @@
 <script lang="ts">
 import { ArrowUpDown, Filter } from "@lucide/svelte";
 import type { Column } from "@tanstack/table-core";
+import type { DeviceRelations } from "common/schemas/device/index";
 import { Button } from "$shared/ui/button/index.js";
 import * as DropdownMenu from "$shared/ui/dropdown-menu/index.js";
 
-let { column, label }: { column: Column<any, any>; label: string } = $props();
+let {
+  column,
+  label,
+}: { column: Column<DeviceRelations, unknown>; label: string } = $props();
 
-const filterValue = $derived(column.getFilterValue() as string);
+const filterValue = $derived(column.getFilterValue() as string | undefined);
 
 function setFilter(value: string | undefined) {
   column.setFilterValue(value);

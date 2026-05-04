@@ -117,6 +117,13 @@ const table = createSvelteTable({
 
 const selectedRows = $derived(table.getFilteredSelectedRowModel().rows);
 
+function getFilterLabel(value: unknown): string {
+  if (typeof value === "object" && value !== null && "name" in value) {
+    return String((value as { name: unknown }).name);
+  }
+  return String(value);
+}
+
 function handleDeleteSelected() {
   const ids = selectedRows.map((row) => row.original.id);
   onDeleteSelected?.(ids);
@@ -169,14 +176,12 @@ function handleDeleteSelected() {
                   {filter.id}
                   :
                 </span>
-                <span class="capitalize">
-                  {typeof value === 'object' && value?.name ? value.name : value}
-                </span>
+                <span class="capitalize">{getFilterLabel(value)}</span>
                 <button
                   type="button"
                   class="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   onclick={() => {
-                    const current = filter.value as any[];
+                    const current = filter.value as unknown[];
                     const next = current.filter((v) => v !== value);
                     column?.setFilterValue(next.length > 0 ? next : undefined);
                   }}
@@ -194,11 +199,7 @@ function handleDeleteSelected() {
                 <Icon class="mr-1 size-3 text-muted-foreground" />
               {/if}
               <span class="text-muted-foreground capitalize">{filter.id}:</span>
-              <span class="capitalize">
-                {typeof filter.value === 'object' && filter.value?.name
-                  ? filter.value.name
-                  : filter.value}
-              </span>
+              <span class="capitalize">{getFilterLabel(filter.value)}</span>
               <button
                 type="button"
                 class="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"

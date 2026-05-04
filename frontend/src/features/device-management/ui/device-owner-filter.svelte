@@ -2,6 +2,7 @@
 import { ArrowUpDown, Filter } from "@lucide/svelte";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import type { Column } from "@tanstack/table-core";
+import type { DeviceRelations } from "common/schemas/device/index";
 import { Debounced } from "runed";
 import { untrack } from "svelte";
 import { deviceQuery } from "$pages/app/network/[slug]/devices/api/query";
@@ -10,13 +11,19 @@ import { getNetworkId } from "$shared/lib/network-id-context";
 import { Button } from "$shared/ui/button/index.js";
 import { Input } from "$shared/ui/input/index.js";
 import * as Popover from "$shared/ui/popover/index.js";
+import type { FilterValueWithId } from "../model/types";
 
-let { column, label }: { column: Column<any, any>; label: string } = $props();
+let {
+  column,
+  label,
+}: { column: Column<DeviceRelations, unknown>; label: string } = $props();
 
 const queryClient = useQueryClient();
 let networkID = $derived(getNetworkId().id);
 
-let filterValue = $state((column.getFilterValue() as string) ?? "");
+let filterValue = $derived(
+  column.getFilterValue() as FilterValueWithId | undefined,
+);
 
 let search = $state("");
 const debounced = new Debounced(() => search, 500);
@@ -66,13 +73,13 @@ const query = createQuery(() =>
         <Input placeholder="Owner name..." bind:value={search} class="h-8" />
       </div>
       {#if query.isSuccess}
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-2 mt-2">
           {#each query.data as device (device.id)}
             <button
               type="button"
-              class="p-2 border border-white truncate hover:opacity-50"
+              class="p-2 border border-white truncate hover:opacity-50 text-left"
               onclick={() => {
-                column.setFilterValue({id: device.id, name: device.name});
+                column.setFilterValue({id: device.id, name: device.owner});
               }}
             >
               {device.owner}

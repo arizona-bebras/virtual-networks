@@ -2,6 +2,7 @@
 import { Filter, X } from "@lucide/svelte";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import type { Column } from "@tanstack/table-core";
+import type { DeviceRelations } from "common/schemas/device/index";
 import { Debounced } from "runed";
 import DeviceCell from "$entities/device/ui/device-tags-cell.svelte";
 import { deviceQuery } from "$pages/app/network/[slug]/devices/api/query";
@@ -11,14 +12,18 @@ import { Button } from "$shared/ui/button/index.js";
 import { Input } from "$shared/ui/input/index.js";
 import * as Popover from "$shared/ui/popover/index.js";
 import { Separator } from "$shared/ui/separator/index.js";
+import type { DeviceTagsFilterValue } from "../model/types";
 
-let { column, label }: { column: Column<any, any>; label: string } = $props();
+let {
+  column,
+  label,
+}: { column: Column<DeviceRelations, unknown>; label: string } = $props();
 
 let queryClient = useQueryClient();
 let networkID = $derived(getNetworkId().id);
 
 let filterValue = $derived(
-  (column.getFilterValue() as { id: string; name: string }[]) ?? [],
+  (column.getFilterValue() as DeviceTagsFilterValue) ?? [],
 );
 
 let search = $state("");
@@ -36,9 +41,8 @@ let availableTags = $derived(
 );
 
 function toggleTag(tag: { id: string; name: string }) {
-  const current =
-    (column.getFilterValue() as { id: string; name: string }[]) ?? [];
-  let next;
+  const current = (column.getFilterValue() as DeviceTagsFilterValue) ?? [];
+  let next: DeviceTagsFilterValue;
   if (current.some((t) => t.id === tag.id)) {
     next = current.filter((t) => t.id !== tag.id);
   } else {
