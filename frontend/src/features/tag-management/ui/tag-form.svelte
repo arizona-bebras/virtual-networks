@@ -1,0 +1,116 @@
+<script lang="ts">
+import { createMutation, getQueryClientContext } from "@tanstack/svelte-query";
+import { CreateTagSchema } from "common/schemas/tag/create-tag";
+import type { Tag } from "common/schemas/tag/index";
+import { onMount } from "svelte";
+import { useForm } from "$shared/lib/forms/use-form.svelte";
+import { getNetworkId } from "$shared/lib/network-id-context";
+import * as Form from "$shared/ui/form/index.js";
+import { Input } from "$shared/ui/input/index.js";
+import { tagCreationMutation, tagUpdateMutation } from "../api/query";
+
+let {
+  tag,
+  dialogState = $bindable(),
+}: { tag?: Tag; dialogState: boolean } = $props();
+
+const queryClient = getQueryClientContext();
+let currentNetworkId = $derived(getNetworkId().id);
+
+const colors = [
+  { name: "Red", value: "bg-red-500", key: "red" },
+  { name: "Green", value: "bg-green-500", key: "green" },
+  { name: "Blue", value: "bg-blue-500", key: "blue" },
+  { name: "Yellow", value: "bg-yellow-500", key: "yellow" },
+  { name: "Purple", value: "bg-purple-500", key: "purple" },
+  { name: "Orange", value: "bg-orange-500", key: "orange" },
+] as const;
+
+const creationMutation = createMutation(() =>
+  tagCreationMutation(() => {
+    queryClient.invalidateQueries({ queryKey: ["userTags"] });
+    dialogState = false;
+  }),
+);
+
+const updateMutation = createMutation(() =>
+  tagUpdateMutation(() => {
+    queryClient.invalidateQueries({ queryKey: ["userTags"] });
+    dialogState = false;
+  }),
+);
+
+let {
+  forms: form,
+  formData,
+  valid,
+  enhance,
+} = useForm(CreateTagSchema, {
+  onSubmit: async () => {
+    if (tag) {
+      updateMutation.mutate({
+        networkId: currentNetworkId,
+        tagId: tag.id,
+        tagInfo: {
+          name: $formData.name,
+          color: $formData.color,
+        },
+      });
+    } else {
+      creationMutation.mutate({
+        networkId: currentNetworkId,
+        tagInfo: {
+          name: $formData.name,
+          color: $formData.color,
+        },
+      });
+    }
+  },
+});
+
+onMount(() => {
+  if (tag) {
+    $formData.name = tag.name;
+    $formData.color = tag.color;
+  }
+});
+</script>
+
+<form method="POST" use:enhance class="space-y-4">
+  <Form.Field {form} name="name">
+    <Form.Control>
+      {#snippet children({ props })}
+        <Form.Label>Name</Form.Label>
+        <Input
+          {...props}
+          bind:value={$formData.name}
+          placeholder="e.g. Servers"
+        />
+      {/snippet}
+    </Form.Control>
+    <Form.Description />
+    <Form.FieldErrors />
+  </Form.Field>
+  <Form.Field {form} name="color">
+    <Form.Control>
+      {#snippet children({ props })}
+        <Form.Label>Color</Form.Label>
+        <div class="flex gap-2">
+          {#each colors as color}
+            <button
+              type="button"
+              class={`size-6 rounded-full ${color.value} ring-primary ring-offset-2 ring-offset-background transition-all hover:ring-2 ${$formData.color === color.key ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+              title={color.name}
+              onclick={() => $formData.color = color.key}
+            ></button>
+          {/each}
+        </div>
+      {/snippet}
+    </Form.Control>
+    <Form.Description />
+    <Form.FieldErrors />
+  </Form.Field>
+  <Form.Button disabled={!valid()} class="w-full">
+    {tag ? "Save Changes" : "Save Tag"}
+  </Form.Button>
+</form>
