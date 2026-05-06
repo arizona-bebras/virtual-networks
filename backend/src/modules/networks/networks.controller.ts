@@ -22,6 +22,7 @@ import { AuthGuard } from "@thallesp/nestjs-better-auth";
 import { CreateNetworkDto } from "common/dto/network/create-network";
 import { NetworkEnterCredentialsDto } from "common/dto/network/enter-credentials";
 import { NetworkDto } from "common/dto/network/index";
+import { NetworkUsersDto } from "common/dto/network/network-users";
 import { UpdateNetworkDto } from "common/dto/network/update-network";
 import { Role } from "../../authorization/role.enum";
 import { Roles } from "../../authorization/roles.decorator";
@@ -75,6 +76,27 @@ export class NetworksController {
       throw new NotFoundException(`Network with ID ${id} not found`);
     }
     return network;
+  }
+
+  @Get(":network_id/users")
+  @UseGuards(AuthGuard, RolesGuard)
+  @ApiOperation({ summary: "Получить пользователей сети" })
+  @ApiParam({
+    name: "network_id",
+    description: "UUID сети",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Пользователи сети получены",
+    type: NetworkUsersDto,
+  })
+  @ApiResponse({ status: 404, description: "Сеть не найдена" })
+  async getNetworkUsers(
+    @Param("network_id") id: string,
+  ): Promise<NetworkUsersDto> {
+    const users = await this.networksService.getNetworkUsers(id);
+    return users;
   }
 
   @Post(":network_id")

@@ -2,9 +2,10 @@ import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import type { CreateNetworkDto } from "common/dto/network/create-network";
 import type { NetworkEnterCredentialsDto } from "common/dto/network/enter-credentials";
 import { NetworkDto } from "common/dto/network/index";
+import type { NetworkUsersDto } from "common/dto/network/network-users";
 import type { UpdateNetworkDto } from "common/dto/network/update-network";
 import { sql } from "drizzle-orm";
-import { eq } from "drizzle-orm/sql/expressions/conditions";
+import { and, eq } from "drizzle-orm/sql/expressions/conditions";
 import { type Database, DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
 
@@ -96,6 +97,26 @@ export class NetworksService {
     });
   }
 
+  async getNetworkUsers(networkId: string): Promise<NetworkUsersDto> {
+    const users = await this.db
+      .select({
+        id: schema.user.id,
+        name: schema.user.name,
+        email: schema.user.email,
+        role: schema.networkUsers.role,
+      })
+      .from(schema.user)
+      .innerJoin(
+        schema.networkUsers,
+        and(
+          eq(schema.networkUsers.userId, schema.user.id),
+          eq(schema.networkUsers.networkId, networkId),
+        ),
+      );
+
+    return { users };
+  }
+
   async getMyNetworks(userId: string): Promise<NetworkDto[]> {
     const user = await this.db.query.user.findFirst({
       columns: {},
@@ -107,8 +128,8 @@ export class NetworksService {
           extras: {
             devicesCount: (networks, { sql }) =>
               sql<number>`(
-              SELECT COUNT(*)::int 
-              FROM ${schema.devices} 
+              SELECT COUNT(*)::int
+              FROM ${schema.devices}
               WHERE ${schema.devices.networkId} = ${networks.id}
             )`
                 .mapWith(Number)
