@@ -94,8 +94,12 @@ export class NetworksController {
   @ApiResponse({ status: 404, description: "Сеть не найдена" })
   async getNetworkUsers(
     @Param("network_id") id: string,
+    @Session() session: UserSession,
   ): Promise<NetworkUsersDto> {
-    const users = await this.networksService.getNetworkUsers(id);
+    const users = await this.networksService.getNetworkUsers(
+      id,
+      session.user.id,
+    );
     return users;
   }
 

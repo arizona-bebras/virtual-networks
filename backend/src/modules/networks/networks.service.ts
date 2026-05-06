@@ -1,4 +1,9 @@
-import { BadRequestException, Inject, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+} from "@nestjs/common";
 import type { CreateNetworkDto } from "common/dto/network/create-network";
 import type { NetworkEnterCredentialsDto } from "common/dto/network/enter-credentials";
 import { NetworkDto } from "common/dto/network/index";
@@ -97,7 +102,10 @@ export class NetworksService {
     });
   }
 
-  async getNetworkUsers(networkId: string): Promise<NetworkUsersDto> {
+  async getNetworkUsers(
+    networkId: string,
+    userId: string,
+  ): Promise<NetworkUsersDto> {
     const users = await this.db
       .select({
         id: schema.user.id,
@@ -113,6 +121,10 @@ export class NetworksService {
           eq(schema.networkUsers.networkId, networkId),
         ),
       );
+
+    if (!users.find((user) => user.id === userId)) {
+      throw new ForbiddenException("You must be in network");
+    }
 
     return { users };
   }
