@@ -2,7 +2,12 @@ import { Inject, Injectable } from "@nestjs/common";
 import type { CreateRuleDto } from "common/dto/rule/create-rule";
 import { RuleDto } from "common/dto/rule/index";
 import type { UpdateRuleDto } from "common/dto/rule/update-rule";
-import { eq } from "drizzle-orm/sql/expressions/conditions";
+import {
+  and,
+  eq,
+  ilike,
+  inArray,
+} from "drizzle-orm/sql/expressions/conditions";
 import { type Database, DRIZZLE } from "../../db/database.module";
 import * as schema from "../../db/schema";
 
@@ -29,8 +34,8 @@ export class RulesService {
           extras: {
             devicesCount: (tags, { sql }) =>
               sql<number>`(
-              SELECT COUNT(*)::int 
-              FROM ${schema.devicesTags} 
+              SELECT COUNT(*)::int
+              FROM ${schema.devicesTags}
               WHERE ${schema.devicesTags.tagId} = ${tags.id}
             )`
                 .mapWith(Number)
@@ -46,8 +51,8 @@ export class RulesService {
           extras: {
             devicesCount: (tags, { sql }) =>
               sql<number>`(
-              SELECT COUNT(*)::int 
-              FROM ${schema.devicesTags} 
+              SELECT COUNT(*)::int
+              FROM ${schema.devicesTags}
               WHERE ${schema.devicesTags.tagId} = ${tags.id}
             )`
                 .mapWith(Number)
@@ -58,10 +63,29 @@ export class RulesService {
     });
   }
 
-  async getAllRules(networkId: string): Promise<RuleDto[]> {
+  async getRules(
+    networkId: string,
+    q?: string,
+    sourceTags?: string[],
+    destTags?: string[],
+  ): Promise<RuleDto[]> {
+    if (sourceTags && !Array.isArray(sourceTags)) {
+      sourceTags = [sourceTags];
+    }
+    if (destTags && !Array.isArray(destTags)) {
+      destTags = [destTags];
+    }
     return this.db.query.rules.findMany({
       where: {
-        networkId,
+        RAW: (rules) =>
+          and(
+            eq(rules.networkId, networkId),
+            q ? ilike(rules.description, `${q}%`) : undefined,
+            sourceTags?.length
+              ? inArray(rules.sourceId, sourceTags)
+              : undefined,
+            destTags?.length ? inArray(rules.destId, destTags) : undefined,
+          )!,
       },
       with: {
         source: {
@@ -73,8 +97,8 @@ export class RulesService {
           extras: {
             devicesCount: (tags, { sql }) =>
               sql<number>`(
-              SELECT COUNT(*)::int 
-              FROM ${schema.devicesTags} 
+              SELECT COUNT(*)::int
+              FROM ${schema.devicesTags}
               WHERE ${schema.devicesTags.tagId} = ${tags.id}
             )`
                 .mapWith(Number)
@@ -90,8 +114,8 @@ export class RulesService {
           extras: {
             devicesCount: (tags, { sql }) =>
               sql<number>`(
-              SELECT COUNT(*)::int 
-              FROM ${schema.devicesTags} 
+              SELECT COUNT(*)::int
+              FROM ${schema.devicesTags}
               WHERE ${schema.devicesTags.tagId} = ${tags.id}
             )`
                 .mapWith(Number)
