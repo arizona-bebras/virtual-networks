@@ -1,5 +1,6 @@
 import { mutationOptions } from "@tanstack/svelte-query";
 import type { CreateDevice } from "common/schemas/device/create-device";
+import type { DeviceRelations } from "common/schemas/device/index";
 import type { UpdateDevice } from "common/schemas/device/update-device";
 import { client } from "$shared/api/openapi-client";
 
@@ -71,6 +72,37 @@ export const deviceUpdateMutation = (onSuccess: () => void) =>
           params: {
             path: {
               network_id: networkId,
+              device_id: deviceId,
+            },
+          },
+          body: deviceInfo,
+        },
+      );
+      if (error) throw error;
+    },
+    onSuccess,
+  });
+
+export const tagDeviceCreation = (onSuccess: () => void) =>
+  mutationOptions({
+    mutationFn: async ({
+      networkId,
+      tagId,
+      deviceId,
+      deviceInfo,
+    }: {
+      networkId: string;
+      tagId: string;
+      deviceId: string;
+      deviceInfo: DeviceRelations;
+    }) => {
+      const { error } = await client.POST(
+        "/networks/{network_id}/devices/{device_id}/add_tag/{tag_id}",
+        {
+          params: {
+            path: {
+              network_id: networkId,
+              tag_id: tagId,
               device_id: deviceId,
             },
           },
