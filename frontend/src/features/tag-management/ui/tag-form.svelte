@@ -9,10 +9,8 @@ import * as Form from "$shared/ui/form/index.js";
 import { Input } from "$shared/ui/input/index.js";
 import { tagCreationMutation, tagUpdateMutation } from "../api/query";
 
-let {
-  tag,
-  dialogState = $bindable(),
-}: { tag?: Tag; dialogState: boolean } = $props();
+let { tag, dialogState = $bindable() }: { tag?: Tag; dialogState: boolean } =
+  $props();
 
 const queryClient = getQueryClientContext();
 let currentNetworkId = $derived(getNetworkId().id);

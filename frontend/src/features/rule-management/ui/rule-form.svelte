@@ -115,19 +115,14 @@ onMount(() => {
           <Select.Root type="single" bind:value={$formData.sourceId!}>
             <Select.Trigger class="w-[180px] flex">
               {#if $formData.sourceId && selectedSourceTag}
-                <TagBadge
-                  name={selectedSourceTag.name}
-                  color={selectedSourceTag.color!}
-                />
+                <TagBadge tag={selectedSourceTag} />
               {:else}
                 <span>Выберите тег</span>
               {/if}
             </Select.Trigger>
             <Select.Content>
               {#each userTags.data as tag (tag.id)}
-                <Select.Item value={tag.id}>
-                  <TagBadge name={tag.name} color={tag.color!} />
-                </Select.Item>
+                <Select.Item value={tag.id}><TagBadge {tag} /></Select.Item>
               {/each}
             </Select.Content>
           </Select.Root>
@@ -143,19 +138,14 @@ onMount(() => {
           <Select.Root type="single" bind:value={$formData.destId!}>
             <Select.Trigger class="w-[180px] flex">
               {#if $formData.destId && selectedDestTag}
-                <TagBadge
-                  name={selectedDestTag.name}
-                  color={selectedDestTag.color!}
-                />
+                <TagBadge tag={selectedDestTag} />
               {:else}
                 <span>Выберите тег</span>
               {/if}
             </Select.Trigger>
             <Select.Content>
               {#each userTags.data as tag (tag.id)}
-                <Select.Item value={tag.id}>
-                  <TagBadge name={tag.name} color={tag.color!} />
-                </Select.Item>
+                <Select.Item value={tag.id}><TagBadge {tag} /></Select.Item>
               {/each}
             </Select.Content>
           </Select.Root>
