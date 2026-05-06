@@ -8,7 +8,7 @@ let {
   onclick,
 }: { tag: DeviceRelations["tags"][number]; onclick?: (name: string) => void } =
   $props();
-let color = colorVariants[tag.color || "purple"];
+let color = $derived(colorVariants[tag.color || "purple"]);
 </script>
 
 <Badge

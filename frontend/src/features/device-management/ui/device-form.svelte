@@ -8,7 +8,7 @@ import { CreateDeviceSchema } from "common/schemas/device/create-device";
 import type { DeviceRelations } from "common/schemas/device/index";
 import { onMount } from "svelte";
 import Tags from "$entities/device/ui/device-tags-cell.svelte";
-import TagSelector from "$features/tag-management/ui/teg-selector.svelte";
+import TagSelector from "$features/tag-management/ui/tag-selector.svelte";
 import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
@@ -50,13 +50,8 @@ const createTagMutation = createMutation(() => tagDeviceCreation(() => {}));
 
 const deleteTagMutation = createMutation(() => tagDeviceRemove(() => {}));
 
-let selectedTagName = $state("");
-let selectedTag = $derived(
-  userTagsQuery.data?.filter((tag) => tag.name === selectedTagName),
-);
 let isTagSelectorOpen = $state(false);
 let deviceTagsArray = $state(device?.tags || []);
-let removedElements: DeviceRelations["tags"] = $state([]);
 
 let {
   forms: form,
@@ -75,21 +70,26 @@ let {
           ownerId: device.ownerId,
         },
       });
-      const newTags = deviceTagsArray.filter(
-        (t) => !device.tags.some((orig) => orig.id === t.id),
+
+      const tagsToRemove = device.tags.filter(
+        (orig) => !deviceTagsArray.some((current) => current.id === orig.id),
       );
-      for (const tag of newTags) {
-        createTagMutation.mutate({
+      const tagsToAdd = deviceTagsArray.filter(
+        (current) => !device.tags.some((orig) => orig.id === current.id),
+      );
+
+      for (const tag of tagsToRemove) {
+        deleteTagMutation.mutate({
           networkId: currentNetworkId,
-          tagId: tag?.id,
+          tagId: tag.id,
           deviceId: device.id,
           deviceInfo: device,
         });
       }
-      for (const tag of removedElements) {
-        deleteTagMutation.mutate({
+      for (const tag of tagsToAdd) {
+        createTagMutation.mutate({
           networkId: currentNetworkId,
-          tagId: tag?.id,
+          tagId: tag.id,
           deviceId: device.id,
           deviceInfo: device,
         });
@@ -142,11 +142,7 @@ onMount(() => {
       <Tags
         tags={deviceTagsArray}
         onclick={(name) => {
-          const removedElement = deviceTagsArray!.filter((tag) => tag.name === name)
-          deviceTagsArray = deviceTagsArray?.filter((tag) => tag.name !== name)
-          if (device.tags.some((tag) => tag.id === removedElement[0]?.id)){
-            removedElements.push(removedElement[0]!)
-          }
+          deviceTagsArray = deviceTagsArray.filter((tag) => tag.name !== name);
         }}
       />
       <Popover.Root bind:open={isTagSelectorOpen}>
@@ -154,8 +150,10 @@ onMount(() => {
         <Popover.Content>
           <TagSelector
             onclick={(name) => {
-            selectedTagName = name
-            deviceTagsArray.push(selectedTag?.at(0))
+            const tag = userTagsQuery.data?.find((t) => t.name === name);
+            if (tag){
+              deviceTagsArray.push(tag);
+            }
           }}
             excludedTags={deviceTagsArray}
           />

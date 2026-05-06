@@ -5,7 +5,7 @@ import type { Column } from "@tanstack/table-core";
 import type { DeviceRelations } from "common/schemas/device/index";
 import { Debounced } from "runed";
 import DeviceCell from "$entities/device/ui/device-tags-cell.svelte";
-import TagSelector from "$features/tag-management/ui/teg-selector.svelte";
+import TagSelector from "$features/tag-management/ui/tag-selector.svelte";
 import { deviceQuery } from "$pages/app/network/[slug]/devices/api/query";
 import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
 import { getNetworkId } from "$shared/lib/network-id-context";

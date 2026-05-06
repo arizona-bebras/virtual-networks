@@ -17,7 +17,7 @@ let {
 </script>
 
 <div class="flex flex-wrap gap-1">
-  {#each tags as tag}
+  {#each tags as tag (tag.id)}
     {#if !excludedTags?.some((filterTag) => filterTag.name === tag.name)}
       <TagBadge {tag} onclick={() => onclick?.(tag.name)} />
     {/if}
