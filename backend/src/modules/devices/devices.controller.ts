@@ -158,6 +158,7 @@ export class DevicesController {
   })
   @ApiResponse({ status: 404, description: "Устройство не найдено" })
   async addTagOnDevice(
+    @Param("network_id") netowrkId: string,
     @Param("device_id") deviceId: string,
     @Param("tag_id") tagId: string,
   ) {
@@ -174,6 +175,7 @@ export class DevicesController {
   })
   @ApiResponse({ status: 404, description: "Устройство не найдено" })
   async deleteTagFromDevice(
+    @Param("network_id") netowrkId: string,
     @Param("device_id") deviceId: string,
     @Param("tag_id") tagId: string,
   ) {

@@ -113,3 +113,33 @@ export const tagDeviceCreation = (onSuccess: () => void) =>
     },
     onSuccess,
   });
+export const tagDeviceRemove = (onSuccess: () => void) =>
+  mutationOptions({
+    mutationFn: async ({
+      networkId,
+      tagId,
+      deviceId,
+      deviceInfo,
+    }: {
+      networkId: string;
+      tagId: string;
+      deviceId: string;
+      deviceInfo: DeviceRelations;
+    }) => {
+      const { error } = await client.DELETE(
+        "/networks/{network_id}/devices/{device_id}/add_tag/{tag_id}",
+        {
+          params: {
+            path: {
+              network_id: networkId,
+              tag_id: tagId,
+              device_id: deviceId,
+            },
+          },
+          body: deviceInfo,
+        },
+      );
+      if (error) throw error;
+    },
+    onSuccess,
+  });

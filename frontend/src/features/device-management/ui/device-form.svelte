@@ -8,12 +8,10 @@ import { CreateDeviceSchema } from "common/schemas/device/create-device";
 import type { DeviceRelations } from "common/schemas/device/index";
 import { onMount } from "svelte";
 import Tags from "$entities/device/ui/device-tags-cell.svelte";
-import { tagCreationMutation } from "$features/tag-management/api/query";
 import TagSelector from "$features/tag-management/ui/teg-selector.svelte";
 import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
-import { Button } from "$shared/ui/button/index";
 import * as Form from "$shared/ui/form/index.js";
 import { Input } from "$shared/ui/input/index.js";
 import * as Popover from "$shared/ui/popover/index";
@@ -21,6 +19,7 @@ import {
   deviceUpdateMutation,
   deviceСreationQuery,
   tagDeviceCreation,
+  tagDeviceRemove,
 } from "../api/query";
 
 let {
@@ -32,9 +31,6 @@ const queryClient = getQueryClientContext();
 let currentNetworkId = $derived(getNetworkId().id);
 
 const userTagsQuery = createQuery(() => deviceTags.userTags(currentNetworkId));
-const networkTagsQuery = createQuery(() =>
-  deviceTags.userTags(currentNetworkId, ""),
-);
 
 const creationMutation = createMutation(() =>
   deviceСreationQuery(() => {
@@ -50,19 +46,16 @@ const updateMutation = createMutation(() =>
   }),
 );
 
-const createTagMutation = createMutation(() =>
-  tagDeviceCreation(() => {
-    queryClient.invalidateQueries({ queryKey: ["userDevices"] });
-    dialogState = false;
-  }),
-);
+const createTagMutation = createMutation(() => tagDeviceCreation(() => {}));
+
+const deleteTagMutation = createMutation(() => tagDeviceRemove(() => {}));
 
 let selectedTagName = $state("");
 let selectedTag = $derived(
   userTagsQuery.data?.filter((tag) => tag.name === selectedTagName),
 );
 let isTagSelectorOpen = $state(false);
-let arrayTest = $state(device?.tags);
+let deviceTagsArray = $state(device?.tags || []);
 let removedElements: DeviceRelations["tags"] = $state([]);
 
 let {
@@ -82,8 +75,10 @@ let {
           ownerId: device.ownerId,
         },
       });
-      console.log(device.tags, arrayTest);
-      for (const tag of arrayTest!.slice(device.tags.length)) {
+      const newTags = deviceTagsArray.filter(
+        (t) => !device.tags.some((orig) => orig.id === t.id),
+      );
+      for (const tag of newTags) {
         createTagMutation.mutate({
           networkId: currentNetworkId,
           tagId: tag?.id,
@@ -91,6 +86,16 @@ let {
           deviceInfo: device,
         });
       }
+      for (const tag of removedElements) {
+        deleteTagMutation.mutate({
+          networkId: currentNetworkId,
+          tagId: tag?.id,
+          deviceId: device.id,
+          deviceInfo: device,
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ["userDevices"] });
+      dialogState = false;
     } else {
       creationMutation.mutate({
         networkId: currentNetworkId,
@@ -135,13 +140,12 @@ onMount(() => {
   {#if device}
     <div class="flex gap-1 items-center">
       <Tags
-        tags={arrayTest}
+        tags={deviceTagsArray}
         onclick={(name) => {
-          const removedElement = arrayTest!.filter((tag) => tag.name === name)
-          // arrayTest = arrayTest?.filter((tag) => tag.name !== name)
-
+          const removedElement = deviceTagsArray!.filter((tag) => tag.name === name)
+          deviceTagsArray = deviceTagsArray?.filter((tag) => tag.name !== name)
           if (device.tags.some((tag) => tag.id === removedElement[0]?.id)){
-            console.log("Этот элемент есть в исходном массиве", device.tags, remove)
+            removedElements.push(removedElement[0]!)
           }
         }}
       />
@@ -151,9 +155,9 @@ onMount(() => {
           <TagSelector
             onclick={(name) => {
             selectedTagName = name
-            arrayTest.push(selectedTag[0])
+            deviceTagsArray.push(selectedTag?.at(0))
           }}
-            excludedTags={arrayTest}
+            excludedTags={deviceTagsArray}
           />
         </Popover.Content>
       </Popover.Root>
