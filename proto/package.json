@@ -9,6 +9,7 @@
     "generate": "node ./scripts/generate.mjs all",
     "generate:ts": "node ./scripts/generate.mjs ts",
     "generate:go": "node ./scripts/generate.mjs go",
+    "mock:control-plane": "python ./mock/control_plane_mock.py",
     "prepare": "node ./scripts/generate.mjs all"
   },
   "keywords": [],

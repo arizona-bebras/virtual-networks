@@ -12,20 +12,21 @@ import (
 )
 
 func main() {
-	runtime, err := router.NewRuntime()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	runtime, err := router.NewRuntime(ctx)
 	if err != nil {
 		log.Fatalf("create router runtime: %v", err)
 	}
 	defer runtime.Close()
 
-	if err := runtime.Start(); err != nil {
+	if err := runtime.Start(ctx); err != nil {
 		log.Fatalf("start router runtime: %v", err)
 	}
 
 	runtime.PrintBootstrapInfo()
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
 	<-ctx.Done()
 	log.Printf("shutting down userspace router")
 }

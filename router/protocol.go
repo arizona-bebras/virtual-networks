@@ -29,6 +29,14 @@ func selectTunnelProtocol(name string) (TunnelProtocol, error) {
 	return factory, nil
 }
 
+func registeredProtocolNames() []string {
+	names := make([]string, 0, len(protocolRegistry))
+	for name := range protocolRegistry {
+		names = append(names, name)
+	}
+	return names
+}
+
 func normalizeProtocolName(name string) string {
 	return strings.ToLower(strings.TrimSpace(name))
 }
