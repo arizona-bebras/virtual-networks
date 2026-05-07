@@ -180,10 +180,12 @@ func buildProtocols(cfg Config, overlays map[string]*overlayRuntime) ([]Protocol
 
 func (r *Runtime) Start(ctx context.Context) error {
 	r.mu.Lock()
-	if err := r.startLocked(); err != nil {
+	closers, err := startRuntimeParts(r.cfg, r.overlays, r.protocols)
+	if err != nil {
 		r.mu.Unlock()
 		return err
 	}
+	r.closers = closers
 	revision := r.revision
 	configWatch := r.configWatch
 	r.configWatch = nil
@@ -194,24 +196,32 @@ func (r *Runtime) Start(ctx context.Context) error {
 	return nil
 }
 
-func (r *Runtime) startLocked() error {
-	for _, protocol := range r.protocols {
+func startRuntimeParts(
+	cfg Config,
+	overlays map[string]*overlayRuntime,
+	protocols []ProtocolInstance,
+) ([]func() error, error) {
+	closers := []func() error{}
+	for _, protocol := range protocols {
 		if err := protocol.Start(); err != nil {
-			return fmt.Errorf("start %s: %w", protocol.ID(), err)
+			closeRuntimeParts(cfg, overlays, protocols, closers)
+			return nil, fmt.Errorf("start %s: %w", protocol.ID(), err)
 		}
 	}
-	for _, overlayCfg := range r.cfg.Overlays {
-		overlay := r.overlays[overlayCfg.NetworkID]
+	for _, overlayCfg := range cfg.Overlays {
+		overlay := overlays[overlayCfg.NetworkID]
 		if overlay == nil {
-			return fmt.Errorf("network runtime %q is missing", overlayCfg.NetworkID)
+			closeRuntimeParts(cfg, overlays, protocols, closers)
+			return nil, fmt.Errorf("network runtime %q is missing", overlayCfg.NetworkID)
 		}
 		closeStatus, err := startStatusServer(overlay.net, overlay.cfg, overlay.protocols)
 		if err != nil {
-			return fmt.Errorf("start userspace netstack status server for network %q: %w", overlay.networkID, err)
+			closeRuntimeParts(cfg, overlays, protocols, closers)
+			return nil, fmt.Errorf("start userspace netstack status server for network %q: %w", overlay.networkID, err)
 		}
-		r.closers = append(r.closers, closeStatus)
+		closers = append(closers, closeStatus)
 	}
-	return nil
+	return closers, nil
 }
 
 func (r *Runtime) Close() {
@@ -228,15 +238,24 @@ func (r *Runtime) Close() {
 }
 
 func (r *Runtime) closeCurrentLocked() {
-	for i := len(r.closers) - 1; i >= 0; i-- {
-		_ = r.closers[i]()
-	}
+	closeRuntimeParts(r.cfg, r.overlays, r.protocols, r.closers)
 	r.closers = nil
-	for i := len(r.protocols) - 1; i >= 0; i-- {
-		r.protocols[i].Close()
+}
+
+func closeRuntimeParts(
+	cfg Config,
+	overlays map[string]*overlayRuntime,
+	protocols []ProtocolInstance,
+	closers []func() error,
+) {
+	for i := len(closers) - 1; i >= 0; i-- {
+		_ = closers[i]()
 	}
-	for _, overlayCfg := range r.cfg.Overlays {
-		overlay := r.overlays[overlayCfg.NetworkID]
+	for i := len(protocols) - 1; i >= 0; i-- {
+		protocols[i].Close()
+	}
+	for _, overlayCfg := range cfg.Overlays {
+		overlay := overlays[overlayCfg.NetworkID]
 		if overlay != nil && overlay.tun != nil {
 			_ = overlay.tun.Close()
 		}
@@ -279,7 +298,7 @@ func (r *Runtime) watchControlPlane(ctx context.Context, currentRevision string,
 }
 
 func (r *Runtime) ApplyConfig(cfg Config, revision string) error {
-	overlays, protocols, err := buildRuntimeParts(cfg)
+	nextOverlays, nextProtocols, err := buildRuntimeParts(cfg)
 	if err != nil {
 		return err
 	}
@@ -287,15 +306,43 @@ func (r *Runtime) ApplyConfig(cfg Config, revision string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.closeCurrentLocked()
+	previousCfg := r.cfg
+	previousRevision := r.revision
+	previousOverlays := r.overlays
+	previousProtocols := r.protocols
+	previousClosers := r.closers
+
 	r.cfg = cfg
 	r.revision = revision
-	r.overlays = overlays
-	r.protocols = protocols
-	if err := r.startLocked(); err != nil {
-		return err
+	r.overlays = nextOverlays
+	r.protocols = nextProtocols
+	r.closers = nil
+
+	closeRuntimeParts(previousCfg, previousOverlays, previousProtocols, previousClosers)
+
+	nextClosers, err := startRuntimeParts(r.cfg, r.overlays, r.protocols)
+	if err == nil {
+		r.closers = nextClosers
+		return nil
 	}
-	return nil
+
+	restoreOverlays, restoreProtocols, restoreErr := buildRuntimeParts(previousCfg)
+	if restoreErr != nil {
+		r.closers = nil
+		return fmt.Errorf("start replacement config: %w; restore previous config: %v", err, restoreErr)
+	}
+	restoreClosers, restoreStartErr := startRuntimeParts(previousCfg, restoreOverlays, restoreProtocols)
+	if restoreStartErr != nil {
+		closeRuntimeParts(previousCfg, restoreOverlays, restoreProtocols, restoreClosers)
+		r.closers = nil
+		return fmt.Errorf("start replacement config: %w; restart previous config: %v", err, restoreStartErr)
+	}
+	r.cfg = previousCfg
+	r.revision = previousRevision
+	r.overlays = restoreOverlays
+	r.protocols = restoreProtocols
+	r.closers = restoreClosers
+	return err
 }
 
 func (r *Runtime) reportConnections(ctx context.Context) {
