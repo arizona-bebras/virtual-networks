@@ -89,7 +89,6 @@ export class DevicesService {
     ownerId?: string,
     q?: string,
   ): Promise<DeviceRelations | DeviceRelations[] | undefined> {
-
     if (id) {
       return this.db.query.devices.findFirst({
         where: {
@@ -117,10 +116,10 @@ export class DevicesService {
             columns: {
               id: true,
               name: true,
-              email: true
-            }
-          }
-        }
+              email: true,
+            },
+          },
+        },
       });
     }
 
@@ -141,9 +140,9 @@ export class DevicesService {
           columns: {
             id: true,
             name: true,
-            email: true
-          }
-        }
+            email: true,
+          },
+        },
       },
       ...(q
         ? {
