@@ -414,6 +414,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.router == 'true'
+    env:
+      PROTOC_VERSION: "25.2"
 
     steps:
       - name: Checkout repository
@@ -425,6 +427,15 @@ jobs:
           go-version-file: router/go.mod
           cache-dependency-path: |
             router/go.sum
+            proto/go.sum
+
+      - name: Install protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          version: ${{ env.PROTOC_VERSION }}
+
+      - name: Generate Go protobuf artifacts
+        run: node proto/scripts/generate.mjs go
 
       - name: Lint router Go module
         working-directory: router

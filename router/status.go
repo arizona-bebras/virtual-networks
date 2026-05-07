@@ -12,13 +12,13 @@ func startStatusServer(
 	tnet *netstack.Network,
 	cfg OverlayConfig,
 	protocols []ProtocolInstance,
-) error {
+) (func() error, error) {
 	listener, err := tnet.ListenTCP(&net.TCPAddr{
 		IP:   net.IP(cfg.ServerAddr.AsSlice()),
 		Port: cfg.StatusPort,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	go func() {
@@ -28,7 +28,7 @@ func startStatusServer(
 		}))
 	}()
 
-	return nil
+	return listener.Close, nil
 }
 
 func renderStatusBody(
@@ -39,12 +39,13 @@ func renderStatusBody(
 	var b strings.Builder
 
 	fmt.Fprintf(&b, "userspace router\n")
+	fmt.Fprintf(&b, "network_id=%s\n", cfg.NetworkID)
 	fmt.Fprintf(&b, "server_ip=%s\n", cfg.ServerAddr)
 	fmt.Fprintf(&b, "overlay=%s\n", cfg.OverlayCIDR)
 
 	for _, protocol := range protocols {
 		info := protocol.StatusInfo(requesterAddr)
-		fmt.Fprintf(&b, "\n[%s]\n", protocol.InstanceName())
+		fmt.Fprintf(&b, "\n[%s]\n", protocol.ID())
 		fmt.Fprintf(&b, "protocol=%s\n", protocol.Name())
 		for _, line := range info.Lines {
 			fmt.Fprintf(&b, "%s\n", line)
@@ -63,24 +64,24 @@ func printBootstrapInfo(cfg Config, protocols []ProtocolInstance) {
 
 	for _, overlay := range cfg.Overlays {
 		fmt.Printf(
-			"Overlay [%s]: %s/%d\n",
-			overlay.Name,
-			overlay.Config.ServerAddr,
-			overlay.Config.OverlayCIDR.Bits(),
+			"Network [%s]: %s/%d\n",
+			overlay.NetworkID,
+			overlay.ServerAddr,
+			overlay.OverlayCIDR.Bits(),
 		)
 		fmt.Printf(
 			"Status endpoint inside tunnel [%s]: http://%s:%d/\n",
-			overlay.Name,
-			overlay.Config.ServerAddr,
-			overlay.Config.StatusPort,
+			overlay.NetworkID,
+			overlay.ServerAddr,
+			overlay.StatusPort,
 		)
 	}
 
 	for _, protocol := range protocols {
 		info := protocol.BootstrapInfo()
 		fmt.Println()
-		fmt.Printf("[%s]\n", protocol.InstanceName())
-		fmt.Printf("Overlay: %s\n", protocol.OverlayName())
+		fmt.Printf("[%s]\n", protocol.ID())
+		fmt.Printf("Network: %s\n", protocol.NetworkID())
 		fmt.Printf("Display: %s\n", info.DisplayName)
 		fmt.Printf("Protocol: %s\n", protocol.Name())
 		fmt.Printf("Listen endpoint: %s\n", info.ListenEndpoint)
