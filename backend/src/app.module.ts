@@ -8,6 +8,7 @@ import { auth } from "./auth";
 import { DatabaseModule } from "./db/database.module";
 import { DevicesModule } from "./modules/devices/devices.module";
 import { NetworksModule } from "./modules/networks/networks.module";
+import { RouterModule } from "./modules/router/router.module";
 import { RulesModule } from "./modules/rules/rules.module";
 import { TagsModule } from "./modules/tags/tags.module";
 
@@ -21,6 +22,7 @@ import { TagsModule } from "./modules/tags/tags.module";
     AuthModule.forRoot({
       auth,
     }),
+    RouterModule,
   ],
   controllers: [AppController],
   providers: [
