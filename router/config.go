@@ -71,6 +71,9 @@ func validateConfig(cfg Config) error {
 			if protocol.WireGuard.InterfacePublicKey == nil {
 				return fmt.Errorf("protocol %q is missing wireguard interface public key", protocol.ID)
 			}
+			if err := validateProtocolPeerIDs(protocol); err != nil {
+				return err
+			}
 			if len(protocol.WireGuard.Peers) == 0 {
 				return fmt.Errorf("protocol %q must include at least one wireguard peer", protocol.ID)
 			}
@@ -87,6 +90,34 @@ func validateConfig(cfg Config) error {
 		}
 	}
 
+	return nil
+}
+
+func validateProtocolPeerIDs(protocol ProtocolConfig) error {
+	if len(protocol.PeerIDs) == 0 {
+		return nil
+	}
+
+	seenRequested := make(map[string]struct{}, len(protocol.PeerIDs))
+	for _, peerID := range protocol.PeerIDs {
+		if peerID == "" {
+			return fmt.Errorf("protocol %q peer_ids must not include empty peer id", protocol.ID)
+		}
+		if _, exists := seenRequested[peerID]; exists {
+			return fmt.Errorf("protocol %q peer_ids includes duplicate peer id %q", protocol.ID, peerID)
+		}
+		seenRequested[peerID] = struct{}{}
+	}
+
+	selectedPeers := make(map[string]struct{}, len(protocol.WireGuard.Peers))
+	for _, peer := range protocol.WireGuard.Peers {
+		selectedPeers[peer.ID] = struct{}{}
+	}
+	for peerID := range seenRequested {
+		if _, exists := selectedPeers[peerID]; !exists {
+			return fmt.Errorf("protocol %q peer_ids references unknown peer %q in network %q", protocol.ID, peerID, protocol.NetworkID)
+		}
+	}
 	return nil
 }
 

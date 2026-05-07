@@ -30,6 +30,7 @@ type ProtocolConfig struct {
 	NetworkID  string
 	ListenPort uint16
 	PublicHost string
+	PeerIDs    []string
 	WireGuard  *WireGuardProtocolConfig
 }
 

@@ -344,6 +344,7 @@ func configFromControlPlane(snapshot *controlplanepb.RouterConfiguration) (Confi
 			NetworkID:  protocol.GetNetworkId(),
 			ListenPort: uint16(listenPort),
 			PublicHost: protocol.GetPublicHost(),
+			PeerIDs:    protocol.GetPeerIds(),
 		}
 		if cfg.PublicHost == "" {
 			cfg.PublicHost = defaultPublicHost()
