@@ -45,7 +45,7 @@ func Key(protocolName string, port uint16) string {
 func NewEndpoint(port uint16) *Endpoint {
 	return &Endpoint{
 		port:            port,
-		inner:           conn.NewDefaultBind(),
+		inner:           conn.NewStdNetBind(),
 		logger:          newObserverLog(),
 		receivers:       make(map[*sharedBind]struct{}),
 		receiverByIndex: make(map[uint32]*sharedBind),
