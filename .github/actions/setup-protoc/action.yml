@@ -1,0 +1,20 @@
+name: Setup protoc
+description: Install the repository-pinned protoc version.
+
+inputs:
+  version:
+    description: protoc version to install.
+    required: false
+    default: "25.2"
+  repo-token:
+    description: GitHub token used by arduino/setup-protoc for API requests.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Install protoc
+      uses: arduino/setup-protoc@v3
+      with:
+        version: ${{ inputs.version }}
+        repo-token: ${{ inputs.repo-token }}

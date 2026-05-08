@@ -1,0 +1,44 @@
+name: Report Biome issues
+description: Run Biome with checkstyle output and publish annotations through reviewdog.
+
+inputs:
+  workspace:
+    description: Workspace directory to check.
+    required: true
+  name:
+    description: Reviewdog check name.
+    required: true
+  github-token:
+    description: GitHub token for reviewdog.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Setup reviewdog
+      uses: reviewdog/action-setup@v1
+
+    - name: Comment Biome issues
+      shell: bash
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github-token }}
+      run: |
+        reporter="github-check"
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          reporter="github-pr-review"
+        fi
+
+        output_file="$(mktemp)"
+        biome_status=0
+
+        "./${{ inputs.workspace }}/node_modules/.bin/biome" check --reporter=checkstyle "${{ inputs.workspace }}" >"$output_file" || biome_status=$?
+
+        reviewdog -f=checkstyle -name="${{ inputs.name }}" -reporter="$reporter" -filter-mode=file -fail-level=any <"$output_file"
+        reviewdog_status=$?
+
+        if [ "$biome_status" -gt 1 ]; then
+          cat "$output_file"
+          exit "$biome_status"
+        fi
+
+        exit "$reviewdog_status"
