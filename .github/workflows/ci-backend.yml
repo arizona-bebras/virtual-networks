@@ -136,13 +136,17 @@ jobs:
           script: |
             const marker = "<!-- backend-test-results -->";
             const passed = process.env.TEST_STATUS === "0";
-            const icon = passed ? "✅" : "❌";
+            const icon = passed ? "👏" : "😭";
             const status = passed ? "PASSED" : "FAILED";
             const suites = process.env.TEST_SUITES?.trim();
 
             const body = [
               marker,
               `### ${icon} Backend tests ${status}.`,
+              "",
+              "> [!TIP]",
+              "> При изменении спецификации API в Backend, необходимо актуализировать E2E-тесты.",
+              "",
               suites ? `\n${suites}` : "",
               "",
               `[View workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
