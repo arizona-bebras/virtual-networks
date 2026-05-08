@@ -11,7 +11,10 @@
 ## Tools
 
 - Package manager: `pnpm` monorepo workspace
+- Task runner/cache: Turborepo via root `package.json` scripts
 - Formatter/linter: Biome
+- GitHub Actions linting: `actionlint`
+- GitHub Actions formatting: Prettier through `pnpm format:actions`
 - Frontend build/tooling: Vite, `svelte-check`
 - Backend build/tooling: Nest CLI, Drizzle Kit, TypeScript
 - Go validation: `go vet`, `go build`, `gofmt`
@@ -20,18 +23,31 @@
 
 #### For Go modules (`router`, `proto`)
 
-Run `go vet` for Go code. 
-Verify builds if code was changed in the package.
-Format code using `gofmt`.
+- Format changed Go files with `gofmt`.
+- Run `go vet ./...` and `go build ./...` from the changed Go module (`router/` or `proto/`).
+- For protobuf generation changes, prefer root Turbo commands such as `pnpm generate`, `pnpm generate:go`, or `pnpm generate:ts`.
 
 #### For TypeScript packages (`backend`, `frontend`, `common`)
 
-Run `pnpm --filter <package name> check` to verify code style and run lints, it automatically applies fixes where possible. In frontend this also automatically includes typechecking using `svelte-check`.
-Verify builds if code was changed in the package.
+- Prefer root Turborepo scripts:
+  - `pnpm check` for Biome checks and frontend type-checking.
+  - `pnpm lint` for lint-only validation, including GitHub Actions via `actionlint`.
+  - `pnpm format` for formatting TypeScript/Svelte packages and GitHub Actions YAML.
+  - `pnpm build` for workspace builds.
+  - `pnpm test` for backend tests.
+- For focused runs, use Turbo task selectors, for example `pnpm exec turbo run frontend#type-check`, `pnpm exec turbo run backend#build`, or `pnpm exec turbo run common#build`.
+- When implementing or changing backend features, update the backend e2e tests under `backend/test` to cover the new or changed behavior.
 
 #### For `common`
 
-If anything in `common` was modified, always run `pnpm --filter common build` to refresh built files.
+If anything in `common` was modified, always run `pnpm exec turbo run common#build` or `pnpm build` so `common/dist` is refreshed.
+
+#### For GitHub Actions
+
+- Local composite actions live under `.github/actions/`.
+- CI workflows are split by area under `.github/workflows/ci-*.yml`.
+- Run `pnpm lint:actions` after editing workflows or actions.
+- Run `pnpm format:actions` after editing workflows or actions.
 
 ## Monorepo Structure
 
@@ -50,12 +66,15 @@ If anything in `common` was modified, always run `pnpm --filter common build` to
 
 CI runs only for changed areas.
 
-- Frontend job: Biome check, `svelte-check`, frontend build
-- Backend job: Biome check, backend build
-- Proto job: regenerate protobuf artifacts, `go vet`, `go build`
-- Router job: `go vet`, `go build`
+- Common workflow: Biome check, common build
+- Frontend workflow: Biome check, common build for type-check dependencies, `svelte-check`, frontend build
+- Backend workflow: Biome check, backend build, backend e2e tests
+- Proto workflow: regenerate protobuf artifacts, `go vet`, `go build`
+- Router workflow: generate Go protobuf artifacts, `go vet`, `go build`
+- GitHub Actions are validated with `actionlint` through `pnpm lint:actions`
 
 Important repo behavior:
 
 - Changes under `proto/` can trigger frontend, backend, proto, and router CI work
 - CI pins `protoc` to `25.2` for protobuf generation
+- Common GitHub Actions setup is shared through local composite actions for pnpm, protoc, Go, Turbo cache, and Biome reviewdog reporting
