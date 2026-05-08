@@ -15,7 +15,7 @@ async function bootstrap() {
     options: {
       package: "controlplane",
       protoPath: "../proto/src/controlplane.proto",
-      url: process.env.PORT ?? "0.0.0.0:50051",
+      url: process.env.GRPC_URL ?? "0.0.0.0:50051",
       onLoadPackageDefinition: (pkg, server) => {
         new ReflectionService(pkg).addToServer(server);
       },

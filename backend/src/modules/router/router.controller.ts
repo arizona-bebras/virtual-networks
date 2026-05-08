@@ -1,6 +1,4 @@
-import { Metadata } from "@grpc/grpc-js";
 import { Controller } from "@nestjs/common";
-import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
 import {
   ChangedResourceType,
   ChangeOperation,
@@ -11,11 +9,8 @@ import {
   type RouterConfigurationUpdate,
   RouterControlPlaneController,
   RouterControlPlaneControllerMethods,
-  type RouterEvent,
-  type WatchRouterConfigurationRequest,
 } from "proto";
 import { from, Observable } from "rxjs";
-import { RouterService } from "./router.service";
 
 // Константы, дублирующие Python mock сервер
 const REVISION = "mock-static-1";
@@ -133,12 +128,7 @@ const createStaticConfiguration = (): RouterConfiguration => {
 @Controller()
 @RouterControlPlaneControllerMethods()
 export class RouterController implements RouterControlPlaneController {
-  constructor(private readonly routerService: RouterService) {}
-
-  watchRouterConfiguration(
-    request: WatchRouterConfigurationRequest,
-    metadata: Metadata,
-  ): Observable<RouterConfigurationUpdate> {
+  watchRouterConfiguration(): Observable<RouterConfigurationUpdate> {
     const configuration = createStaticConfiguration();
     const update: RouterConfigurationUpdate = {
       revision: REVISION,
@@ -157,10 +147,7 @@ export class RouterController implements RouterControlPlaneController {
     return from([update]);
   }
 
-  reportRouterEvents(
-    event: Observable<RouterEvent>,
-    metadata: Metadata,
-  ):
+  reportRouterEvents():
     | Promise<ReportRouterEventsResponse>
     | Observable<ReportRouterEventsResponse>
     | ReportRouterEventsResponse {
