@@ -58,6 +58,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/networks/{network_id}/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить пользователей сети */
+        get: operations["NetworksController_getNetworkUsers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/networks/{network_id}/devices": {
         parameters: {
             query?: never;
@@ -230,6 +247,19 @@ export interface components {
             } | null;
             devicesCount: number;
         };
+        NetworkUsersDto: {
+            /** @description The users of the network */
+            users: {
+                /** @description The unique identifier of the user */
+                id: string;
+                /** @description The name of the user */
+                name: string;
+                /** @description The email of the user */
+                email: string;
+                /** @description A role of the user */
+                role: ("user" | "admin") | null;
+            }[];
+        };
         NetworkEnterCredentialsDto: {
             /** @description The network access key */
             key: string;
@@ -283,6 +313,15 @@ export interface components {
                 /** @description The display color of the tag */
                 color: ("red" | "blue" | "green" | "yellow" | "purple" | "orange") | null;
             }[];
+            /** @description The owner of the device */
+            owner: {
+                /** @description The unique identifier of the user */
+                id: string;
+                /** @description The name of the user */
+                name: string;
+                /** @description The email of the user */
+                email: string;
+            } | null;
         };
         UpdateDeviceDto: {
             /** @description The name of the device */
@@ -556,6 +595,36 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Сеть не найдена */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NetworksController_getNetworkUsers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID сети */
+                network_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Пользователи сети получены */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NetworkUsersDto"];
+                };
             };
             /** @description Сеть не найдена */
             404: {
@@ -924,7 +993,14 @@ export interface operations {
     };
     RulesController_getAllRules: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Поисковой запрос по названию правила */
+                q?: string;
+                /** @description ID тегов, отправляющих данные, по которым происходит фильтрация */
+                source_tags?: string[];
+                /** @description ID тегов, принимающих данные, по которым происходит фильтрация */
+                dest_tags?: string[];
+            };
             header?: never;
             path: {
                 network_id: string;
