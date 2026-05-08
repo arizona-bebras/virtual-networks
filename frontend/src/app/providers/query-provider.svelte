@@ -1,14 +1,15 @@
 <script lang="ts">
 import { QueryClient, QueryClientProvider } from "@tanstack/svelte-query";
 import { SvelteQueryDevtools } from "@tanstack/svelte-query-devtools";
+import { queryClient } from "$shared/api/query-client";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: Infinity,
-    },
-  },
-});
+// const queryClient = new QueryClient({
+//   defaultOptions: {
+//     queries: {
+//       staleTime: Infinity,
+//     },
+//   },
+// });
 
 let { children } = $props();
 </script>
