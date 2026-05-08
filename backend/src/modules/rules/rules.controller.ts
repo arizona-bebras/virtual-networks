@@ -6,12 +6,14 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from "@nestjs/common";
 import {
   ApiBody,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
@@ -44,6 +46,25 @@ export class RulesController {
 
   @Get()
   @Roles(Role.Admin)
+  @ApiQuery({
+    name: "q",
+    description: "Поисковой запрос по названию правила",
+    required: false,
+  })
+  @ApiQuery({
+    name: "source_tags",
+    description:
+      "ID тегов, отправляющих данные, по которым происходит фильтрация",
+    required: false,
+    isArray: true,
+  })
+  @ApiQuery({
+    name: "dest_tags",
+    description:
+      "ID тегов, принимающих данные, по которым происходит фильтрация",
+    required: false,
+    isArray: true,
+  })
   @ApiOperation({ summary: "Получить правила сети" })
   @ApiResponse({
     status: 200,
@@ -53,8 +74,11 @@ export class RulesController {
   })
   async getAllRules(
     @Param("network_id") networkId: string,
+    @Query("q") q: string,
+    @Query("source_tags") sourceTags: string[],
+    @Query("dest_tags") destTags: string[],
   ): Promise<RuleDto[]> {
-    return await this.rulesService.getAllRules(networkId);
+    return await this.rulesService.getRules(networkId, q, sourceTags, destTags);
   }
 
   @Get(":rule_id")
