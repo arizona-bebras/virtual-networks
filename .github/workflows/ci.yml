@@ -346,6 +346,144 @@ jobs:
 
           exit "$failed"
 
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    env:
+      TURBO_TELEMETRY_DISABLED: "1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Prepare pnpm lockfile for pull requests
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          branch_lockfile="pnpm-lock.${GITHUB_HEAD_REF//\//!}.yaml"
+
+          if [ ! -f "$branch_lockfile" ]; then
+            echo "Expected branch lockfile '$branch_lockfile' was not found."
+            exit 0
+          fi
+
+          cp "$branch_lockfile" pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Restore Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-tests-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-tests-
+            ${{ runner.os }}-turbo-
+
+      - name: Run backend tests with Turbo
+        id: backend_tests
+        continue-on-error: true
+        shell: bash
+        run: |
+          output_file="$RUNNER_TEMP/backend-test-output.txt"
+          set +e
+
+          pnpm exec turbo run backend#test --affected --output-logs=full 2>&1 | tee "$output_file"
+          status=${PIPESTATUS[0]}
+
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          echo "output_file=$output_file" >> "$GITHUB_OUTPUT"
+
+      - name: Comment backend test results
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        env:
+          TEST_STATUS: ${{ steps.backend_tests.outputs.status }}
+          TEST_OUTPUT_FILE: ${{ steps.backend_tests.outputs.output_file }}
+        with:
+          script: |
+            const fs = require("fs");
+
+            const marker = "<!-- backend-test-results -->";
+            const status = process.env.TEST_STATUS === "0" ? "passed" : "failed";
+            const label = status === "passed" ? "PASS" : "FAIL";
+            const outputFile = process.env.TEST_OUTPUT_FILE;
+            const output = outputFile && fs.existsSync(outputFile)
+              ? fs.readFileSync(outputFile, "utf8")
+              : "No backend test output was captured.";
+            const lines = output.trimEnd().split(/\r?\n/);
+            const maxLines = 120;
+            const excerpt = lines.slice(-maxLines).join("\n");
+            const omitted = lines.length > maxLines
+              ? `\n\n_Showing the last ${maxLines} of ${lines.length} log lines._`
+              : "";
+
+            const body = [
+              marker,
+              "## Backend Test Results",
+              "",
+              `**${label}** Backend tests ${status}.`,
+              "",
+              "```text",
+              excerpt,
+              "```",
+              omitted,
+              "",
+              `[View workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+            ].join("\n");
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+            const existing = comments.find((comment) =>
+              comment.user.type === "Bot" && comment.body.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+            }
+
+      - name: Fail if backend tests failed
+        if: steps.backend_tests.outputs.status != '0'
+        run: exit 1
+
   proto:
     name: Proto Validation
     runs-on: ubuntu-latest
