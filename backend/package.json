@@ -15,11 +15,7 @@
     "format": "biome format --write .",
     "check": "biome check --write .",
     "lint": "biome lint .",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test": "node --experimental-vm-modules ../node_modules/jest/bin/jest.js --config ./test/jest-e2e.json"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -41,6 +37,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.11",
+    "@electric-sql/pglite": "^0.4.5",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
     "@nestjs/cli": "^11.0.0",
@@ -67,39 +64,5 @@
     "tsx": "^4.21.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "..",
-    "testRegex": "backend/src/.*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": [
-        "ts-jest",
-        {
-          "tsconfig": "<rootDir>/backend/tsconfig.spec.json"
-        }
-      ]
-    },
-    "moduleNameMapper": {
-      "^@thallesp/nestjs-better-auth$": "<rootDir>/backend/src/test-utils/nestjs-better-auth.mock.ts",
-      "^common/dto/(.*)$": "<rootDir>/common/src/dto/$1",
-      "^common/schemas/(.*)$": "<rootDir>/common/src/schemas/$1",
-      "^(\\.{1,2}/.*)\\.js$": "$1"
-    },
-    "collectCoverageFrom": [
-      "backend/src/**/*.(t|j)s",
-      "!backend/src/**/*.spec.ts",
-      "!backend/src/**/*.module.ts",
-      "!backend/src/main.ts",
-      "!backend/src/auth.ts",
-      "!backend/src/db/schema.ts",
-      "!backend/src/test-utils/**"
-    ],
-    "coverageDirectory": "backend/coverage",
-    "testEnvironment": "node"
   }
 }
