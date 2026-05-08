@@ -21,12 +21,7 @@ export const deviceTags = {
           },
         );
         if (error) throw error;
-
-        // Добавляем временный статус и маппим ownerId в owner
-        return data.map((tag) => ({
-          ...tag,
-          count: Math.floor(Math.random() * 100), // Временное значение для количества устройств с этим тегом
-        }));
+        return data;
       },
     }),
 };
