@@ -34,14 +34,18 @@ const userTagsQuery = createQuery(() => deviceTags.userTags(currentNetworkId));
 
 const creationMutation = createMutation(() =>
   deviceСreationQuery(() => {
-    queryClient.invalidateQueries({ queryKey: ["userDevices"] });
+    queryClient.invalidateQueries({
+      queryKey: ["userDevices", currentNetworkId],
+    });
     dialogState = false;
   }),
 );
 
 const updateMutation = createMutation(() =>
   deviceUpdateMutation(() => {
-    queryClient.invalidateQueries({ queryKey: ["userDevices"] });
+    queryClient.invalidateQueries({
+      queryKey: ["userDevices", currentNetworkId],
+    });
     dialogState = false;
   }),
 );
@@ -94,7 +98,12 @@ let {
           deviceInfo: device,
         });
       }
-      queryClient.invalidateQueries({ queryKey: ["userDevices"] });
+      queryClient.invalidateQueries({
+        queryKey: ["userDevices", currentNetworkId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["userTags", currentNetworkId],
+      });
       dialogState = false;
     } else {
       creationMutation.mutate({
