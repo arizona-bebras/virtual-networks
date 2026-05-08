@@ -4,1067 +4,1134 @@
  */
 
 export interface paths {
-  "/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AppController_getHello"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get: operations["AppController_getHello"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/networks": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/networks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить сети, в которых состоит пользователь */
+        get: operations["NetworksController_getMyNetworks"];
+        put?: never;
+        /** Создать новую сеть */
+        post: operations["NetworksController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Получить сети, в которых состоит пользователь */
-    get: operations["NetworksController_getMyNetworks"];
-    put?: never;
-    /** Создать новую сеть */
-    post: operations["NetworksController_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/networks/{network_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/networks/{network_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить сеть по ID */
+        get: operations["NetworksController_get"];
+        /** Обновить сеть по ID */
+        put: operations["NetworksController_update"];
+        /** Войти в сеть */
+        post: operations["NetworksController_enter"];
+        /** Удалить сеть по ID */
+        delete: operations["NetworksController_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Получить сеть по ID */
-    get: operations["NetworksController_get"];
-    /** Обновить сеть по ID */
-    put: operations["NetworksController_update"];
-    /** Войти в сеть */
-    post: operations["NetworksController_enter"];
-    /** Удалить сеть по ID */
-    delete: operations["NetworksController_delete"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/networks/{network_id}/devices": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/networks/{network_id}/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить пользователей сети */
+        get: operations["NetworksController_getNetworkUsers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Получить устройства по фильтрам */
-    get: operations["DevicesController_getDevicesWithFilters"];
-    put?: never;
-    /** Создать новое устройство */
-    post: operations["DevicesController_createDevice"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/networks/{network_id}/devices/{device_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/networks/{network_id}/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить устройства по фильтрам */
+        get: operations["DevicesController_getDevicesWithFilters"];
+        put?: never;
+        /** Создать новое устройство */
+        post: operations["DevicesController_createDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Получить устройство по ID */
-    get: operations["DevicesController_getDevice"];
-    /** Обновить устройство по ID */
-    put: operations["DevicesController_updateDevice"];
-    post?: never;
-    /** Удалить устройство по ID */
-    delete: operations["DevicesController_deleteDevice"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/networks/{network_id}/devices/{device_id}/add_tag/{tag_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/networks/{network_id}/devices/{device_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить устройство по ID */
+        get: operations["DevicesController_getDevice"];
+        /** Обновить устройство по ID */
+        put: operations["DevicesController_updateDevice"];
+        post?: never;
+        /** Удалить устройство по ID */
+        delete: operations["DevicesController_deleteDevice"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Добавить тег на устройство */
-    post: operations["DevicesController_addTagOnDevice"];
-    /** Добавить тег на устройство */
-    delete: operations["DevicesController_deleteTagFromDevice"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/networks/{network_id}/tags": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/networks/{network_id}/devices/{device_id}/add_tag/{tag_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Добавить тег на устройство */
+        post: operations["DevicesController_addTagOnDevice"];
+        /** Добавить тег на устройство */
+        delete: operations["DevicesController_deleteTagFromDevice"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Получить теги сети */
-    get: operations["TagsController_getAllTags"];
-    put?: never;
-    /** Создать новый тег */
-    post: operations["TagsController_createTag"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/networks/{network_id}/tags/{tag_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/networks/{network_id}/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить теги сети */
+        get: operations["TagsController_getAllTags"];
+        put?: never;
+        /** Создать новый тег */
+        post: operations["TagsController_createTag"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Получить тег по ID */
-    get: operations["TagsController_getTag"];
-    /** Обновить тег по ID */
-    put: operations["TagsController_updateTag"];
-    post?: never;
-    /** Удалить тег по ID */
-    delete: operations["TagsController_deleteTag"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/networks/{network_id}/rules": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/networks/{network_id}/tags/{tag_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить тег по ID */
+        get: operations["TagsController_getTag"];
+        /** Обновить тег по ID */
+        put: operations["TagsController_updateTag"];
+        post?: never;
+        /** Удалить тег по ID */
+        delete: operations["TagsController_deleteTag"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Получить правила сети */
-    get: operations["RulesController_getAllRules"];
-    put?: never;
-    /** Создать новое правило */
-    post: operations["RulesController_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/networks/{network_id}/rules/{rule_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/networks/{network_id}/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить правила сети */
+        get: operations["RulesController_getAllRules"];
+        put?: never;
+        /** Создать новое правило */
+        post: operations["RulesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Получить правило по ID */
-    get: operations["RulesController_get"];
-    /** Обновить правило по ID */
-    put: operations["RulesController_update"];
-    post?: never;
-    /** Удалить правило по ID */
-    delete: operations["RulesController_delete"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
+    "/networks/{network_id}/rules/{rule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить правило по ID */
+        get: operations["RulesController_get"];
+        /** Обновить правило по ID */
+        put: operations["RulesController_update"];
+        post?: never;
+        /** Удалить правило по ID */
+        delete: operations["RulesController_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    CreateNetworkDto: {
-      /** @description The name of the network */
-      name: string;
-      /** @description A description of the network */
-      description: string;
-      /**
-       * Format: cidrv4
-       * @description The IP address range of the network
-       */
-      cidr: string;
+    schemas: {
+        CreateNetworkDto: {
+            /** @description The name of the network */
+            name: string;
+            /** @description A description of the network */
+            description: string;
+            /**
+             * Format: cidrv4
+             * @description The IP address range of the network
+             */
+            cidr: string;
+        };
+        NetworkDto: {
+            /**
+             * Format: uuid
+             * @description The unique identifier of the network
+             */
+            id: string;
+            /** @description The name of the network */
+            name: string;
+            /** @description A description of the network */
+            description: string;
+            /**
+             * Format: cidrv4
+             * @description The IP address range of the network
+             */
+            cidr: string;
+            /** @description The unique identifier of the network creator */
+            creatorId: string | null;
+            /** @description The data of user who created network */
+            creator: {
+                /** @description The unique identifier of the user */
+                id: string;
+                /** @description The name of the user */
+                name: string;
+                /** @description The email of the user */
+                email: string;
+            } | null;
+            devicesCount: number;
+        };
+        NetworkUsersDto: {
+            /** @description The users of the network */
+            users: {
+                /** @description The unique identifier of the user */
+                id: string;
+                /** @description The name of the user */
+                name: string;
+                /** @description The email of the user */
+                email: string;
+                /** @description A role of the user */
+                role: ("user" | "admin") | null;
+            }[];
+        };
+        NetworkEnterCredentialsDto: {
+            /** @description The network access key */
+            key: string;
+        };
+        UpdateNetworkDto: {
+            /** @description The name of the network */
+            name?: string;
+            /** @description A description of the network */
+            description?: string;
+            /**
+             * Format: cidrv4
+             * @description The IP address range of the network
+             */
+            cidr?: string;
+        };
+        CreateDeviceDto: {
+            /** @description The name of the device */
+            name: string;
+            /**
+             * Format: ipv4
+             * @description The IP address of the device
+             */
+            ip: string;
+            /** @description The identifier of the device owner */
+            ownerId?: string;
+        };
+        DeviceRelationsDto: {
+            /**
+             * Format: uuid
+             * @description The unique identifier of the device
+             */
+            id: string;
+            /** @description The name of the device */
+            name: string;
+            /**
+             * Format: ipv4
+             * @description The IP address of the device
+             */
+            ip: string;
+            /** @description The identifier of the device owner */
+            ownerId: string;
+            /** @description The list of tags associated with the device */
+            tags: {
+                /**
+                 * Format: uuid
+                 * @description The unique identifier of the tag
+                 */
+                id: string;
+                /** @description The name of the tag */
+                name: string;
+                /** @description The display color of the tag */
+                color: ("red" | "blue" | "green" | "yellow" | "purple" | "orange") | null;
+            }[];
+            /** @description The owner of the device */
+            owner: {
+                /** @description The unique identifier of the user */
+                id: string;
+                /** @description The name of the user */
+                name: string;
+                /** @description The email of the user */
+                email: string;
+            } | null;
+        };
+        UpdateDeviceDto: {
+            /** @description The name of the device */
+            name?: string;
+            /**
+             * Format: ipv4
+             * @description The IP address of the device
+             */
+            ip?: string;
+            /** @description The identifier of the device owner */
+            ownerId?: string;
+        };
+        CreateTagDto: {
+            /** @description The name of the tag */
+            name: string;
+            /** @description The display color of the tag */
+            color: ("red" | "blue" | "green" | "yellow" | "purple" | "orange") | null;
+        };
+        TagDto: {
+            /**
+             * Format: uuid
+             * @description The unique identifier of the tag
+             */
+            id: string;
+            /** @description The name of the tag */
+            name: string;
+            /** @description The display color of the tag */
+            color: ("red" | "blue" | "green" | "yellow" | "purple" | "orange") | null;
+            /** @description The number of devices with this tag */
+            devicesCount: number;
+        };
+        UpdateTagDto: {
+            /** @description The name of the tag */
+            name?: string;
+            /** @description The display color of the tag */
+            color?: ("red" | "blue" | "green" | "yellow" | "purple" | "orange") | null;
+        };
+        CreateRuleDto: {
+            sourceId: string | null;
+            destId: string | null;
+            description: string | null;
+            protocol: ("TCP" | "UDP" | "ICMP") | null;
+            port: number | null;
+        };
+        RuleDto: {
+            /**
+             * Format: uuid
+             * @description The unique identifier of the rule
+             */
+            id: string;
+            sourceId: string | null;
+            destId: string | null;
+            description: string | null;
+            protocol: ("TCP" | "UDP" | "ICMP") | null;
+            port: number | null;
+            /** @description The source tag */
+            source: {
+                /**
+                 * Format: uuid
+                 * @description The unique identifier of the tag
+                 */
+                id: string;
+                /** @description The name of the tag */
+                name: string;
+                /** @description The display color of the tag */
+                color: ("red" | "blue" | "green" | "yellow" | "purple" | "orange") | null;
+                /** @description The number of devices with this tag */
+                devicesCount: number;
+            } | null;
+            /** @description The destination tag */
+            dest: {
+                /**
+                 * Format: uuid
+                 * @description The unique identifier of the tag
+                 */
+                id: string;
+                /** @description The name of the tag */
+                name: string;
+                /** @description The display color of the tag */
+                color: ("red" | "blue" | "green" | "yellow" | "purple" | "orange") | null;
+                /** @description The number of devices with this tag */
+                devicesCount: number;
+            } | null;
+        };
+        UpdateRuleDto: {
+            sourceId?: string | null;
+            destId?: string | null;
+            description?: string | null;
+            protocol?: ("TCP" | "UDP" | "ICMP") | null;
+            port?: number | null;
+        };
     };
-    NetworkDto: {
-      /**
-       * Format: uuid
-       * @description The unique identifier of the network
-       */
-      id: string;
-      /** @description The name of the network */
-      name: string;
-      /** @description A description of the network */
-      description: string;
-      /**
-       * Format: cidrv4
-       * @description The IP address range of the network
-       */
-      cidr: string;
-      /** @description The unique identifier of the network creator */
-      creatorId: string | null;
-      /** @description The data of user who created network */
-      creator: {
-        /** @description The unique identifier of the user */
-        id: string;
-        /** @description The name of the user */
-        name: string;
-        /** @description The email of the user */
-        email: string;
-      } | null;
-      devicesCount: number;
-    };
-    NetworkEnterCredentialsDto: {
-      /** @description The network access key */
-      key: string;
-    };
-    UpdateNetworkDto: {
-      /** @description The name of the network */
-      name?: string;
-      /** @description A description of the network */
-      description?: string;
-      /**
-       * Format: cidrv4
-       * @description The IP address range of the network
-       */
-      cidr?: string;
-    };
-    CreateDeviceDto: {
-      /** @description The name of the device */
-      name: string;
-      /**
-       * Format: ipv4
-       * @description The IP address of the device
-       */
-      ip: string;
-      /** @description The identifier of the device owner */
-      ownerId?: string;
-    };
-    DeviceRelationsDto: {
-      /**
-       * Format: uuid
-       * @description The unique identifier of the device
-       */
-      id: string;
-      /** @description The name of the device */
-      name: string;
-      /**
-       * Format: ipv4
-       * @description The IP address of the device
-       */
-      ip: string;
-      /** @description The identifier of the device owner */
-      ownerId: string;
-      /** @description The list of tags associated with the device */
-      tags: {
-        /**
-         * Format: uuid
-         * @description The unique identifier of the tag
-         */
-        id: string;
-        /** @description The name of the tag */
-        name: string;
-        /** @description The display color of the tag */
-        color:
-          | ("red" | "blue" | "green" | "yellow" | "purple" | "orange")
-          | null;
-      }[];
-    };
-    UpdateDeviceDto: {
-      /** @description The name of the device */
-      name?: string;
-      /**
-       * Format: ipv4
-       * @description The IP address of the device
-       */
-      ip?: string;
-      /** @description The identifier of the device owner */
-      ownerId?: string;
-    };
-    CreateTagDto: {
-      /** @description The name of the tag */
-      name: string;
-      /** @description The display color of the tag */
-      color: ("red" | "blue" | "green" | "yellow" | "purple" | "orange") | null;
-    };
-    TagDto: {
-      /**
-       * Format: uuid
-       * @description The unique identifier of the tag
-       */
-      id: string;
-      /** @description The name of the tag */
-      name: string;
-      /** @description The display color of the tag */
-      color: ("red" | "blue" | "green" | "yellow" | "purple" | "orange") | null;
-      /** @description The number of devices with this tag */
-      devicesCount: number;
-    };
-    UpdateTagDto: {
-      /** @description The name of the tag */
-      name?: string;
-      /** @description The display color of the tag */
-      color?:
-        | ("red" | "blue" | "green" | "yellow" | "purple" | "orange")
-        | null;
-    };
-    CreateRuleDto: {
-      sourceId: string | null;
-      destId: string | null;
-      description: string | null;
-      protocol: ("TCP" | "UDP" | "ICMP") | null;
-      port: number | null;
-    };
-    RuleDto: {
-      /**
-       * Format: uuid
-       * @description The unique identifier of the rule
-       */
-      id: string;
-      sourceId: string | null;
-      destId: string | null;
-      description: string | null;
-      protocol: ("TCP" | "UDP" | "ICMP") | null;
-      port: number | null;
-      /** @description The source tag */
-      source: {
-        /**
-         * Format: uuid
-         * @description The unique identifier of the tag
-         */
-        id: string;
-        /** @description The name of the tag */
-        name: string;
-        /** @description The display color of the tag */
-        color:
-          | ("red" | "blue" | "green" | "yellow" | "purple" | "orange")
-          | null;
-        /** @description The number of devices with this tag */
-        devicesCount: number;
-      } | null;
-      /** @description The destination tag */
-      dest: {
-        /**
-         * Format: uuid
-         * @description The unique identifier of the tag
-         */
-        id: string;
-        /** @description The name of the tag */
-        name: string;
-        /** @description The display color of the tag */
-        color:
-          | ("red" | "blue" | "green" | "yellow" | "purple" | "orange")
-          | null;
-        /** @description The number of devices with this tag */
-        devicesCount: number;
-      } | null;
-    };
-    UpdateRuleDto: {
-      sourceId?: string | null;
-      destId?: string | null;
-      description?: string | null;
-      protocol?: ("TCP" | "UDP" | "ICMP") | null;
-      port?: number | null;
-    };
-  };
-  responses: never;
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  AppController_getHello: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+    AppController_getHello: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content?: never;
-      };
-    };
-  };
-  NetworksController_getMyNetworks: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Сети получены */
-      200: {
-        headers: {
-          [name: string]: unknown;
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
-        content: {
-          "application/json": components["schemas"]["NetworkDto"][];
+    };
+    NetworksController_getMyNetworks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
-    };
-  };
-  NetworksController_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CreateNetworkDto"];
-      };
-    };
-    responses: {
-      /** @description Сеть успешно создана */
-      201: {
-        headers: {
-          [name: string]: unknown;
+        requestBody?: never;
+        responses: {
+            /** @description Сети получены */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NetworkDto"][];
+                };
+            };
         };
-        content: {
-          "application/json": components["schemas"]["NetworkDto"];
+    };
+    NetworksController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
-    };
-  };
-  NetworksController_get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description UUID сети */
-        network_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Сеть найдена */
-      200: {
-        headers: {
-          [name: string]: unknown;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateNetworkDto"];
+            };
         };
-        content: {
-          "application/json": components["schemas"]["NetworkDto"];
+        responses: {
+            /** @description Сеть успешно создана */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NetworkDto"];
+                };
+            };
         };
-      };
-      /** @description Сеть не найдена */
-      404: {
-        headers: {
-          [name: string]: unknown;
+    };
+    NetworksController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID сети */
+                network_id: string;
+            };
+            cookie?: never;
         };
-        content?: never;
-      };
-    };
-  };
-  NetworksController_update: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description UUID сети */
-        network_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["UpdateNetworkDto"];
-      };
-    };
-    responses: {
-      /** @description Сеть успешно обновлена */
-      200: {
-        headers: {
-          [name: string]: unknown;
+        requestBody?: never;
+        responses: {
+            /** @description Сеть найдена */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NetworkDto"];
+                };
+            };
+            /** @description Сеть не найдена */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
-        content?: never;
-      };
-      /** @description Сеть не найдена */
-      404: {
-        headers: {
-          [name: string]: unknown;
+    };
+    NetworksController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID сети */
+                network_id: string;
+            };
+            cookie?: never;
         };
-        content?: never;
-      };
-    };
-  };
-  NetworksController_enter: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description UUID сети */
-        network_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["NetworkEnterCredentialsDto"];
-      };
-    };
-    responses: {
-      /** @description Успешный вход */
-      200: {
-        headers: {
-          [name: string]: unknown;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateNetworkDto"];
+            };
         };
-        content?: never;
-      };
-      /** @description Сеть не найдена */
-      404: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description Сеть успешно обновлена */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Сеть не найдена */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
-        content?: never;
-      };
     };
-  };
-  NetworksController_delete: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description UUID сети */
-        network_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Сеть успешно удалена */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    NetworksController_enter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID сети */
+                network_id: string;
+            };
+            cookie?: never;
         };
-        content?: never;
-      };
-      /** @description Сеть не найдена */
-      404: {
-        headers: {
-          [name: string]: unknown;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NetworkEnterCredentialsDto"];
+            };
         };
-        content?: never;
-      };
-    };
-  };
-  DevicesController_getDevicesWithFilters: {
-    parameters: {
-      query?: {
-        /** @description Пойсковой запрос по названию */
-        q?: string;
-        /** @description ID тэгов, по которым происходит фильтрация */
-        tags?: string[];
-        /** @description UUID владельца устройства */
-        owner_id?: string;
-      };
-      header?: never;
-      path: {
-        network_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Устройства найдены */
-      200: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description Успешный вход */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Сеть не найдена */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
-        content: {
-          "application/json": components["schemas"]["DeviceRelationsDto"][];
+    };
+    NetworksController_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID сети */
+                network_id: string;
+            };
+            cookie?: never;
         };
-      };
-      /** @description Устройства не найдены */
-      404: {
-        headers: {
-          [name: string]: unknown;
+        requestBody?: never;
+        responses: {
+            /** @description Сеть успешно удалена */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Сеть не найдена */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
-        content?: never;
-      };
     };
-  };
-  DevicesController_createDevice: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        network_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CreateDeviceDto"];
-      };
-    };
-    responses: {
-      /** @description Устройство успешно создано */
-      201: {
-        headers: {
-          [name: string]: unknown;
+    NetworksController_getNetworkUsers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID сети */
+                network_id: string;
+            };
+            cookie?: never;
         };
-        content?: never;
-      };
-    };
-  };
-  DevicesController_getDevice: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        network_id: string;
-        /** @description UUID устройства */
-        device_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Устройство найдено */
-      200: {
-        headers: {
-          [name: string]: unknown;
+        requestBody?: never;
+        responses: {
+            /** @description Пользователи сети получены */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NetworkUsersDto"];
+                };
+            };
+            /** @description Сеть не найдена */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
-        content: {
-          "application/json": components["schemas"]["DeviceRelationsDto"];
+    };
+    DevicesController_getDevicesWithFilters: {
+        parameters: {
+            query?: {
+                /** @description Пойсковой запрос по названию */
+                q?: string;
+                /** @description ID тэгов, по которым происходит фильтрация */
+                tags?: string[];
+                /** @description UUID владельца устройства */
+                owner_id?: string;
+            };
+            header?: never;
+            path: {
+                network_id: string;
+            };
+            cookie?: never;
         };
-      };
-      /** @description Устройство не найдено */
-      404: {
-        headers: {
-          [name: string]: unknown;
+        requestBody?: never;
+        responses: {
+            /** @description Устройства найдены */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceRelationsDto"][];
+                };
+            };
+            /** @description Устройства не найдены */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
-        content?: never;
-      };
     };
-  };
-  DevicesController_updateDevice: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        network_id: string;
-        /** @description UUID устройства */
-        device_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["UpdateDeviceDto"];
-      };
-    };
-    responses: {
-      /** @description Устройство успешно обновлено */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    DevicesController_createDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                network_id: string;
+            };
+            cookie?: never;
         };
-        content?: never;
-      };
-      /** @description Устройство не найдено */
-      404: {
-        headers: {
-          [name: string]: unknown;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateDeviceDto"];
+            };
         };
-        content?: never;
-      };
-    };
-  };
-  DevicesController_deleteDevice: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description UUID устройства */
-        device_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Устройство успешно удалено */
-      200: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description Устройство успешно создано */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
-        content?: never;
-      };
-      /** @description Устройство не найдено */
-      404: {
-        headers: {
-          [name: string]: unknown;
+    };
+    DevicesController_getDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                network_id: string;
+                /** @description UUID устройства */
+                device_id: string;
+            };
+            cookie?: never;
         };
-        content?: never;
-      };
-    };
-  };
-  DevicesController_addTagOnDevice: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        network_id: string;
-        device_id: string;
-        tag_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["DeviceRelationsDto"];
-      };
-    };
-    responses: {
-      /** @description Тег успешно добавлен к устройству */
-      201: {
-        headers: {
-          [name: string]: unknown;
+        requestBody?: never;
+        responses: {
+            /** @description Устройство найдено */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceRelationsDto"];
+                };
+            };
+            /** @description Устройство не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
-        content?: never;
-      };
-      /** @description Устройство не найдено */
-      404: {
-        headers: {
-          [name: string]: unknown;
+    };
+    DevicesController_updateDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                network_id: string;
+                /** @description UUID устройства */
+                device_id: string;
+            };
+            cookie?: never;
         };
-        content?: never;
-      };
-    };
-  };
-  DevicesController_deleteTagFromDevice: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        device_id: string;
-        tag_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["DeviceRelationsDto"];
-      };
-    };
-    responses: {
-      /** @description Тег успешно добавлен к устройству */
-      201: {
-        headers: {
-          [name: string]: unknown;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateDeviceDto"];
+            };
         };
-        content?: never;
-      };
-      /** @description Устройство не найдено */
-      404: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description Устройство успешно обновлено */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Устройство не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
-        content?: never;
-      };
     };
-  };
-  TagsController_getAllTags: {
-    parameters: {
-      query?: {
-        /** @description Пойсковой запрос по названию */
-        q?: string;
-      };
-      header?: never;
-      path: {
-        network_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Теги получены */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    DevicesController_deleteDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID устройства */
+                device_id: string;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["TagDto"][];
+        requestBody?: never;
+        responses: {
+            /** @description Устройство успешно удалено */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Устройство не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
-      };
     };
-  };
-  TagsController_createTag: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description UUID сети */
-        network_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CreateTagDto"];
-      };
-    };
-    responses: {
-      /** @description Тег успешно создан */
-      201: {
-        headers: {
-          [name: string]: unknown;
+    DevicesController_addTagOnDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                device_id: string;
+                tag_id: string;
+            };
+            cookie?: never;
         };
-        content?: never;
-      };
-    };
-  };
-  TagsController_getTag: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description UUID тега */
-        tag_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Тег найден */
-      200: {
-        headers: {
-          [name: string]: unknown;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeviceRelationsDto"];
+            };
         };
-        content: {
-          "application/json": components["schemas"]["TagDto"];
+        responses: {
+            /** @description Тег успешно добавлен к устройству */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Устройство не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
-      };
-      /** @description Тег не найден */
-      404: {
-        headers: {
-          [name: string]: unknown;
+    };
+    DevicesController_deleteTagFromDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                device_id: string;
+                tag_id: string;
+            };
+            cookie?: never;
         };
-        content?: never;
-      };
-    };
-  };
-  TagsController_updateTag: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description UUID тега */
-        tag_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["UpdateTagDto"];
-      };
-    };
-    responses: {
-      /** @description Тег успешно обновлён */
-      200: {
-        headers: {
-          [name: string]: unknown;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeviceRelationsDto"];
+            };
         };
-        content?: never;
-      };
-      /** @description Тег не найден */
-      404: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description Тег успешно добавлен к устройству */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Устройство не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
-        content?: never;
-      };
     };
-  };
-  TagsController_deleteTag: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description UUID тега */
-        tag_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Тег успешно удалён */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    TagsController_getAllTags: {
+        parameters: {
+            query?: {
+                /** @description Пойсковой запрос по названию */
+                q?: string;
+            };
+            header?: never;
+            path: {
+                network_id: string;
+            };
+            cookie?: never;
         };
-        content?: never;
-      };
-      /** @description Тег не найден */
-      404: {
-        headers: {
-          [name: string]: unknown;
+        requestBody?: never;
+        responses: {
+            /** @description Теги получены */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagDto"][];
+                };
+            };
         };
-        content?: never;
-      };
     };
-  };
-  RulesController_getAllRules: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        network_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Правила получены */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    TagsController_createTag: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID сети */
+                network_id: string;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["RuleDto"][];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTagDto"];
+            };
         };
-      };
-    };
-  };
-  RulesController_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        network_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CreateRuleDto"];
-      };
-    };
-    responses: {
-      /** @description Правило успешно создано */
-      201: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description Тег успешно создан */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
-        content?: never;
-      };
     };
-  };
-  RulesController_get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description UUID правила */
-        rule_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Правило найдено */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    TagsController_getTag: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID тега */
+                tag_id: string;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["RuleDto"];
+        requestBody?: never;
+        responses: {
+            /** @description Тег найден */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagDto"];
+                };
+            };
+            /** @description Тег не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
-      };
-      /** @description Правило не найдено */
-      404: {
-        headers: {
-          [name: string]: unknown;
+    };
+    TagsController_updateTag: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID тега */
+                tag_id: string;
+            };
+            cookie?: never;
         };
-        content?: never;
-      };
-    };
-  };
-  RulesController_update: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description UUID правила */
-        rule_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["UpdateRuleDto"];
-      };
-    };
-    responses: {
-      /** @description Правило успешно обновлено */
-      200: {
-        headers: {
-          [name: string]: unknown;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTagDto"];
+            };
         };
-        content?: never;
-      };
-      /** @description Правило не найдено */
-      404: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description Тег успешно обновлён */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Тег не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
-        content?: never;
-      };
     };
-  };
-  RulesController_delete: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description UUID правила */
-        rule_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Правило успешно удалено */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    TagsController_deleteTag: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID тега */
+                tag_id: string;
+            };
+            cookie?: never;
         };
-        content?: never;
-      };
-      /** @description Правило не найдено */
-      404: {
-        headers: {
-          [name: string]: unknown;
+        requestBody?: never;
+        responses: {
+            /** @description Тег успешно удалён */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Тег не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
-        content?: never;
-      };
     };
-  };
+    RulesController_getAllRules: {
+        parameters: {
+            query?: {
+                /** @description Поисковой запрос по названию правила */
+                q?: string;
+                /** @description ID тегов, отправляющих данные, по которым происходит фильтрация */
+                source_tags?: string[];
+                /** @description ID тегов, принимающих данные, по которым происходит фильтрация */
+                dest_tags?: string[];
+            };
+            header?: never;
+            path: {
+                network_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Правила получены */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleDto"][];
+                };
+            };
+        };
+    };
+    RulesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                network_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRuleDto"];
+            };
+        };
+        responses: {
+            /** @description Правило успешно создано */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RulesController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID правила */
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Правило найдено */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleDto"];
+                };
+            };
+            /** @description Правило не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RulesController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID правила */
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateRuleDto"];
+            };
+        };
+        responses: {
+            /** @description Правило успешно обновлено */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Правило не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RulesController_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID правила */
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Правило успешно удалено */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Правило не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
 }

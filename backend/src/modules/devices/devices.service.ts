@@ -89,16 +89,6 @@ export class DevicesService {
     ownerId?: string,
     q?: string,
   ): Promise<DeviceRelations | DeviceRelations[] | undefined> {
-    const withTags = {
-      tags: {
-        columns: {
-          id: true,
-          name: true,
-          color: true,
-        },
-      },
-    } as const;
-
     if (id) {
       return this.db.query.devices.findFirst({
         where: {
@@ -114,7 +104,22 @@ export class DevicesService {
               ),
             )!,
         },
-        with: withTags,
+        with: {
+          tags: {
+            columns: {
+              id: true,
+              name: true,
+              color: true,
+            },
+          },
+          owner: {
+            columns: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
       });
     }
 
@@ -123,7 +128,22 @@ export class DevicesService {
         RAW: (devices) =>
           and(...this.buildReadFilters(devices, networkId, tags, ownerId, q))!,
       },
-      with: withTags,
+      with: {
+        tags: {
+          columns: {
+            id: true,
+            name: true,
+            color: true,
+          },
+        },
+        owner: {
+          columns: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
       ...(q
         ? {
             orderBy: (devices, { asc }) => asc(sql`length(${devices.name})`),

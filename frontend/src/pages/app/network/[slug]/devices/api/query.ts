@@ -38,7 +38,6 @@ export const deviceQuery = {
         return data!.map((device) => ({
           ...device,
           status: "online" as const,
-          owner: device.ownerId,
         }));
       },
     }),
