@@ -55,6 +55,7 @@ const createTagMutation = createMutation(() => tagDeviceCreation(() => {}));
 const deleteTagMutation = createMutation(() => tagDeviceRemove(() => {}));
 
 let isTagSelectorOpen = $state(false);
+// svelte-ignore state_referenced_locally
 let deviceTagsArray = $state(device?.tags || []);
 
 let {

@@ -53,20 +53,6 @@ function toggleTag(tag: FilterValueWithId) {
   }
   column?.setFilterValue(next.length > 0 ? next : undefined);
 }
-
-function onClickHandler(): (name: string) => void {
-  console.log("click", onclick, !!onclick);
-  if (onclick) {
-    console.log("one more click");
-    return onclick!;
-  } else {
-    console.log("one  click");
-    return (name: string) => {
-      const tag = selectedTags.find((t) => t.name === name);
-      if (tag) toggleTag(tag);
-    };
-  }
-}
 </script>
 
 <Input placeholder="Search tags..." bind:value={search} class="h-8" />

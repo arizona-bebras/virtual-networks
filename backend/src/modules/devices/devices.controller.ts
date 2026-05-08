@@ -29,6 +29,11 @@ import { RolesGuard } from "../../authorization/roles.guard";
 import { DevicesService } from "./devices.service";
 
 @ApiTags("Devices")
+@ApiParam({
+  name: "network_id",
+  description: "UUID сети",
+  example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+})
 @Controller("networks/:network_id/devices")
 @UseGuards(AuthGuard, RolesGuard)
 export class DevicesController {
@@ -158,7 +163,6 @@ export class DevicesController {
   })
   @ApiResponse({ status: 404, description: "Устройство не найдено" })
   async addTagOnDevice(
-    @Param("network_id") netowrkId: string,
     @Param("device_id") deviceId: string,
     @Param("tag_id") tagId: string,
   ) {
@@ -175,7 +179,6 @@ export class DevicesController {
   })
   @ApiResponse({ status: 404, description: "Устройство не найдено" })
   async deleteTagFromDevice(
-    @Param("network_id") netowrkId: string,
     @Param("device_id") deviceId: string,
     @Param("tag_id") tagId: string,
   ) {
