@@ -1,0 +1,110 @@
+name: CI Frontend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - frontend/**
+      - common/**
+      - proto/**
+      - biome.json
+      - package.json
+      - pnpm-lock*.yaml
+      - pnpm-workspace.yaml
+      - turbo.json
+      - .github/actions/**
+      - .github/workflows/ci-frontend.yml
+  pull_request:
+    paths:
+      - frontend/**
+      - common/**
+      - proto/**
+      - biome.json
+      - package.json
+      - pnpm-lock*.yaml
+      - pnpm-workspace.yaml
+      - turbo.json
+      - .github/actions/**
+      - .github/workflows/ci-frontend.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+env:
+  TURBO_TELEMETRY_DISABLED: "1"
+
+jobs:
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Setup protoc
+        uses: ./.github/actions/setup-protoc
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore Turbo cache
+        uses: ./.github/actions/turbo-cache
+        with:
+          namespace: frontend
+
+      - name: Prepare frontend environment
+        run: cp frontend/.env.example frontend/.env
+
+      - name: Comment frontend Biome issues
+        uses: ./.github/actions/biome-reviewdog
+        with:
+          workspace: frontend
+          name: biome-frontend
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build frontend type-check dependencies
+        run: pnpm exec turbo run common#build
+
+      - name: Type-check frontend
+        shell: bash
+        run: |
+          output_file="$RUNNER_TEMP/svelte-check.txt"
+          status=0
+
+          (
+            cd frontend
+            pnpm type-check --output machine
+          ) >"$output_file" 2>&1 || status=$?
+
+          while IFS= read -r line; do
+            if [[ "$line" =~ ^[0-9]+\ (ERROR|WARNING)\ \"([^\"]+)\"\ ([0-9]+):([0-9]+)\ \"(.*)\"$ ]]; then
+              severity=$(printf '%s' "${BASH_REMATCH[1]}" | tr '[:upper:]' '[:lower:]')
+              file="${BASH_REMATCH[2]}"
+              line_no="${BASH_REMATCH[3]}"
+              col_no="${BASH_REMATCH[4]}"
+              message="${BASH_REMATCH[5]}"
+
+              if [ "$line_no" -le 0 ]; then
+                line_no=1
+              fi
+
+              if [ "$col_no" -le 0 ]; then
+                col_no=1
+              fi
+
+              echo "::$severity file=frontend/$file,line=$line_no,col=$col_no::$message"
+            fi
+          done <"$output_file"
+
+          cat "$output_file"
+          exit "$status"
+
+      - name: Build frontend
+        run: pnpm exec turbo run common#build frontend#build

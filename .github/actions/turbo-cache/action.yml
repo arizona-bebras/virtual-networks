@@ -1,0 +1,20 @@
+name: Restore Turbo cache
+description: Restore the local Turbo task cache.
+
+inputs:
+  namespace:
+    description: Optional cache namespace.
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Restore Turbo cache
+      uses: actions/cache@v4
+      with:
+        path: .turbo
+        key: ${{ runner.os }}-turbo-${{ inputs.namespace }}-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-turbo-${{ inputs.namespace }}-
+          ${{ runner.os }}-turbo-

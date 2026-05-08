@@ -1,0 +1,181 @@
+name: CI Backend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - backend/**
+      - common/**
+      - proto/**
+      - biome.json
+      - package.json
+      - pnpm-lock*.yaml
+      - pnpm-workspace.yaml
+      - turbo.json
+      - .github/actions/**
+      - .github/workflows/ci-backend.yml
+  pull_request:
+    paths:
+      - backend/**
+      - common/**
+      - proto/**
+      - biome.json
+      - package.json
+      - pnpm-lock*.yaml
+      - pnpm-workspace.yaml
+      - turbo.json
+      - .github/actions/**
+      - .github/workflows/ci-backend.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+  issues: write
+  pull-requests: write
+
+env:
+  TURBO_TELEMETRY_DISABLED: "1"
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Setup protoc
+        uses: ./.github/actions/setup-protoc
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore Turbo cache
+        uses: ./.github/actions/turbo-cache
+        with:
+          namespace: backend
+
+      - name: Comment backend Biome issues
+        uses: ./.github/actions/biome-reviewdog
+        with:
+          workspace: backend
+          name: biome-backend
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build backend
+        run: pnpm exec turbo run common#build proto#build backend#build
+
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Setup protoc
+        uses: ./.github/actions/setup-protoc
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore Turbo cache
+        uses: ./.github/actions/turbo-cache
+        with:
+          namespace: backend-tests
+
+      - name: Run backend tests with Turbo
+        id: backend_tests
+        shell: bash
+        run: |
+          output_file="$RUNNER_TEMP/backend-test-output.txt"
+          set +e
+
+          pnpm exec turbo run backend#test --affected --output-logs=full 2>&1 | tee "$output_file"
+          status=${PIPESTATUS[0]}
+
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          {
+            echo "suites<<EOF"
+            awk '
+              /(^|backend:test:[[:space:]]+)(PASS|FAIL)[[:space:]]+test\// {
+                state = ""
+                file = ""
+                for (i = 1; i <= NF; i++) {
+                  if ($i == "PASS" || $i == "FAIL") {
+                    state = $i
+                    file = $(i + 1)
+                    break
+                  }
+                }
+                if (state != "" && file != "") {
+                  icon = state == "PASS" ? "✅" : "❌"
+                  print icon " `" file "`"
+                }
+              }
+            ' "$output_file"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Comment backend test results
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        env:
+          TEST_STATUS: ${{ steps.backend_tests.outputs.status }}
+          TEST_SUITES: ${{ steps.backend_tests.outputs.suites }}
+        with:
+          script: |
+            const marker = "<!-- backend-test-results -->";
+            const passed = process.env.TEST_STATUS === "0";
+            const icon = passed ? "✅" : "❌";
+            const status = passed ? "PASSED" : "FAILED";
+            const suites = process.env.TEST_SUITES?.trim();
+
+            const body = [
+              marker,
+              `### ${icon} Backend tests ${status}.`,
+              suites ? `\n${suites}` : "",
+              "",
+              `[View workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+            ].join("\n");
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+            const existing = comments.find((comment) =>
+              comment.user.type === "Bot" && comment.body.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+            }
+
+      - name: Fail if backend tests failed
+        if: steps.backend_tests.outputs.status != '0'
+        run: exit 1

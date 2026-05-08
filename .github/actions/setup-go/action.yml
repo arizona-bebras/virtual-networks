@@ -1,0 +1,19 @@
+name: Setup Go module
+description: Setup Go using a module go.mod file and dependency cache paths.
+
+inputs:
+  go-version-file:
+    description: Path to the go.mod file that declares the Go version.
+    required: true
+  cache-dependency-path:
+    description: Newline-delimited go.sum paths used by setup-go cache.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: ${{ inputs.go-version-file }}
+        cache-dependency-path: ${{ inputs.cache-dependency-path }}

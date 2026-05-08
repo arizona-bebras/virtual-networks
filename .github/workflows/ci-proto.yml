@@ -1,0 +1,65 @@
+name: CI Proto
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - proto/**
+      - package.json
+      - pnpm-lock*.yaml
+      - pnpm-workspace.yaml
+      - turbo.json
+      - .github/actions/**
+      - .github/workflows/ci-proto.yml
+  pull_request:
+    paths:
+      - proto/**
+      - package.json
+      - pnpm-lock*.yaml
+      - pnpm-workspace.yaml
+      - turbo.json
+      - .github/actions/**
+      - .github/workflows/ci-proto.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TURBO_TELEMETRY_DISABLED: "1"
+
+jobs:
+  proto:
+    name: Proto Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: ./.github/actions/setup-go
+        with:
+          go-version-file: proto/go.mod
+          cache-dependency-path: |
+            proto/go.sum
+
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Setup protoc
+        uses: ./.github/actions/setup-protoc
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify generated protobuf artifacts
+        run: pnpm exec turbo run proto#generate --force
+
+      - name: Lint generated Go proto module
+        working-directory: proto
+        run: go vet ./...
+
+      - name: Build generated Go proto module
+        working-directory: proto
+        run: go build ./...

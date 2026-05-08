@@ -1,0 +1,54 @@
+name: CI Router
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - router/**
+      - proto/**
+      - .github/actions/**
+      - .github/workflows/ci-router.yml
+  pull_request:
+    paths:
+      - router/**
+      - proto/**
+      - .github/actions/**
+      - .github/workflows/ci-router.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  go-router:
+    name: Go Router
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: ./.github/actions/setup-go
+        with:
+          go-version-file: router/go.mod
+          cache-dependency-path: |
+            router/go.sum
+            proto/go.sum
+
+      - name: Setup protoc
+        uses: ./.github/actions/setup-protoc
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Go protobuf artifacts
+        run: node proto/scripts/generate.mjs go
+
+      - name: Lint router Go module
+        working-directory: router
+        run: go vet ./...
+
+      - name: Build router Go module
+        working-directory: router
+        run: go build ./...

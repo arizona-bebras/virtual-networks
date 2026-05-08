@@ -1,0 +1,61 @@
+name: CI Common
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - common/**
+      - biome.json
+      - package.json
+      - pnpm-lock*.yaml
+      - pnpm-workspace.yaml
+      - turbo.json
+      - .github/actions/**
+      - .github/workflows/ci-common.yml
+  pull_request:
+    paths:
+      - common/**
+      - biome.json
+      - package.json
+      - pnpm-lock*.yaml
+      - pnpm-workspace.yaml
+      - turbo.json
+      - .github/actions/**
+      - .github/workflows/ci-common.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+env:
+  TURBO_TELEMETRY_DISABLED: "1"
+
+jobs:
+  common:
+    name: Common
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Restore Turbo cache
+        uses: ./.github/actions/turbo-cache
+        with:
+          namespace: common
+
+      - name: Comment common Biome issues
+        uses: ./.github/actions/biome-reviewdog
+        with:
+          workspace: common
+          name: biome-common
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build common
+        run: pnpm exec turbo run common#build

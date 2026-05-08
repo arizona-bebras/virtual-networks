@@ -30,6 +30,8 @@ jobs:
       PREVIOUS_HEAD_SHA: ${{ github.event.before || '' }}
       PR_ACTION: ${{ github.event.action }}
       REPOSITORY: ${{ github.repository }}
+      BASE_REF: ${{ github.event.pull_request.base.ref }}
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
     outputs:
       codex-output: ${{ steps.run-codex.outputs.final-message }}
     steps:
@@ -197,8 +199,8 @@ jobs:
             echo "Pull Request #: ${PR_NUMBER}"
             echo "Pull request action: ${PR_ACTION}"
             echo "Review scope: ${REVIEW_SCOPE}"
-            echo "Base ref: ${{ github.event.pull_request.base.ref }}"
-            echo "Head ref: ${{ github.event.pull_request.head.ref }}"
+            echo "Base ref: ${BASE_REF}"
+            echo "Head ref: ${HEAD_REF}"
             echo "PR Base SHA: ${BASE_SHA}"
             echo "Review Base SHA: ${REVIEW_BASE_SHA}"
             echo "Head SHA: ${HEAD_SHA}"
