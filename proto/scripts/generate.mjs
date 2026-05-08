@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
@@ -12,16 +12,18 @@ const goOutDir = resolve(protoDir, "gen", "go");
 
 const target = process.argv[2] ?? "all";
 
-const collectProtoFiles = (directory) =>
+const toProtoPath = (path) => path.split(sep).join("/");
+
+const collectProtoFiles = (directory, root = directory) =>
   readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const entryPath = resolve(directory, entry.name);
 
     if (entry.isDirectory()) {
-      return collectProtoFiles(entryPath);
+      return collectProtoFiles(entryPath, root);
     }
 
     if (entry.isFile() && entry.name.endsWith(".proto")) {
-      return [entry.name];
+      return [toProtoPath(relative(root, entryPath))];
     }
 
     return [];
@@ -103,7 +105,7 @@ const generateTs = () => {
       "--ts_proto_opt=nestJs=true",
       "--ts_proto_opt=addGrpcMetadata=true",
       "--ts_proto_opt=esModuleInterop=true",
-      `--ts_proto_out=gen/ts`,
+      "--ts_proto_out=gen/ts",
       ...protoFiles,
     ],
     { cwd: protoDir },
@@ -142,11 +144,11 @@ const generateGo = () => {
   run(
     "protoc",
     [
-      `--go_out=${protoDir}`,
+      "--go_out=.",
       "--go_opt=module=proto",
-      `--go-grpc_out=${protoDir}`,
+      "--go-grpc_out=.",
       "--go-grpc_opt=module=proto",
-      `-I${protoSrcDir}`,
+      "-Isrc",
       ...protoFiles,
     ],
     { cwd: protoDir, env },
