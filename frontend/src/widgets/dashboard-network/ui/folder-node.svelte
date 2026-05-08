@@ -36,8 +36,6 @@ let filteredDevices = $derived(
     : data.devices,
 );
 
-function handleClick(e: MouseEvent) {}
-
 function handleBurst() {}
 </script>
 
@@ -79,7 +77,6 @@ function handleBurst() {}
 {#if displayMode === "graphical"}
   <Card.Root
     class="w-44 bg-muted/10 border-border hover:bg-muted/30 transition-all cursor-pointer group shadow-lg border-2"
-    onclick={handleClick}
   >
     <div class="p-3 flex items-center justify-between">
       <div class="flex items-center gap-3">
