@@ -4,13 +4,13 @@
   "description": "Protobuf schema and code generation for TS and Go",
   "private": true,
   "scripts": {
-    "build": "pnpm generate:ts",
+    "build": "pnpm generate:ts && tsc -p tsconfig.json --incremental false",
     "clean": "node ./scripts/generate.mjs clean",
     "generate": "node ./scripts/generate.mjs all",
     "generate:ts": "node ./scripts/generate.mjs ts",
     "generate:go": "node ./scripts/generate.mjs go",
     "mock:control-plane": "python ./mock/control_plane_mock.py",
-    "prepare": "node ./scripts/generate.mjs all"
+    "prepare": "pnpm generate && tsc -p tsconfig.json --incremental false"
   },
   "keywords": [],
   "author": "",
@@ -19,22 +19,27 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.14.3",
     "@grpc/proto-loader": "^0.8.0",
-    "protobufjs": "^8.0.1"
+    "@nestjs/microservices": "^11.1.19",
+    "protobufjs": "^8.0.1",
+    "rxjs": "^7.8.1",
+    "ts-proto": "^2.11.8",
+    "typescript": "^5.7.3"
   },
   "devDependencies": {
     "protobufjs-cli": "^2.0.1"
   },
-  "main": "gen/ts/controlplane.js",
-  "types": "gen/ts/controlplane.d.ts",
+  "main": "dist/controlplane.js",
+  "types": "dist/controlplane.d.ts",
   "files": [
+    "dist",
     "gen/ts",
     "gen/go",
     "src"
   ],
   "exports": {
     ".": {
-      "types": "./gen/ts/controlplane.d.ts",
-      "default": "./gen/ts/controlplane.js"
+      "types": "./dist/controlplane.d.ts",
+      "default": "./dist/controlplane.js"
     }
   }
 }

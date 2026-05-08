@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
@@ -9,20 +9,21 @@ const protoDir = resolve(scriptDir, "..");
 const protoSrcDir = resolve(protoDir, "src");
 const tsOutDir = resolve(protoDir, "gen", "ts");
 const goOutDir = resolve(protoDir, "gen", "go");
-const tsModuleName = "controlplane";
 
 const target = process.argv[2] ?? "all";
 
-const collectProtoFiles = (directory) =>
+const toProtoPath = (path) => path.split(sep).join("/");
+
+const collectProtoFiles = (directory, root = directory) =>
   readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const entryPath = resolve(directory, entry.name);
 
     if (entry.isDirectory()) {
-      return collectProtoFiles(entryPath);
+      return collectProtoFiles(entryPath, root);
     }
 
     if (entry.isFile() && entry.name.endsWith(".proto")) {
-      return [entryPath];
+      return [toProtoPath(relative(root, entryPath))];
     }
 
     return [];
@@ -93,34 +94,19 @@ const ensureGoPlugins = () => {
 const generateTs = () => {
   recreateDir(tsOutDir);
   const protoFiles = getProtoFiles();
-  const jsOut = resolve(tsOutDir, `${tsModuleName}.js`);
 
   run(
-    "pnpm",
+    "protoc",
     [
-      "exec",
-      "pbjs",
-      "-t",
-      "static-module",
-      "-w",
-      "commonjs",
-      "-o",
-      jsOut,
-      "-p",
-      protoSrcDir,
+      "--proto_path=src",
+      process.platform === "win32"
+        ? '--plugin=protoc-gen-ts_proto=".\\node_modules\\.bin\\protoc-gen-ts_proto.cmd"'
+        : "--plugin=./node_modules/.bin/protoc-gen-ts_proto",
+      "--ts_proto_opt=nestJs=true",
+      "--ts_proto_opt=addGrpcMetadata=true",
+      "--ts_proto_opt=esModuleInterop=true",
+      "--ts_proto_out=gen/ts",
       ...protoFiles,
-    ],
-    { cwd: protoDir },
-  );
-
-  run(
-    "pnpm",
-    [
-      "exec",
-      "pbts",
-      "-o",
-      resolve(tsOutDir, `${tsModuleName}.d.ts`),
-      jsOut,
     ],
     { cwd: protoDir },
   );
@@ -158,11 +144,11 @@ const generateGo = () => {
   run(
     "protoc",
     [
-      `--go_out=${protoDir}`,
+      "--go_out=.",
       "--go_opt=module=proto",
-      `--go-grpc_out=${protoDir}`,
+      "--go-grpc_out=.",
       "--go-grpc_opt=module=proto",
-      `-I${protoSrcDir}`,
+      "-Isrc",
       ...protoFiles,
     ],
     { cwd: protoDir, env },
@@ -170,7 +156,7 @@ const generateGo = () => {
 };
 
 const clean = () => {
-  for (const path of [resolve(protoDir, "gen")]) {
+  for (const path of [resolve(protoDir, "gen"), resolve(protoDir, "dist")]) {
     if (existsSync(path)) {
       rmSync(path, { recursive: true, force: true });
     }
