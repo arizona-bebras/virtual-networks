@@ -19,7 +19,8 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.14.3",
     "@grpc/proto-loader": "^0.8.0",
-    "protobufjs": "^8.0.1"
+    "protobufjs": "^8.0.1",
+    "ts-proto": "^2.11.8"
   },
   "devDependencies": {
     "protobufjs-cli": "^2.0.1"

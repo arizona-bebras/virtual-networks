@@ -93,37 +93,35 @@ const ensureGoPlugins = () => {
 const generateTs = () => {
   recreateDir(tsOutDir);
   const protoFiles = getProtoFiles();
-  const jsOut = resolve(tsOutDir, `${tsModuleName}.js`);
+
+
+  console.log(protoSrcDir);
+  console.log(tsOutDir);
 
   run(
-    "pnpm",
+    "protoc",
     [
-      "exec",
-      "pbjs",
-      "-t",
-      "static-module",
-      "-w",
-      "commonjs",
-      "-o",
-      jsOut,
-      "-p",
-      protoSrcDir,
+      `--proto_path="${protoSrcDir}"`,
+      '--plugin=protoc-gen-ts_proto=".\\node_modules\\.bin\\protoc-gen-ts_proto.cmd"',
+      "--ts_proto_opt=nestJs=true",
+      "--ts_proto_opt=addGrpcMetadata=true",
+      `--ts_proto_out="${tsOutDir}"`,
       ...protoFiles,
     ],
     { cwd: protoDir },
   );
 
-  run(
-    "pnpm",
-    [
-      "exec",
-      "pbts",
-      "-o",
-      resolve(tsOutDir, `${tsModuleName}.d.ts`),
-      jsOut,
-    ],
-    { cwd: protoDir },
-  );
+  // run(
+  //   "pnpm",
+  //   [
+  //     "exec",
+  //     "pbts",
+  //     "-o",
+  //     resolve(tsOutDir, `${tsModuleName}.d.ts`),
+  //     jsOut,
+  //   ],
+  //   { cwd: protoDir },
+  // );
 };
 
 const generateGo = () => {
