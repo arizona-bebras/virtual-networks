@@ -47,7 +47,7 @@ Designed for system engineers and IT administrators, VirtualNetworks provides a 
 
 ## Architecture
 
-VirtualNetworks uses a distributed architecture where the intelligence is centered in the **Control Plane**, while the traffic is handled by independent **V-Routers**.
+VirtualNetworks uses a distributed architecture where the intelligence is centered in the **Control Plane**, while the traffic is handled by independent **V-Routers**. For a more in-depth look, see the [Architecture Documentation](ARCHITECTURE.md).
 
 ```mermaid
 graph TD
