@@ -731,6 +731,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
+        network_id: string;
         device_id: string;
         tag_id: string;
       };

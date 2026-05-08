@@ -20,6 +20,7 @@ RUN pnpm install --filter backend... --frozen-lockfile --ignore-scripts
 
 FROM deps AS build
 
+RUN apk add protobuf-dev
 WORKDIR /app
 
 COPY backend backend
@@ -47,7 +48,8 @@ RUN pnpm install --filter backend... --prod --frozen-lockfile --ignore-scripts
 
 COPY --from=build /app/backend/dist backend/dist
 COPY --from=build /app/common/dist common/dist
-COPY --from=build /app/proto/gen proto/gen
+COPY --from=build /app/proto/dist proto/dist
+COPY --from=build /app/proto/src proto/src
 
 WORKDIR /app/backend
 

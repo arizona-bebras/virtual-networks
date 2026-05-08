@@ -62,7 +62,7 @@ export const columns: ColumnDef<Tag>[] = [
     },
   },
   {
-    accessorKey: "count",
+    accessorKey: "devicesCount",
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
         label: "Device Count",
@@ -71,7 +71,7 @@ export const columns: ColumnDef<Tag>[] = [
     },
     cell: ({ row }) => {
       return renderComponent(TagCountCell, {
-        count: row.getValue("count"),
+        count: row.original.devicesCount,
       });
     },
   },

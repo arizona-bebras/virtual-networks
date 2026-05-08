@@ -25,6 +25,7 @@ services:
         condition: service_healthy
     ports:
       - "3000:3000"
+      - "50051:50051"
     environment:
       PORT: 3000
       TRUSTED_ORIGINS: ${TRUSTED_ORIGINS:-http://localhost:5173}

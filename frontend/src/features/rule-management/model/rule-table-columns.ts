@@ -51,7 +51,7 @@ export const columns: ColumnDef<RuleRelation>[] = [
     cell: ({ row }) => {
       const tag = row.original.source;
       if (!tag) return "Any";
-      return renderComponent(TagBadge, { name: tag.name, color: tag.color });
+      return renderComponent(TagBadge, { tag: tag });
     },
   },
   {
@@ -65,7 +65,7 @@ export const columns: ColumnDef<RuleRelation>[] = [
     cell: ({ row }) => {
       const tag = row.original.dest;
       if (!tag) return "Any";
-      return renderComponent(TagBadge, { name: tag.name, color: tag.color });
+      return renderComponent(TagBadge, { tag: tag });
     },
   },
   {
