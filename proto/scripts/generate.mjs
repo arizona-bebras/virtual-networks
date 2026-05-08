@@ -9,7 +9,6 @@ const protoDir = resolve(scriptDir, "..");
 const protoSrcDir = resolve(protoDir, "src");
 const tsOutDir = resolve(protoDir, "gen", "ts");
 const goOutDir = resolve(protoDir, "gen", "go");
-const tsModuleName = "controlplane";
 
 const target = process.argv[2] ?? "all";
 
@@ -22,7 +21,7 @@ const collectProtoFiles = (directory) =>
     }
 
     if (entry.isFile() && entry.name.endsWith(".proto")) {
-      return [entryPath];
+      return [entry.name];
     }
 
     return [];
@@ -94,34 +93,21 @@ const generateTs = () => {
   recreateDir(tsOutDir);
   const protoFiles = getProtoFiles();
 
-
-  console.log(protoSrcDir);
-  console.log(tsOutDir);
-
   run(
     "protoc",
     [
-      `--proto_path="${protoSrcDir}"`,
-      '--plugin=protoc-gen-ts_proto=".\\node_modules\\.bin\\protoc-gen-ts_proto.cmd"',
+      "--proto_path=src",
+      process.platform === "win32"
+        ? '--plugin=protoc-gen-ts_proto=".\\node_modules\\.bin\\protoc-gen-ts_proto.cmd"'
+        : "--plugin=./node_modules/.bin/protoc-gen-ts_proto",
       "--ts_proto_opt=nestJs=true",
       "--ts_proto_opt=addGrpcMetadata=true",
-      `--ts_proto_out="${tsOutDir}"`,
+      "--ts_proto_opt=esModuleInterop=true",
+      `--ts_proto_out=gen/ts`,
       ...protoFiles,
     ],
     { cwd: protoDir },
   );
-
-  // run(
-  //   "pnpm",
-  //   [
-  //     "exec",
-  //     "pbts",
-  //     "-o",
-  //     resolve(tsOutDir, `${tsModuleName}.d.ts`),
-  //     jsOut,
-  //   ],
-  //   { cwd: protoDir },
-  // );
 };
 
 const generateGo = () => {
@@ -168,7 +154,7 @@ const generateGo = () => {
 };
 
 const clean = () => {
-  for (const path of [resolve(protoDir, "gen")]) {
+  for (const path of [resolve(protoDir, "gen"), resolve(protoDir, "dist")]) {
     if (existsSync(path)) {
       rmSync(path, { recursive: true, force: true });
     }

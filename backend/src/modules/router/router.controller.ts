@@ -1,7 +1,6 @@
 import { Metadata } from "@grpc/grpc-js";
 import { Controller } from "@nestjs/common";
 import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
-import { from, Observable } from "rxjs";
 import {
   ChangedResourceType,
   ChangeOperation,
@@ -13,7 +12,8 @@ import {
   RouterControlPlaneController,
   type RouterEvent,
   type WatchRouterConfigurationRequest,
-} from "../../../../proto/gen/ts/controlplane";
+} from "proto";
+import { from, Observable } from "rxjs";
 import { RouterService } from "./router.service";
 
 // Константы, дублирующие Python mock сервер
