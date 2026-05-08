@@ -1,6 +1,12 @@
 name: CI Summary
 
 on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
   workflow_run:
     workflows:
       - CI Backend
@@ -22,7 +28,7 @@ permissions:
 jobs:
   update-pr-comment:
     name: Update PR CI Summary
-    if: github.event.workflow_run.event == 'pull_request'
+    if: github.event_name == 'pull_request' || github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
 
     steps:
@@ -31,13 +37,18 @@ jobs:
         with:
           script: |
             const marker = "<!-- ci-workflow-summary -->";
-            const currentRun = context.payload.workflow_run;
-            const pullRequest = currentRun.pull_requests?.[0];
+            const workflowRun = context.payload.workflow_run;
+            const pullRequest =
+              context.payload.pull_request ?? workflowRun?.pull_requests?.[0];
 
             if (!pullRequest) {
-              core.info("Workflow run is not associated with a pull request; skipping summary.");
+              core.info("Run is not associated with a pull request; skipping summary.");
               return;
             }
+
+            const headSha = workflowRun?.head_sha ?? pullRequest.head.sha;
+            const triggerRunUrl = workflowRun?.html_url ??
+              `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
             const workflows = [
               { name: "CI Common", file: "ci-common.yml" },
@@ -48,26 +59,34 @@ jobs:
             ];
 
             const { owner, repo } = context.repo;
-            const runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
-              owner,
-              repo,
-              event: "pull_request",
-              head_sha: currentRun.head_sha,
-              per_page: 100,
-            });
+            const pullRequestNumber = pullRequest.number;
 
             const latestRunsByName = new Map();
-            for (const run of runs) {
-              if (!workflows.some((workflow) => workflow.name === run.name)) {
-                continue;
-              }
+            for (const workflow of workflows) {
+              const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+                owner,
+                repo,
+                workflow_id: workflow.file,
+                event: "pull_request",
+                per_page: 100,
+              });
 
-              const existing = latestRunsByName.get(run.name);
-              const existingTime = existing ? Date.parse(existing.updated_at) : 0;
-              const runTime = Date.parse(run.updated_at);
+              for (const run of runs) {
+                const belongsToPullRequest = run.pull_requests?.some(
+                  (runPullRequest) => runPullRequest.number === pullRequestNumber
+                );
 
-              if (!existing || runTime > existingTime) {
-                latestRunsByName.set(run.name, run);
+                if (!belongsToPullRequest) {
+                  continue;
+                }
+
+                const existing = latestRunsByName.get(workflow.name);
+                const existingTime = existing ? Date.parse(existing.updated_at) : 0;
+                const runTime = Date.parse(run.updated_at);
+
+                if (!existing || runTime > existingTime) {
+                  latestRunsByName.set(workflow.name, run);
+                }
               }
             }
 
@@ -102,13 +121,14 @@ jobs:
               marker,
               "### CI workflow summary",
               "",
-              `Commit: \`${currentRun.head_sha.slice(0, 7)}\``,
+              `Pull request: #${pullRequestNumber}`,
+              `Commit: \`${headSha.slice(0, 7)}\``,
               "",
               "| Workflow | Status | Link |",
               "| --- | --- | --- |",
               ...workflows.map(describeRun),
               "",
-              `[View workflow run](${currentRun.html_url})`,
+              `[View trigger run](${triggerRunUrl})`,
             ].join("\n");
 
             const comments = await github.paginate(github.rest.issues.listComments, {
