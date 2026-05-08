@@ -8,23 +8,66 @@ import type {
   TagNodeData,
 } from "$entities/node/model/types";
 
+const RULE_Y_STEP = 180;
+
+export function ruleDataToNode(rules: RuleRelation[]): Node<RuleNodeData>[] {
+  return rules.map((rule, index) => ({
+    id: rule.id,
+    type: "rule",
+    data: {
+      name: rule.description || "Default Rule",
+      protocol: rule.protocol || "TCP",
+      port: rule.port?.toString() || "*",
+      action: "allow",
+    },
+    position: { x: 350, y: index * RULE_Y_STEP },
+  }));
+}
+
 export function tagDataToNode(
   userTags: Tag[],
+  rules: RuleRelation[],
   positionX: number = 100,
   isDestNodes: boolean = false,
 ): Node<TagNodeData>[] {
-  return userTags.map((tag, index) => ({
-    id: isDestNodes ? `dest-${tag.id}` : `source-${tag.id}`,
-    type: "tag",
-    data: {
-      label: tag.name,
-      id: tag.id,
-      name: tag.name,
-      color: tag.color,
-      count: tag.devicesCount,
-    },
-    position: { x: positionX, y: 100 * index },
-  }));
+  const tagRuleStats = new Map<string, { sum: number; count: number }>();
+
+  for (let i = 0; i < rules.length; i++) {
+    const rule = rules[i]!;
+    const targetTagId = isDestNodes ? rule.destId : rule.sourceId;
+
+    if (targetTagId) {
+      const stats = tagRuleStats.get(targetTagId) || { sum: 0, count: 0 };
+      stats.sum += i;
+      stats.count += 1;
+      tagRuleStats.set(targetTagId, stats);
+    }
+  }
+
+  return userTags.map((tag, tagIndex) => {
+    const stats = tagRuleStats.get(tag.id);
+    let y: number;
+
+    if (stats) {
+      const avgRuleIndex = stats.sum / stats.count;
+      y = avgRuleIndex * RULE_Y_STEP;
+    } else {
+      y = rules.length * RULE_Y_STEP + tagIndex * 100;
+    }
+
+    return {
+      id: isDestNodes ? `dest-${tag.id}` : `source-${tag.id}`,
+      type: "tag",
+      data: {
+        label: tag.name,
+        id: tag.id,
+        name: tag.name,
+        color: tag.color,
+        count: tag.devicesCount,
+      },
+      position: { x: positionX, y },
+    };
+  });
 }
 
 // Прекрасная функция
@@ -76,7 +119,8 @@ export function deviceDataToNode(
   isDestFolders: boolean = false,
   tagNodes: Node[] = [],
 ): Node<FolderNodeData>[] {
-  const nodes: Node<FolderNodeData>[] = [];
+  const nodesMap = new Map<string, Node<FolderNodeData>>();
+  const tagPosMap = new Map(tagNodes.map((n) => [n.data.id, n.position.y]));
 
   for (const device of devices) {
     for (const tag of device.tags) {
@@ -84,22 +128,23 @@ export function deviceDataToNode(
       const nodeId = isDestFolders
         ? `dest-folder-${deviceTagId}`
         : `source-folder-${deviceTagId}`;
-      const existingNode = nodes.find((node) => node.id === nodeId);
+
       const deviceData = {
         name: device.name,
         ip: device.ip,
         tag: tag.name,
         tagId: tag.id,
       };
+
+      const existingNode = nodesMap.get(nodeId);
       if (existingNode) {
-        existingNode.data?.devices?.push(deviceData);
+        existingNode.data.devices.push(deviceData);
         existingNode.data.count += 1;
       } else {
-        const tagNode = tagNodes.find((n) => n.data.id === deviceTagId);
-        const positionY = tagNode ? tagNode.position.y : 100;
-        const positionX = isDestFolders ? -150 : 850;
+        const positionY = tagPosMap.get(deviceTagId) ?? 100;
+        const positionX = isDestFolders ? 850 : -150;
 
-        nodes.push({
+        nodesMap.set(nodeId, {
           id: nodeId,
           type: "folder",
           data: {
@@ -114,19 +159,6 @@ export function deviceDataToNode(
       }
     }
   }
-  return nodes;
-}
 
-export function ruleDataToNode(rules: RuleRelation[]): Node<RuleNodeData>[] {
-  return rules.map((rule, index) => ({
-    id: rule.id,
-    type: "rule",
-    data: {
-      name: rule.description || "Default Rule",
-      protocol: rule.protocol || "TCP",
-      port: rule.port?.toString() || "*",
-      action: "allow",
-    },
-    position: { x: 350, y: 150 * index },
-  }));
+  return Array.from(nodesMap.values());
 }

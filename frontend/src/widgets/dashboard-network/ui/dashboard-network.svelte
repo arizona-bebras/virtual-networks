@@ -56,9 +56,17 @@ $effect(() => {
     networkDeviceQuery.isSuccess
   ) {
     untrack(() => {
-      const sourceTagNodes = tagDataToNode(networkTagsQuery.data);
-      const destTagNodes = tagDataToNode(networkTagsQuery.data, 650, true);
       const ruleNodes = ruleDataToNode(networkRulesQuery.data);
+      const sourceTagNodes = tagDataToNode(
+        networkTagsQuery.data,
+        networkRulesQuery.data,
+      );
+      const destTagNodes = tagDataToNode(
+        networkTagsQuery.data,
+        networkRulesQuery.data,
+        650,
+        true,
+      );
       const sourceDeviceNodes = deviceDataToNode(
         networkDeviceQuery.data,
         false,

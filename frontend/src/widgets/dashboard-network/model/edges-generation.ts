@@ -12,7 +12,7 @@ export function ruleEdges(rules: RuleRelation[]): Edge[] {
         target: rule.id,
       });
       edges.push({
-        id: `rule-source-${index + 1}`,
+        id: `rule-dest-${index + 1}`,
         source: rule.id,
         target: `dest-${rule.destId}`,
       });
@@ -26,14 +26,15 @@ export function deviceFolderToTagEdges(
 ): Edge[] {
   const edges: Edge[] = [];
   for (const [index, folder] of deviceFolders.entries()) {
-    if (folder.data.folderType === "dest")
+    if (folder.data.folderType === "source") {
+      // Flow: Source Folder (-150) -> Source Tag (100)
       edges.push({
         id: `folder-source-${index + 1}`,
         source: folder.id,
         target: `source-${folder.data.connectingTagId}`,
       });
-    else {
-      // console.log("ЕСТь!");
+    } else {
+      // Flow: Dest Tag (650) -> Dest Folder (850)
       edges.push({
         id: `dest-folder-${index + 1}`,
         source: `dest-${folder.data.connectingTagId}`,
