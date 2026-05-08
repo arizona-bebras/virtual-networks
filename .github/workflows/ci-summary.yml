@@ -1,7 +1,7 @@
 name: CI Summary
 
 on:
-  pull_request:
+  pull_request_target:
     types:
       - opened
       - reopened
@@ -28,7 +28,7 @@ permissions:
 jobs:
   update-pr-comment:
     name: Update PR CI Summary
-    if: github.event_name == 'pull_request' || github.event.workflow_run.event == 'pull_request'
+    if: github.event_name == 'pull_request_target' || github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
 
     steps:
