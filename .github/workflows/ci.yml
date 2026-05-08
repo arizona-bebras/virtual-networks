@@ -114,6 +114,7 @@ jobs:
         uses: arduino/setup-protoc@v3
         with:
           version: ${{ env.PROTOC_VERSION }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Prepare pnpm lockfile for pull requests
         if: github.event_name == 'pull_request'
@@ -386,6 +387,7 @@ jobs:
         uses: arduino/setup-protoc@v3
         with:
           version: ${{ env.PROTOC_VERSION }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Prepare pnpm lockfile for pull requests
         if: github.event_name == 'pull_request'
@@ -551,6 +553,7 @@ jobs:
         uses: arduino/setup-protoc@v3
         with:
           version: ${{ env.PROTOC_VERSION }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify generated protobuf artifacts
         run: pnpm exec turbo run proto#generate --force
@@ -587,6 +590,7 @@ jobs:
         uses: arduino/setup-protoc@v3
         with:
           version: ${{ env.PROTOC_VERSION }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate Go protobuf artifacts
         run: node proto/scripts/generate.mjs go
