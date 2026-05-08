@@ -3,16 +3,16 @@ import { Controller } from "@nestjs/common";
 import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
 import { from, Observable } from "rxjs";
 import {
-  ChangeOperation,
   ChangedResourceType,
-  RouterControlPlaneController,
-  type WatchRouterConfigurationRequest,
-  type RouterConfigurationUpdate,
-  type RouterEvent,
+  ChangeOperation,
+  ConfigurationUpdateReason,
+  type PeerConfig,
   type ReportRouterEventsResponse,
   type RouterConfiguration,
-  type PeerConfig,
-  ConfigurationUpdateReason,
+  type RouterConfigurationUpdate,
+  RouterControlPlaneController,
+  type RouterEvent,
+  type WatchRouterConfigurationRequest,
 } from "../../../../proto/gen/ts/controlplane";
 import { RouterService } from "./router.service";
 
@@ -150,8 +150,7 @@ export class RouterController implements RouterControlPlaneController {
           type: ChangedResourceType.CHANGED_RESOURCE_TYPE_NETWORK,
           id: "000000000",
           networkId: "primary",
-          operation: ChangeOperation.CHANGE_OPERATION_CREATED
-          
+          operation: ChangeOperation.CHANGE_OPERATION_CREATED,
         },
       ],
     };
