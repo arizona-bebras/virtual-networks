@@ -1,6 +1,12 @@
 name: CI Summary
 
 on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
   pull_request_target:
     types:
       - opened
@@ -28,7 +34,7 @@ permissions:
 jobs:
   update-pr-comment:
     name: Update PR CI Summary
-    if: github.event_name == 'pull_request_target' || github.event.workflow_run.event == 'pull_request'
+    if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target' || github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
 
     steps:
@@ -75,8 +81,9 @@ jobs:
                 const belongsToPullRequest = run.pull_requests?.some(
                   (runPullRequest) => runPullRequest.number === pullRequestNumber
                 );
+                const belongsToHeadCommit = run.head_sha === headSha;
 
-                if (!belongsToPullRequest) {
+                if (!belongsToPullRequest || !belongsToHeadCommit) {
                   continue;
                 }
 
@@ -142,17 +149,35 @@ jobs:
             );
 
             if (existing) {
-              await github.rest.issues.updateComment({
-                owner,
-                repo,
-                comment_id: existing.id,
-                body,
-              });
+              try {
+                await github.rest.issues.updateComment({
+                  owner,
+                  repo,
+                  comment_id: existing.id,
+                  body,
+                });
+              } catch (error) {
+                if (error.status !== 403) {
+                  throw error;
+                }
+
+                core.warning("GitHub token cannot update PR comments for this event; writing the summary to the job summary instead.");
+                await core.summary.addRaw(body).write();
+              }
             } else {
-              await github.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number: pullRequest.number,
-                body,
-              });
+              try {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: pullRequest.number,
+                  body,
+                });
+              } catch (error) {
+                if (error.status !== 403) {
+                  throw error;
+                }
+
+                core.warning("GitHub token cannot create PR comments for this event; writing the summary to the job summary instead.");
+                await core.summary.addRaw(body).write();
+              }
             }
