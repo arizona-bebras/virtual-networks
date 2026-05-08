@@ -1,16 +1,21 @@
 <script lang="ts">
-import type { TagColor } from "common/schemas/tag/index";
+import type { DeviceRelations } from "common/schemas/device/index";
 import { colorVariants } from "$shared/lib/tag-color-mapping";
+import { Badge } from "$shared/ui/badge/index";
 
-let { name, color }: { name: string; color: TagColor | null } = $props();
+let {
+  tag,
+  onclick,
+}: { tag: DeviceRelations["tags"][number]; onclick?: (name: string) => void } =
+  $props();
+let color = $derived(colorVariants[tag.color || "purple"]);
 </script>
 
-<div class="flex items-center gap-2">
-  {#if color && colorVariants[color]}
-    {@const variants = colorVariants[color]}
-    <div
-      class={`size-2 rounded-full border ${variants.backgroundColor} ${variants.borderColor}`}
-    ></div>
-  {/if}
-  <span>{name}</span>
-</div>
+<Badge
+  variant="secondary"
+  class="text-[10px] border {color.backgroundColor} {color.borderColor} {onclick ? 'cursor-pointer hover:brightness-75 transition-all' : ''}"
+  style=""
+  onclick={() => onclick?.(tag.name)}
+>
+  {tag.name}
+</Badge>

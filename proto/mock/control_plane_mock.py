@@ -66,8 +66,8 @@ def load_generated_modules() -> tuple[Any, Any]:
         raise RuntimeError(f"protoc failed with exit code {result}")
 
     sys.path.insert(0, str(generated_dir))
-    import controlplane_pb2  # type: ignore[import-not-found]
-    import controlplane_pb2_grpc  # type: ignore[import-not-found]
+    import controlplane_pb2  # type: ignore[import-not-found] # ty: ignore[unresolved-import] # pyright: ignore
+    import controlplane_pb2_grpc  # type: ignore[import-not-found] # ty: ignore[unresolved-import] # pyright: ignore
 
     return controlplane_pb2, controlplane_pb2_grpc
 
