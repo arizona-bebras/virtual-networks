@@ -26,6 +26,7 @@ let networkID = $derived(getNetworkId().id);
 
 let search = $state("");
 const debounced = new Debounced(() => search, 500);
+$inspect(debounced.current);
 
 const query = createQuery(() =>
   deviceTags.userTags(networkID, debounced.current),
@@ -41,7 +42,6 @@ let selectedTags = $derived(
 let availableTags = $derived(
   (query.data || []).filter((tag) => !filterValue.some((f) => f.id === tag.id)),
 );
-$inspect(availableTags);
 
 function toggleTag(tag: FilterValueWithId) {
   const current = (column?.getFilterValue() as FilterValueWithId[]) ?? [];
