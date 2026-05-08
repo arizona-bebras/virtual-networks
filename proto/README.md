@@ -10,8 +10,7 @@
 
 ## Contract
 
-- `GetRouterConfiguration`: startup fetch for the router's desired networks, protocol instances, and peers.
-- `WatchRouterConfiguration`: server stream of full configuration snapshots with revision and change hints.
+- `WatchRouterConfiguration`: server stream of full configuration snapshots with revision and change hints. The first message is the router's startup snapshot.
 - `ReportRouterEvents`: client stream used by routers to report WireGuard handshake and connection activity.
 
 ## Commands

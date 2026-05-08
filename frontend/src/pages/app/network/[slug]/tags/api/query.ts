@@ -19,7 +19,7 @@ export const userTagsFn = async (networkId: string) => {
 };
 
 export const deviceTags = {
-  userTags: (networkId: string) =>
+  userTags: (networkId: string, q?: string) =>
     queryOptions({
       queryKey: ["userTags", networkId],
       queryFn: () => userTagsFn(networkId),

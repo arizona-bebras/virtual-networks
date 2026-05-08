@@ -9,13 +9,16 @@ import { deviceTags } from "../api/query";
 
 let isDialogOpen = $state(false);
 let currentNetworkId = $derived(getNetworkId().id);
+let globalFilter = $state("");
 
 // TODO: в ожидании реализации bulk delete на бэке
 function bulkRemoveSelected(_ids: string[]) {}
 
 // const tableColumns = $derived(withRowActions(columns, removeTag));
 
-const userTags = createQuery(() => deviceTags.userTags(currentNetworkId));
+const userTags = createQuery(() =>
+  deviceTags.userTags(currentNetworkId, globalFilter),
+);
 </script>
 
 <div class="p-8">
@@ -27,15 +30,14 @@ const userTags = createQuery(() => deviceTags.userTags(currentNetworkId));
     <AddTagBtn bind:open={isDialogOpen} />
   </div>
 
-  {#if userTags.isSuccess}
-    <Card.Root>
-      <Card.Content class="p-6">
-        <DataTable
-          {columns}
-          data={userTags.data! || []}
-          onDeleteSelected={bulkRemoveSelected}
-        />
-      </Card.Content>
-    </Card.Root>
-  {/if}
+  <Card.Root>
+    <Card.Content class="p-6">
+      <DataTable
+        {columns}
+        data={userTags.data || []}
+        onDeleteSelected={bulkRemoveSelected}
+        onGlobalFilterChange={(value) => (globalFilter = value)}
+      />
+    </Card.Content>
+  </Card.Root>
 </div>

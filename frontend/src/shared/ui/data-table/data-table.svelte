@@ -5,6 +5,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Trash,
+  X,
 } from "@lucide/svelte";
 import {
   type ColumnDef,
@@ -16,7 +17,9 @@ import {
   type RowSelectionState,
   type SortingState,
 } from "@tanstack/table-core";
+import { Debounced } from "runed";
 import { fade } from "svelte/transition";
+import { Badge } from "$shared/ui/badge/index.js";
 import { Button } from "$shared/ui/button/index.js";
 import { createSvelteTable, FlexRender } from "$shared/ui/data-table/index.js";
 import { Input } from "$shared/ui/input/index.js";
@@ -28,19 +31,32 @@ type DataTableProps<TData, TValue> = {
   filterColumn?: string;
   filterPlaceholder?: string;
   onDeleteSelected?: (selectedIds: string[]) => void;
+  onGlobalFilterChange?: (value: string) => void;
+  onColumnFiltersChange?: (filters: ColumnFiltersState) => void;
 };
 
 let {
   data,
   columns,
-  filterColumn = "name",
   filterPlaceholder = "Filter...",
   onDeleteSelected,
+  onGlobalFilterChange,
+  onColumnFiltersChange,
 }: DataTableProps<TData, TValue> = $props();
 
 let sorting = $state<SortingState>([]);
 let columnFilters = $state<ColumnFiltersState>([]);
 let rowSelection = $state<RowSelectionState>({});
+let globalFilter = $state("");
+const debounced = new Debounced(() => globalFilter, 500);
+
+$effect(() => {
+  onGlobalFilterChange?.(debounced.current);
+});
+
+$effect(() => {
+  onColumnFiltersChange?.(columnFilters);
+});
 
 const table = createSvelteTable({
   get data() {
@@ -59,7 +75,11 @@ const table = createSvelteTable({
     get rowSelection() {
       return rowSelection;
     },
+    get globalFilter() {
+      return globalFilter;
+    },
   },
+  manualFiltering: true,
   enableRowSelection: true,
   onSortingChange: (updater) => {
     if (typeof updater === "function") {
@@ -73,6 +93,13 @@ const table = createSvelteTable({
       columnFilters = updater(columnFilters);
     } else {
       columnFilters = updater;
+    }
+  },
+  onGlobalFilterChange: (updater) => {
+    if (typeof updater === "function") {
+      globalFilter = updater(globalFilter);
+    } else {
+      globalFilter = updater;
     }
   },
   onRowSelectionChange: (updater) => {
@@ -90,6 +117,13 @@ const table = createSvelteTable({
 
 const selectedRows = $derived(table.getFilteredSelectedRowModel().rows);
 
+function getFilterLabel(value: unknown): string {
+  if (typeof value === "object" && value !== null && "name" in value) {
+    return String((value as { name: unknown }).name);
+  }
+  return String(value);
+}
+
 function handleDeleteSelected() {
   const ids = selectedRows.map((row) => row.original.id);
   onDeleteSelected?.(ids);
@@ -98,31 +132,95 @@ function handleDeleteSelected() {
 </script>
 
 <div class="space-y-4">
-  <div class="flex items-center justify-between py-4">
-    <div class="flex flex-1 items-center gap-2">
-      <Input
-        placeholder={filterPlaceholder}
-        value={(table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""}
-        oninput={(e) => {
-          table.getColumn(filterColumn)?.setFilterValue(e.currentTarget.value);
-        }}
-        class="max-w-sm"
-      />
-      {#if selectedRows.length > 0 && onDeleteSelected}
-        <div in:fade={{ duration: 150 }}>
-          <Button
-            variant="destructive"
-            size="sm"
-            class="h-8 gap-1"
-            onclick={handleDeleteSelected}
-          >
-            <Trash class="size-3.5" />
-            Delete ({selectedRows.length}
-            )
-          </Button>
-        </div>
-      {/if}
+  <div class="flex flex-col gap-4 py-4">
+    <div class="flex items-center justify-between">
+      <div class="flex flex-1 items-center gap-2">
+        <Input
+          placeholder={filterPlaceholder}
+          value={globalFilter}
+          oninput={(e) => {
+            globalFilter = e.currentTarget.value;
+          }}
+          class="max-w-sm"
+        />
+        {#if selectedRows.length > 0 && onDeleteSelected}
+          <div in:fade={{ duration: 150 }}>
+            <Button
+              variant="destructive"
+              size="sm"
+              class="h-8 gap-1"
+              onclick={handleDeleteSelected}
+            >
+              <Trash class="size-3.5" />
+              Delete ({selectedRows.length}
+              )
+            </Button>
+          </div>
+        {/if}
+      </div>
     </div>
+
+    {#if columnFilters.length > 0}
+      <div class="flex flex-wrap gap-2" in:fade>
+        {#each columnFilters as filter (filter.id)}
+          {@const column = table.getColumn(filter.id)}
+          {@const Icon = column?.columnDef.meta?.icon}
+
+          {#if Array.isArray(filter.value)}
+            {#each filter.value as value}
+              <Badge variant="secondary" class="h-7 gap-1 px-2 font-normal">
+                {#if Icon}
+                  <Icon class="mr-1 size-3 text-muted-foreground" />
+                {/if}
+                <span class="text-muted-foreground capitalize">
+                  {filter.id}
+                  :
+                </span>
+                <span class="capitalize">{getFilterLabel(value)}</span>
+                <button
+                  type="button"
+                  class="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  onclick={() => {
+                    const current = filter.value as unknown[];
+                    const next = current.filter((v) => v !== value);
+                    column?.setFilterValue(next.length > 0 ? next : undefined);
+                  }}
+                >
+                  <X
+                    class="size-3 text-muted-foreground hover:text-foreground"
+                  />
+                  <span class="sr-only">Remove filter</span>
+                </button>
+              </Badge>
+            {/each}
+          {:else}
+            <Badge variant="secondary" class="h-7 gap-1 px-2 font-normal">
+              {#if Icon}
+                <Icon class="mr-1 size-3 text-muted-foreground" />
+              {/if}
+              <span class="text-muted-foreground capitalize">{filter.id}:</span>
+              <span class="capitalize">{getFilterLabel(filter.value)}</span>
+              <button
+                type="button"
+                class="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                onclick={() => column?.setFilterValue(undefined)}
+              >
+                <X class="size-3 text-muted-foreground hover:text-foreground" />
+                <span class="sr-only">Remove filter</span>
+              </button>
+            </Badge>
+          {/if}
+        {/each}
+        <Button
+          variant="ghost"
+          size="sm"
+          class="h-7 px-2 text-xs"
+          onclick={() => table.resetColumnFilters()}
+        >
+          Clear all
+        </Button>
+      </div>
+    {/if}
   </div>
 
   <div class="rounded-md border bg-card overflow-hidden">
