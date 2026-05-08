@@ -19,16 +19,17 @@ import {
 const networkId = "11111111-1111-1111-1111-111111111111";
 const otherNetworkId = "22222222-2222-2222-2222-222222222222";
 const userId = "user-1";
+const user = {
+  id: userId,
+  email: "user@example.test",
+  name: "Test User",
+};
 const deviceId = "33333333-3333-3333-3333-333333333333";
 const tagId = "44444444-4444-4444-4444-444444444444";
 
 const createDevicesTestDatabase = async () => {
   const db = await createTestDatabase();
-  await db.insert(schema.user).values({
-    id: userId,
-    email: "user@example.test",
-    name: "Test User",
-  });
+  await db.insert(schema.user).values(user);
   await db.insert(schema.networks).values([
     {
       id: networkId,
@@ -111,6 +112,7 @@ describe("DevicesController (e2e)", () => {
             name: "Laptop",
             networkId,
             ownerId: userId,
+            owner: user,
             tags: [],
           },
         ]);
@@ -128,6 +130,7 @@ describe("DevicesController (e2e)", () => {
           name: "Laptop",
           networkId,
           ownerId: userId,
+          owner: user,
           tags: [],
         });
       });
