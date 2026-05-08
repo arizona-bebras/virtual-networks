@@ -1,0 +1,138 @@
+name: CI Summary
+
+on:
+  workflow_run:
+    workflows:
+      - CI Backend
+      - CI Common
+      - CI Frontend
+      - CI Proto
+      - CI Router
+    types:
+      - requested
+      - in_progress
+      - completed
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  update-pr-comment:
+    name: Update PR CI Summary
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Comment CI summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = "<!-- ci-workflow-summary -->";
+            const currentRun = context.payload.workflow_run;
+            const pullRequest = currentRun.pull_requests?.[0];
+
+            if (!pullRequest) {
+              core.info("Workflow run is not associated with a pull request; skipping summary.");
+              return;
+            }
+
+            const workflows = [
+              { name: "CI Common", file: "ci-common.yml" },
+              { name: "CI Frontend", file: "ci-frontend.yml" },
+              { name: "CI Backend", file: "ci-backend.yml" },
+              { name: "CI Proto", file: "ci-proto.yml" },
+              { name: "CI Router", file: "ci-router.yml" },
+            ];
+
+            const { owner, repo } = context.repo;
+            const runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
+              owner,
+              repo,
+              event: "pull_request",
+              head_sha: currentRun.head_sha,
+              per_page: 100,
+            });
+
+            const latestRunsByName = new Map();
+            for (const run of runs) {
+              if (!workflows.some((workflow) => workflow.name === run.name)) {
+                continue;
+              }
+
+              const existing = latestRunsByName.get(run.name);
+              const existingTime = existing ? Date.parse(existing.updated_at) : 0;
+              const runTime = Date.parse(run.updated_at);
+
+              if (!existing || runTime > existingTime) {
+                latestRunsByName.set(run.name, run);
+              }
+            }
+
+            const describeRun = (workflow) => {
+              const run = latestRunsByName.get(workflow.name);
+              const fallbackUrl = `${context.serverUrl}/${owner}/${repo}/actions/workflows/${workflow.file}`;
+
+              if (!run) {
+                return `| ${workflow.name} | Not triggered | [Workflow](${fallbackUrl}) |`;
+              }
+
+              if (run.status !== "completed") {
+                const label = run.status === "in_progress" ? "Running" : "Queued";
+                return `| ${workflow.name} | ${label} | [Run](${run.html_url}) |`;
+              }
+
+              const conclusions = {
+                success: "Passed",
+                failure: "Failed",
+                cancelled: "Cancelled",
+                skipped: "Skipped",
+                timed_out: "Timed out",
+                action_required: "Action required",
+                neutral: "Neutral",
+              };
+              const label = conclusions[run.conclusion] ?? run.conclusion ?? "Completed";
+
+              return `| ${workflow.name} | ${label} | [Run](${run.html_url}) |`;
+            };
+
+            const body = [
+              marker,
+              "### CI workflow summary",
+              "",
+              `Commit: \`${currentRun.head_sha.slice(0, 7)}\``,
+              "",
+              "| Workflow | Status | Link |",
+              "| --- | --- | --- |",
+              ...workflows.map(describeRun),
+              "",
+              `[View workflow run](${currentRun.html_url})`,
+            ].join("\n");
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number: pullRequest.number,
+              per_page: 100,
+            });
+            const existing = comments.find((comment) =>
+              comment.user.type === "Bot" && comment.body.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: pullRequest.number,
+                body,
+              });
+            }
