@@ -10,6 +10,7 @@ import {
   type RouterConfiguration,
   type RouterConfigurationUpdate,
   RouterControlPlaneController,
+  RouterControlPlaneControllerMethods,
   type RouterEvent,
   type WatchRouterConfigurationRequest,
 } from "proto";
@@ -130,16 +131,15 @@ const createStaticConfiguration = (): RouterConfiguration => {
 };
 
 @Controller()
+@RouterControlPlaneControllerMethods()
 export class RouterController implements RouterControlPlaneController {
   constructor(private readonly routerService: RouterService) {}
 
-  @GrpcMethod("RouterControlPlane", "WatchRouterConfiguration")
   watchRouterConfiguration(
     request: WatchRouterConfigurationRequest,
     metadata: Metadata,
   ): Observable<RouterConfigurationUpdate> {
     const configuration = createStaticConfiguration();
-
     const update: RouterConfigurationUpdate = {
       revision: REVISION,
       reason:
@@ -154,11 +154,9 @@ export class RouterController implements RouterControlPlaneController {
         },
       ],
     };
-
     return from([update]);
   }
 
-  @GrpcStreamMethod("RouterControlPlane", "ReportRouterEvents")
   reportRouterEvents(
     event: Observable<RouterEvent>,
     metadata: Metadata,
