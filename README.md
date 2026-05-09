@@ -16,9 +16,6 @@
   <a href="https://img.shields.io/badge/Architecture-Distributed-blue.svg">
     <img src="https://img.shields.io/badge/Architecture-Distributed-blue.svg">
   </a>
-  <a href="#license">
-    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License">
-  </a>
 </p>
 
 <p align="center">
@@ -129,10 +126,6 @@ cd backend && pnpm run start:dev
 - [ ] **On-Premise Gateways**: Securely connect entire offices or clusters.
 - [ ] **Automated Scaling**: Cloud routers that scale based on traffic load.
 - [ ] **Audit Log**: Full history of configuration changes and access events.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ---
 🇷🇺

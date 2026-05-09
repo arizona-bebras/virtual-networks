@@ -104,7 +104,6 @@ VirtualNetworks follows the **ZTNA (Zero Trust Network Access)** model:
 
 ## 6. Directory Structure
 ```text
-Z:/prj/virtual-networks/
 ├── proto/              # Protobuf definitions (the "Source of Truth")
 ├── backend/            # NestJS implementation of the Control Plane
 ├── router/             # Go implementation of the Data Plane
