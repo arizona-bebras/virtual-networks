@@ -10,16 +10,18 @@ import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { Input } from "$shared/ui/input/index";
 import { Separator } from "$shared/ui/separator/index";
+  import type { RuleRelation } from "common/schemas/rule/index";
 
 let {
   column,
   onclick,
   excludedTags,
 }: {
-  column?: Column<DeviceRelations, unknown>;
+  column?: Column<any, any>;
   onclick?: (name: string) => void;
   excludedTags?: DeviceRelations["tags"];
 } = $props();
+
 
 // let queryClient = useQueryClient();
 let networkID = $derived(getNetworkId().id);

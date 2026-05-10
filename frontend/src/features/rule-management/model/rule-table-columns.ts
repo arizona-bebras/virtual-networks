@@ -1,3 +1,4 @@
+import { ArrowUpDown, Tag } from "@lucide/svelte";
 import type { ColumnDef } from "@tanstack/table-core";
 import type { RuleRelation } from "common/schemas/rule/index";
 import TagBadge from "$entities/tag/ui/tag-badge.svelte";
@@ -5,6 +6,7 @@ import DataTableCheckbox from "$shared/ui/data-table/data-table-checkbox.svelte"
 import DataTableSortButton from "$shared/ui/data-table/data-table-sort-button.svelte";
 import { renderComponent } from "$shared/ui/data-table/index.js";
 import RuleActionsCell from "../ui/rule-actions-cell.svelte";
+import RuleTagFilter from "../ui/rule-tag-filter.svelte";
 
 export const columns: ColumnDef<RuleRelation>[] = [
   {
@@ -43,9 +45,9 @@ export const columns: ColumnDef<RuleRelation>[] = [
   {
     accessorKey: "sourceTag",
     header: ({ column }) => {
-      return renderComponent(DataTableSortButton, {
+      return renderComponent(RuleTagFilter, {
         label: "Source Tag",
-        onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        column,
       });
     },
     cell: ({ row }) => {
@@ -53,19 +55,25 @@ export const columns: ColumnDef<RuleRelation>[] = [
       if (!tag) return "Any";
       return renderComponent(TagBadge, { tag: tag });
     },
+    meta: {
+      icon: Tag,
+    },
   },
   {
     accessorKey: "destTag",
     header: ({ column }) => {
-      return renderComponent(DataTableSortButton, {
+      return renderComponent(RuleTagFilter, {
         label: "Destination Tag",
-        onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        column,
       });
     },
     cell: ({ row }) => {
       const tag = row.original.dest;
       if (!tag) return "Any";
       return renderComponent(TagBadge, { tag: tag });
+    },
+    meta: {
+      icon: Tag,
     },
   },
   {

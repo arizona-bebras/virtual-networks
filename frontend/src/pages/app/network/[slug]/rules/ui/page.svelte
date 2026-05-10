@@ -1,5 +1,6 @@
 <script lang="ts">
 import { createQueries, createQuery } from "@tanstack/svelte-query";
+import type { ColumnFiltersState } from "@tanstack/table-core";
 import { columns } from "$features/rule-management/model/rule-table-columns";
 import AddRuleBtn from "$features/rule-management/ui/add-rule-btn.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
@@ -8,9 +9,34 @@ import DataTable from "$shared/ui/data-table/data-table.svelte";
 import { userRules } from "../api/query";
 
 let isAddRuleDialogOpen = $state(false);
+let globalFilter = $state("");
+let columnFilters = $state<ColumnFiltersState>([]);
+
+let sourceTagsFilter = $derived(
+  (
+    columnFilters.find((f) => f.id === "sourceTag")?.value as
+      | { id: string; name: string }[]
+      | undefined
+  )?.map((t) => t.id),
+);
+
+let destTagsFilter = $derived(
+  (
+    columnFilters.find((f) => f.id === "destTag")?.value as
+      | { id: string; name: string }[]
+      | undefined
+  )?.map((t) => t.id),
+);
 
 const currentNetworkId = $derived(getNetworkId().id);
-const userRulesQuery = createQuery(() => userRules(currentNetworkId));
+const userRulesQuery = createQuery(() =>
+  userRules(
+    currentNetworkId,
+    globalFilter,
+    sourceTagsFilter,
+    destTagsFilter,
+  ),
+);
 
 function bulkRemoveSelected(_ids: string[]) {
   console.log("Delete rules:", _ids);
@@ -32,7 +58,10 @@ function bulkRemoveSelected(_ids: string[]) {
       <DataTable
         {columns}
         data={userRulesQuery.data || []}
+        filterPlaceholder="Search by name..."
         onDeleteSelected={bulkRemoveSelected}
+        onGlobalFilterChange={(value) => (globalFilter = value)}
+        onColumnFiltersChange={(filters) => (columnFilters = filters)}
       />
     </Card.Content>
   </Card.Root>

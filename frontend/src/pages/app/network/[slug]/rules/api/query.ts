@@ -28,14 +28,24 @@ export const deviceQuery = {
     }),
 };
 
-export const userRules = (networkId: string) =>
+export const userRules = (
+  networkId: string,
+  q?: string,
+  sourceTags?: string[],
+  destTags?: string[],
+) =>
   queryOptions({
-    queryKey: ["userRules", networkId],
+    queryKey: ["userRules", networkId, q, sourceTags, destTags],
     queryFn: async () => {
       const { data, error } = await client.GET("/networks/{network_id}/rules", {
         params: {
           path: {
             network_id: networkId,
+          },
+          query: {
+            q,
+            source_tags: sourceTags,
+            dest_tags: destTags,
           },
         },
       });
