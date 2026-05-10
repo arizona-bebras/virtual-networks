@@ -15,7 +15,7 @@ let filterValue = $derived(column.getFilterValue());
 </script>
 
 <div class="flex items-center gap-1">
-  <span class="text-sm font-medium">{label}</span>
+  <span class="font-medium">{label}</span>
 
   <Popover.Root>
     <Popover.Trigger>

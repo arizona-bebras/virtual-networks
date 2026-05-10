@@ -17,15 +17,15 @@ import { deviceOwners } from "../api/query";
 import type { FilterValueWithId } from "../model/types";
 
 let {
-	column,
-	label,
+  column,
+  label,
 }: { column: Column<DeviceRelations, unknown>; label: string } = $props();
 
 const queryClient = useQueryClient();
 let networkID = $derived(getNetworkId().id);
 
 let filterValue = $derived(
-	column.getFilterValue() as FilterValueWithId | undefined,
+  column.getFilterValue() as FilterValueWithId | undefined,
 );
 
 let search = $state("");
@@ -33,9 +33,9 @@ let search = $state("");
 const query = createQuery(() => deviceOwners(networkID));
 
 let filteredUsers = $derived(
-	query.data?.users?.filter((user) =>
-		user.name.toLowerCase().includes(search.toLowerCase()),
-	) ?? [],
+  query.data?.users?.filter((user) =>
+    user.name.toLowerCase().includes(search.toLowerCase()),
+  ) ?? [],
 );
 </script>
 
@@ -67,9 +67,14 @@ let filteredUsers = $derived(
           Type the name to filter devices.
         </p>
         <div class="relative">
-          <Input placeholder="Owner name..." bind:value={search} class="h-8 pr-8" />
+          <Input
+            placeholder="Owner name..."
+            bind:value={search}
+            class="h-8 pr-8"
+          />
           {#if search}
-            <button 
+            <button
+              type="button"
               class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               onclick={() => search = ""}
             >
@@ -111,7 +116,9 @@ let filteredUsers = $derived(
                 }}
               >
                 <div class="flex items-center gap-3 w-full truncate">
-                  <div class="flex h-4 w-4 shrink-0 items-center justify-center">
+                  <div
+                    class="flex h-4 w-4 shrink-0 items-center justify-center"
+                  >
                     {#if filterValue?.id === user.id}
                       <Check class="h-4 w-4 text-primary" />
                     {:else}

@@ -12,7 +12,6 @@ import DeviceActionsCell from "../ui/device-actions-cell.svelte";
 import DeviceOwnerFilter from "../ui/device-owner-filter.svelte";
 import DeviceTagsFilter from "../ui/device-tags-filter.svelte";
 import type { DeviceTagsFilterValue } from "./types";
-import { userData } from "$entities/user/model/store";
 
 export const columns: ColumnDef<DeviceRelations>[] = [
   {
@@ -95,8 +94,8 @@ export const columns: ColumnDef<DeviceRelations>[] = [
       });
     },
     cell: ({ row }) => {
-      const ownerName = row.original.owner?.name
-      return ownerName; 
+      const ownerName = row.original.owner?.name;
+      return ownerName;
     },
     enableGlobalFilter: false,
     meta: {

@@ -1,4 +1,4 @@
-import { ArrowUpDown, Tag } from "@lucide/svelte";
+import { Tag } from "@lucide/svelte";
 import type { ColumnDef } from "@tanstack/table-core";
 import type { RuleRelation } from "common/schemas/rule/index";
 import TagBadge from "$entities/tag/ui/tag-badge.svelte";
@@ -57,7 +57,8 @@ export const columns: ColumnDef<RuleRelation>[] = [
       return renderComponent(TagBadge, {
         tag: tag,
         onclick: () => {
-          const current = (column.getFilterValue() as FilterValueWithId[]) ?? [];
+          const current =
+            (column.getFilterValue() as FilterValueWithId[]) ?? [];
           const next = current.some((t) => t.id === tag.id)
             ? current.filter((t) => t.id !== tag.id)
             : [...current, { id: tag.id, name: tag.name }];
@@ -83,7 +84,8 @@ export const columns: ColumnDef<RuleRelation>[] = [
       return renderComponent(TagBadge, {
         tag: tag,
         onclick: () => {
-          const current = (column.getFilterValue() as FilterValueWithId[]) ?? [];
+          const current =
+            (column.getFilterValue() as FilterValueWithId[]) ?? [];
           const next = current.some((t) => t.id === tag.id)
             ? current.filter((t) => t.id !== tag.id)
             : [...current, { id: tag.id, name: tag.name }];

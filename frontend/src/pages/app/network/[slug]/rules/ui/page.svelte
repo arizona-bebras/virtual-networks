@@ -30,12 +30,7 @@ let destTagsFilter = $derived(
 
 const currentNetworkId = $derived(getNetworkId().id);
 const userRulesQuery = createQuery(() =>
-  userRules(
-    currentNetworkId,
-    globalFilter,
-    sourceTagsFilter,
-    destTagsFilter,
-  ),
+  userRules(currentNetworkId, globalFilter, sourceTagsFilter, destTagsFilter),
 );
 
 function bulkRemoveSelected(_ids: string[]) {
