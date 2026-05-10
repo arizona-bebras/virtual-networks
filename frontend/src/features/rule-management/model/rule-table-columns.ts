@@ -2,6 +2,7 @@ import { ArrowUpDown, Tag } from "@lucide/svelte";
 import type { ColumnDef } from "@tanstack/table-core";
 import type { RuleRelation } from "common/schemas/rule/index";
 import TagBadge from "$entities/tag/ui/tag-badge.svelte";
+import type { FilterValueWithId } from "$features/device-management/model/types";
 import DataTableCheckbox from "$shared/ui/data-table/data-table-checkbox.svelte";
 import DataTableSortButton from "$shared/ui/data-table/data-table-sort-button.svelte";
 import { renderComponent } from "$shared/ui/data-table/index.js";
@@ -50,10 +51,19 @@ export const columns: ColumnDef<RuleRelation>[] = [
         column,
       });
     },
-    cell: ({ row }) => {
+    cell: ({ row, column }) => {
       const tag = row.original.source;
       if (!tag) return "Any";
-      return renderComponent(TagBadge, { tag: tag });
+      return renderComponent(TagBadge, {
+        tag: tag,
+        onclick: () => {
+          const current = (column.getFilterValue() as FilterValueWithId[]) ?? [];
+          const next = current.some((t) => t.id === tag.id)
+            ? current.filter((t) => t.id !== tag.id)
+            : [...current, { id: tag.id, name: tag.name }];
+          column.setFilterValue(next.length > 0 ? next : undefined);
+        },
+      });
     },
     meta: {
       icon: Tag,
@@ -67,10 +77,19 @@ export const columns: ColumnDef<RuleRelation>[] = [
         column,
       });
     },
-    cell: ({ row }) => {
+    cell: ({ row, column }) => {
       const tag = row.original.dest;
       if (!tag) return "Any";
-      return renderComponent(TagBadge, { tag: tag });
+      return renderComponent(TagBadge, {
+        tag: tag,
+        onclick: () => {
+          const current = (column.getFilterValue() as FilterValueWithId[]) ?? [];
+          const next = current.some((t) => t.id === tag.id)
+            ? current.filter((t) => t.id !== tag.id)
+            : [...current, { id: tag.id, name: tag.name }];
+          column.setFilterValue(next.length > 0 ? next : undefined);
+        },
+      });
     },
     meta: {
       icon: Tag,
