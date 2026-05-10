@@ -94,7 +94,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
       });
     },
     cell: ({ row }) => {
-      const ownerName = row.original.owner?.name;
+      const ownerName = row.original.owner?.name || "-";
       return ownerName;
     },
     enableGlobalFilter: false,
