@@ -160,7 +160,13 @@ onMount(() => {
       <Form.Control>
         {#snippet children({ props })}
           <Form.Label>Protocol</Form.Label>
-          <Select.Root type="single" bind:value={$formData.protocol!}>
+          <Select.Root
+            type="single"
+            bind:value={$formData.protocol!}
+            onValueChange={(value: string) => { 
+              if (!['TCP', 'UDP'].includes(value)) $formData.port = null
+          }}
+          >
             <Select.Trigger class="w-[180px]">
               {$formData.protocol ? $formData.protocol : 'Выберите протокол'}
             </Select.Trigger>
@@ -181,9 +187,10 @@ onMount(() => {
           <Form.Label>Port</Form.Label>
           <Input
             {...props}
-            value={$formData.port}
-            oninput={(e) => $formData.port = Number(e.currentTarget.value)}
+            bind:value={$formData.port}
+            type="number"
             placeholder="22"
+            disabled={!['TCP', 'UDP'].includes($formData.protocol)}
           />
         {/snippet}
       </Form.Control>
