@@ -82,6 +82,7 @@ export class RulesController {
   }
 
   @Get(":rule_id")
+  @Roles(Role.Admin, Role.User)
   @ApiOperation({ summary: "Получить правило по ID" })
   @ApiParam({
     name: "rule_id",
