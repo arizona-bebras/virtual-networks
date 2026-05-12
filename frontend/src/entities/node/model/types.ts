@@ -2,7 +2,13 @@ import type { TagColor } from "common/schemas/tag/index";
 
 export type FolderNodeData = {
   label: string;
-  devices: { name: string; ip: string; tag: string; tagId: string }[];
+  devices: {
+    id: string;
+    name: string;
+    ip: string;
+    tag: string;
+    tagId: string;
+  }[];
   connectingTagId: string;
   folderType: "dest" | "source";
   count: number;

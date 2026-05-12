@@ -130,6 +130,7 @@ export function deviceDataToNode(
         : `source-folder-${deviceTagId}`;
 
       const deviceData = {
+        id: device.id,
         name: device.name,
         ip: device.ip,
         tag: tag.name,

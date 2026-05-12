@@ -6,6 +6,7 @@ import {
   List,
   Monitor,
   Search,
+  SquarePen,
   Ungroup,
 } from "@lucide/svelte";
 import {
@@ -15,6 +16,8 @@ import {
   NodeToolbar,
   Position,
 } from "@xyflow/svelte";
+import { goto } from "$app/navigation";
+import { page } from "$app/state";
 import { flip } from "svelte/animate";
 import { cubicOut } from "svelte/easing";
 import { fly, slide } from "svelte/transition";
@@ -37,6 +40,11 @@ let filteredDevices = $derived(
 );
 
 function handleBurst() {}
+
+function handleDeviceEdit(deviceId: string) {
+  const slug = page.params.slug;
+  goto(`/app/network/${slug}/devices?editDevice=${deviceId}`);
+}
 </script>
 
 <NodeToolbar {id} isVisible={selected} position={Position.Top}>
@@ -165,9 +173,14 @@ function handleBurst() {}
             </span>
           </div>
 
-          <div class="opacity-0 group-hover:opacity-100 transition-opacity">
-            <div class="size-1.5 rounded-full bg-primary animate-pulse"></div>
-          </div>
+          <button
+            type="button"
+            class="opacity-0 group-hover:opacity-100 transition-all p-1.5 hover:bg-primary/10 rounded-lg"
+            onclick={() => handleDeviceEdit(device.id)}
+            title="Edit Device"
+          >
+            <SquarePen size={14} class="text-muted-foreground hover:text-primary" />
+          </button>
 
           <div
             class="absolute inset-0 bg-gradient-to-r from-primary/0 to-primary/5 translate-x-full group-hover:translate-x-0 transition-transform duration-500 -z-10"

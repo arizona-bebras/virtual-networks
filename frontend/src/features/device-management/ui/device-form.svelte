@@ -123,6 +123,7 @@ onMount(() => {
     $formData.name = device.name;
     $formData.ip = device.ip;
   }
+  console.log(device)
 });
 </script>
 
