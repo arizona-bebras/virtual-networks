@@ -62,6 +62,7 @@ export class NetworksController {
 
   @Get(":network_id")
   @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.User)
   @ApiOperation({ summary: "Получить сеть по ID" })
   @ApiParam({
     name: "network_id",
@@ -80,6 +81,7 @@ export class NetworksController {
 
   @Get(":network_id/users")
   @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.User)
   @ApiOperation({ summary: "Получить пользователей сети" })
   @ApiParam({
     name: "network_id",
