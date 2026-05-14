@@ -2,7 +2,6 @@
 import { createMutation, getQueryClientContext } from "@tanstack/svelte-query";
 import { CreateTagSchema } from "common/schemas/tag/create-tag";
 import type { Tag } from "common/schemas/tag/index";
-import { onMount } from "svelte";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import * as Form from "$shared/ui/form/index.js";
@@ -66,7 +65,7 @@ let {
   },
 });
 
-onMount(() => {
+$effect(() => {
   if (tag) {
     $formData.name = tag.name;
     $formData.color = tag.color;

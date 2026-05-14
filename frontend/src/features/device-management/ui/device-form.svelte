@@ -6,7 +6,6 @@ import {
 } from "@tanstack/svelte-query";
 import { CreateDeviceSchema } from "common/schemas/device/create-device";
 import type { DeviceRelations } from "common/schemas/device/index";
-import { onMount } from "svelte";
 import Tags from "$entities/device/ui/device-tags-cell.svelte";
 import TagSelector from "$features/tag-management/ui/tag-selector.svelte";
 import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
@@ -118,12 +117,11 @@ let {
   },
 });
 
-onMount(() => {
+$effect(() => {
   if (device) {
     $formData.name = device.name;
     $formData.ip = device.ip;
   }
-  console.log(device);
 });
 </script>
 

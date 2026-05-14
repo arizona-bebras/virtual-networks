@@ -6,10 +6,7 @@ import {
 } from "@tanstack/svelte-query";
 import { CreateRuleSchema } from "common/schemas/rule/create-rule";
 import { ProtocolSchema, type RuleRelation } from "common/schemas/rule/index";
-import { Tags } from "lucide-svelte";
-import { onMount } from "svelte";
 import SuperDebug from "sveltekit-superforms";
-import { z } from "zod";
 import TagBadge from "$entities/tag/ui/tag-badge.svelte";
 import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
@@ -81,9 +78,8 @@ let {
   },
 });
 
-onMount(() => {
+$effect(() => {
   if (pageData) {
-    console.log(pageData);
     $formData.description = pageData?.description;
     $formData.sourceId = pageData?.sourceId;
     $formData.destId = pageData?.destId;
