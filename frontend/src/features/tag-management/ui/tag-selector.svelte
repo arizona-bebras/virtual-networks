@@ -3,8 +3,6 @@
 import { createQuery } from "@tanstack/svelte-query";
 import type { Column } from "@tanstack/table-core";
 import type { DeviceRelations } from "common/schemas/device/index";
-import type { RuleRelation } from "common/schemas/rule/index";
-import type { Tag } from "common/schemas/tag/index";
 import { Debounced } from "runed";
 import DeviceCell from "$entities/device/ui/device-tags-cell.svelte";
 import type { FilterValueWithId } from "$features/device-management/model/types";
@@ -18,7 +16,8 @@ let {
   onclick,
   excludedTags,
 }: {
-  column?: Column<Tag | DeviceRelations | RuleRelation, unknown>;
+  // biome-ignore lint/suspicious/noExplicitAny: <cuz literaly any>
+  column?: Column<any, any>;
   onclick?: (name: string) => void;
   excludedTags?: DeviceRelations["tags"];
 } = $props();
