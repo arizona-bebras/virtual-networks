@@ -11,8 +11,8 @@ import type { DeviceRelations } from "common/schemas/device/index";
 import type { SQL } from "drizzle-orm";
 import { and, eq, inArray } from "drizzle-orm";
 import { ilike, sql } from "drizzle-orm/sql";
-import { type Database, DRIZZLE } from "../../db/database.module";
-import * as schema from "../../db/schema";
+import { type Database, DRIZZLE } from "../../db/database.module.js";
+import * as schema from "../../db/schema.js";
 
 @Injectable()
 export class DevicesService {

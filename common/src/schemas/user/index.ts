@@ -1,7 +1,12 @@
-import { z } from "zod";
+import { createSelectSchema } from "drizzle-orm/zod";
+import { user } from "../../db/schema.js";
 
-export const UserSchema = z.object({
-  id: z.string().describe("The unique identifier of the user"),
-  name: z.string().describe("The name of the user"),
-  email: z.string().describe("The email of the user"),
+export const UserSchema = createSelectSchema(user, {
+  id: (schema) => schema.describe("The unique identifier of the user"),
+  name: (schema) => schema.describe("The name of the user"),
+  email: (schema) => schema.describe("The email of the user"),
+}).pick({
+  id: true,
+  name: true,
+  email: true,
 });

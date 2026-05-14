@@ -21,10 +21,10 @@ import { AuthGuard } from "@thallesp/nestjs-better-auth";
 import { CreateTagDto } from "common/dto/tag/create-tag";
 import { TagDto } from "common/dto/tag/index";
 import { UpdateTagDto } from "common/dto/tag/update-tag";
-import { Role } from "../../authorization/role.enum";
-import { Roles } from "../../authorization/roles.decorator";
-import { RolesGuard } from "../../authorization/roles.guard";
-import { TagsService } from "./tags.service";
+import { Role } from "../../authorization/role.enum.js";
+import { Roles } from "../../authorization/roles.decorator.js";
+import { RolesGuard } from "../../authorization/roles.guard.js";
+import { TagsService } from "./tags.service.js";
 
 @ApiTags("Tags")
 @Controller("networks/:network_id/tags")

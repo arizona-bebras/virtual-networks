@@ -2,9 +2,9 @@ import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { localization } from "better-auth-localization";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { postgresUrl } from "./db/connection";
-import * as schema from "./db/schema";
-import { relations } from "./db/schema";
+import { postgresUrl } from "./db/connection.js";
+import * as schema from "./db/schema.js";
+import { relations } from "./db/schema.js";
 
 const db = drizzle(postgresUrl, { relations });
 

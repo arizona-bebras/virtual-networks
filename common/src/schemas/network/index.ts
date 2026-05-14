@@ -1,15 +1,16 @@
+import { createSelectSchema } from "drizzle-orm/zod";
 import { z } from "zod";
+import { networks } from "../../db/schema.js";
 import { UserSchema } from "../user/index.js";
 
-export const NetworkSchema = z.object({
-  id: z.uuid().describe("The unique identifier of the network"),
-  name: z.string().min(1).max(255).describe("The name of the network"),
-  description: z.string().max(255).describe("A description of the network"),
-  cidr: z.cidrv4().describe("The IP address range of the network"),
-  creatorId: z
-    .uuid()
-    .nullable()
-    .describe("The unique identifier of the network creator"),
+export const NetworkSchema = createSelectSchema(networks, {
+  id: (schema) => schema.describe("The unique identifier of the network"),
+  name: (schema) => schema.min(1).max(255).describe("The name of the network"),
+  description: (schema) =>
+    schema.max(255).describe("A description of the network"),
+  cidr: (schema) => schema.describe("The IP address range of the network"),
+  creatorId: (schema) =>
+    schema.describe("The unique identifier of the network creator"),
 });
 
 export const NetworkRelationsSchema = NetworkSchema.extend({

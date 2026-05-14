@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "type": "module",
   "exports": {
+    "./db/schema": {
+      "types": "./dist/db/schema.d.ts",
+      "default": "./dist/db/schema.js"
+    },
     "./dto/*": {
       "types": "./dist/dto/*.d.ts",
       "default": "./dist/dto/*.js"
@@ -30,6 +34,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.33.0",
   "dependencies": {
+    "drizzle-orm": "1.0.0-beta.20",
     "nestjs-zod": "^5.3.0",
     "typescript": "^5.7.3",
     "zod": "^4.3.6"

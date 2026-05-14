@@ -14,8 +14,8 @@ import type { UpdateNetworkDto } from "common/dto/network/update-network";
 import { sql } from "drizzle-orm";
 import { and, eq } from "drizzle-orm/sql/expressions/conditions";
 import { Address4 } from "ip-address";
-import { type Database, DRIZZLE } from "../../db/database.module";
-import * as schema from "../../db/schema";
+import { type Database, DRIZZLE } from "../../db/database.module.js";
+import * as schema from "../../db/schema.js";
 
 @Injectable()
 export class NetworksService {

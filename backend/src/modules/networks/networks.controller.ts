@@ -24,10 +24,10 @@ import { NetworkEnterCredentialsDto } from "common/dto/network/enter-credentials
 import { NetworkDto } from "common/dto/network/index";
 import { NetworkUsersDto } from "common/dto/network/network-users";
 import { UpdateNetworkDto } from "common/dto/network/update-network";
-import { Role } from "../../authorization/role.enum";
-import { Roles } from "../../authorization/roles.decorator";
-import { RolesGuard } from "../../authorization/roles.guard";
-import { NetworksService } from "./networks.service";
+import { Role } from "../../authorization/role.enum.js";
+import { Roles } from "../../authorization/roles.decorator.js";
+import { RolesGuard } from "../../authorization/roles.guard.js";
+import { NetworksService } from "./networks.service.js";
 
 @ApiTags("Networks")
 @Controller("networks")

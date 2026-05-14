@@ -3,18 +3,18 @@ import { Test, type TestingModule } from "@nestjs/testing";
 import type { DeviceRelations } from "common/schemas/device/index";
 import { sql } from "drizzle-orm";
 import request from "supertest";
-import type { App } from "supertest/types";
-import { Role } from "../src/authorization/role.enum";
-import { RolesGuard } from "../src/authorization/roles.guard";
-import { DRIZZLE } from "../src/db/database.module";
-import * as schema from "../src/db/schema";
-import { DevicesController } from "../src/modules/devices/devices.controller";
-import { DevicesService } from "../src/modules/devices/devices.service";
+import type { App } from "supertest/types.js";
+import { Role } from "../src/authorization/role.enum.js";
+import { RolesGuard } from "../src/authorization/roles.guard.js";
+import { DRIZZLE } from "../src/db/database.module.js";
+import * as schema from "../src/db/schema.js";
+import { DevicesController } from "../src/modules/devices/devices.controller.js";
+import { DevicesService } from "../src/modules/devices/devices.service.js";
 import {
   closeTestDatabase,
   createTestDatabase,
   type TestDatabase,
-} from "./test-database";
+} from "./test-database.js";
 
 const networkId = "11111111-1111-1111-1111-111111111111";
 const otherNetworkId = "22222222-2222-2222-2222-222222222222";

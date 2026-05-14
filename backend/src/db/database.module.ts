@@ -4,8 +4,8 @@ import "dotenv/config";
 import { sql } from "drizzle-orm";
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { Pool } from "pg";
-import { postgresUrl } from "./connection";
-import * as schema from "./schema";
+import { postgresUrl } from "./connection.js";
+import * as schema from "./schema.js";
 
 export const DRIZZLE = "DRIZZLE";
 type DatabaseSchema = ExtractTablesFromSchema<typeof schema>;
