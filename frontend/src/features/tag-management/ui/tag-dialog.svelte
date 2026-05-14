@@ -12,7 +12,6 @@ let {
   title,
   description,
 }: { open: boolean; title: string; tag?: Tag; description?: string } = $props();
-
 </script>
 
 <Dialog.Root bind:open>

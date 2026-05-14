@@ -17,8 +17,14 @@ let isEditingDialogOpen = $state(false);
 let currentNetworkId = $derived(getNetworkId().id);
 let globalFilter = $state("");
 
+const userTags = createQuery(() =>
+  deviceTags.userTags(currentNetworkId, globalFilter),
+);
+
 let tagIdSearchParam = $derived(page.url.searchParams.get("editTag"));
-let editingTag = $derived(userTags.data?.find((t) => t.id === tagIdSearchParam));
+let editingTag = $derived(
+  userTags.data?.find((t) => t.id === tagIdSearchParam),
+);
 
 $effect(() => {
   if (tagIdSearchParam) {
@@ -36,10 +42,6 @@ $effect(() => {
 
 // TODO: в ожидании реализации bulk delete на бэке
 function bulkRemoveSelected(_ids: string[]) {}
-
-const userTags = createQuery(() =>
-  deviceTags.userTags(currentNetworkId, globalFilter),
-);
 </script>
 
 <div class="p-8">

@@ -16,11 +16,11 @@ import {
   NodeToolbar,
   Position,
 } from "@xyflow/svelte";
-import { goto } from "$app/navigation";
-import { page } from "$app/state";
 import { flip } from "svelte/animate";
 import { cubicOut } from "svelte/easing";
 import { fly, slide } from "svelte/transition";
+import { goto } from "$app/navigation";
+import { page } from "$app/state";
 import type { FolderNodeData } from "$entities/node/model/types";
 import { Button } from "$shared/ui/button/index.js";
 import * as Card from "$shared/ui/card/index.js";
@@ -179,7 +179,10 @@ function handleDeviceEdit(deviceId: string) {
             onclick={() => handleDeviceEdit(device.id)}
             title="Edit Device"
           >
-            <SquarePen size={14} class="text-muted-foreground hover:text-primary" />
+            <SquarePen
+              size={14}
+              class="text-muted-foreground hover:text-primary"
+            />
           </button>
 
           <div
