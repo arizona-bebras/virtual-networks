@@ -11,13 +11,14 @@ import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { Input } from "$shared/ui/input/index";
 import { Separator } from "$shared/ui/separator/index";
+  import type { Tag } from "common/schemas/tag/index";
 
 let {
   column,
   onclick,
   excludedTags,
 }: {
-  column?: Column<any, any>;
+  column?: Column<Tag | DeviceRelations | RuleRelation, unknown>;
   onclick?: (name: string) => void;
   excludedTags?: DeviceRelations["tags"];
 } = $props();
