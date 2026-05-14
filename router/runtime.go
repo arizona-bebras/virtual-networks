@@ -233,12 +233,17 @@ func startRuntimeParts(
 
 func (r *Runtime) Close() {
 	r.mu.Lock()
+	closeMetrics := r.metricsClose
+	r.metricsClose = nil
+	r.mu.Unlock()
+
+	if closeMetrics != nil {
+		_ = closeMetrics()
+	}
+
+	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.closeCurrentLocked()
-	if r.metricsClose != nil {
-		_ = r.metricsClose()
-		r.metricsClose = nil
-	}
 	if r.controlPlane != nil {
 		_ = r.controlPlane.Close()
 	}
