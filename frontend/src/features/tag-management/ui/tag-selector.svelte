@@ -4,6 +4,7 @@ import { createQuery } from "@tanstack/svelte-query";
 import type { Column } from "@tanstack/table-core";
 import type { DeviceRelations } from "common/schemas/device/index";
 import type { RuleRelation } from "common/schemas/rule/index";
+import type { Tag } from "common/schemas/tag/index";
 import { Debounced } from "runed";
 import DeviceCell from "$entities/device/ui/device-tags-cell.svelte";
 import type { FilterValueWithId } from "$features/device-management/model/types";
@@ -11,7 +12,6 @@ import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { Input } from "$shared/ui/input/index";
 import { Separator } from "$shared/ui/separator/index";
-  import type { Tag } from "common/schemas/tag/index";
 
 let {
   column,
