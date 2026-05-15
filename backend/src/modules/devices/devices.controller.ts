@@ -95,6 +95,7 @@ export class DevicesController {
   }
 
   @Get(":device_id")
+  @Roles(Role.Admin, Role.User)
   @ApiOperation({ summary: "Получить устройство по ID" })
   @ApiParam({
     name: "device_id",
