@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Lock, ShieldAlert, ShieldCheck } from "@lucide/svelte";
+import { Lock, ShieldAlert, ShieldCheck, SquarePen } from "@lucide/svelte";
 import {
   Handle,
   type Node,
@@ -7,13 +7,23 @@ import {
   NodeToolbar,
   Position,
 } from "@xyflow/svelte";
+import { goto } from "$app/navigation";
+import { page } from "$app/state";
 import type { RuleNodeData } from "$entities/node/model/types";
 import * as Card from "$shared/ui/card/index.js";
 
 let { id, data }: NodeProps<Node<RuleNodeData>> = $props();
+
+function handleEdit(e: MouseEvent) {
+  e.stopPropagation();
+  const slug = page.params.slug;
+  goto(`/app/network/${slug}/rules?editRule=${id}`);
+}
 </script>
 
-<Card.Root class="w-36 bg-background border-border border-2 shadow-sm">
+<Card.Root
+  class="group relative w-36 bg-background border-border border-2 shadow-sm hover:border-gray-700 transition-all duration-200"
+>
   <div class="p-2 flex items-center gap-2">
     <div class="p-1.5 rounded-md bg-secondary flex-shrink-0">
       {#if data.action === 'allow'}
@@ -24,7 +34,7 @@ let { id, data }: NodeProps<Node<RuleNodeData>> = $props();
         <Lock size={16} class="text-primary" />
       {/if}
     </div>
-    <div class="flex flex-col min-w-0">
+    <div class="flex flex-col min-w-0 flex-1">
       <div class="flex items-center gap-1.5">
         <span
           class="text-[9px] font-black uppercase text-muted-foreground leading-none"
@@ -41,6 +51,14 @@ let { id, data }: NodeProps<Node<RuleNodeData>> = $props();
         {data.name || 'Default Rule'}
       </span>
     </div>
+    <button
+      type="button"
+      class="opacity-0 group-hover:opacity-100 transition-all p-1 hover:bg-primary/10 rounded-md"
+      onclick={handleEdit}
+      title="Edit Rule"
+    >
+      <SquarePen size={12} class="text-muted-foreground hover:text-primary" />
+    </button>
   </div>
 </Card.Root>
 
