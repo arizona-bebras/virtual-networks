@@ -1,12 +1,18 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "cd1309d9-e5fc-4c60-ae91-51e59828d3e6",
+  "id": "3b4a04e8-aeb7-4cf4-8954-c81a10b23e0f",
   "prevIds": ["44d46245-286d-401a-adaa-28438022f4ff"],
   "ddl": [
     {
       "values": ["red", "green", "blue", "yellow", "purple", "orange"],
       "name": "color",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "values": ["TCP", "UDP", "ICMP"],
+      "name": "protocol",
       "entityType": "enums",
       "schema": "public"
     },
@@ -532,7 +538,7 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "source",
+      "name": "source_id",
       "entityType": "columns",
       "schema": "public",
       "table": "rules"
@@ -545,14 +551,27 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "dest",
+      "name": "dest_id",
       "entityType": "columns",
       "schema": "public",
       "table": "rules"
     },
     {
-      "type": "varchar(32)",
+      "type": "varchar(255)",
       "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "description",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "rules"
+    },
+    {
+      "type": "protocol",
+      "typeSchema": "public",
       "notNull": false,
       "dimensions": 0,
       "default": null,
@@ -1083,7 +1102,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["source"],
+      "columns": ["source_id"],
       "schemaTo": "public",
       "tableTo": "tags",
       "columnsTo": ["id"],
@@ -1096,7 +1115,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["dest"],
+      "columns": ["dest_id"],
       "schemaTo": "public",
       "tableTo": "tags",
       "columnsTo": ["id"],
@@ -1236,6 +1255,15 @@
     },
     {
       "nameExplicit": false,
+      "columns": ["ip"],
+      "nullsNotDistinct": false,
+      "name": "devices_ip_key",
+      "schema": "public",
+      "table": "devices",
+      "entityType": "uniques"
+    },
+    {
+      "nameExplicit": false,
       "columns": ["token"],
       "nullsNotDistinct": false,
       "name": "session_token_key",
@@ -1262,5 +1290,8 @@
       "entityType": "uniques"
     }
   ],
-  "renames": []
+  "renames": [
+    "public.rules.source->public.rules.source_id",
+    "public.rules.dest->public.rules.dest_id"
+  ]
 }

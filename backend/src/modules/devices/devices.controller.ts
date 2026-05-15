@@ -56,7 +56,6 @@ export class DevicesController {
   }
 
   @Get()
-  @Roles(Role.Admin, Role.User)
   @ApiOperation({ summary: "Получить устройства по фильтрам" })
   @ApiQuery({
     name: "q",
