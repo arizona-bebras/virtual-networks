@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Plus } from "@lucide/svelte";
 import { createQuery } from "@tanstack/svelte-query";
+import type { ColumnFiltersState } from "@tanstack/table-core";
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
 import { columns } from "$features/rule-management/model/rule-table-columns";
@@ -13,6 +14,25 @@ import { userRules } from "../api/query";
 
 let isAddRuleDialogOpen = $state(false);
 let isEditingDialogOpen = $state(false);
+
+let globalFilter = $state("");
+let columnFilters = $state<ColumnFiltersState>([]);
+
+let sourceTagsFilter = $derived(
+  (
+    columnFilters.find((f) => f.id === "sourceTag")?.value as
+      | { id: string; name: string }[]
+      | undefined
+  )?.map((t) => t.id),
+);
+
+let destTagsFilter = $derived(
+  (
+    columnFilters.find((f) => f.id === "destTag")?.value as
+      | { id: string; name: string }[]
+      | undefined
+  )?.map((t) => t.id),
+);
 
 const currentNetworkId = $derived(getNetworkId().id);
 const userRulesQuery = createQuery(() =>

@@ -8,6 +8,7 @@ import { CreateRuleSchema } from "common/schemas/rule/create-rule";
 import { ProtocolSchema, type RuleRelation } from "common/schemas/rule/index";
 import SuperDebug from "sveltekit-superforms";
 import TagBadge from "$entities/tag/ui/tag-badge.svelte";
+import TagListItem from "$entities/tag/ui/tag-list-item.svelte";
 import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
