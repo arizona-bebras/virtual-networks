@@ -66,6 +66,7 @@ type Runtime struct {
 	overlays     map[string]*overlayRuntime
 	protocols    []ProtocolInstance
 	closers      []func() error
+	metricsClose func() error
 	controlPlane *controlPlaneClient
 	configWatch  *configurationWatch
 }
