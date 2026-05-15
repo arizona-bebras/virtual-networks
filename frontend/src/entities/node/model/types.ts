@@ -1,14 +1,9 @@
+import type { DeviceRelations } from "common/schemas/device/index";
 import type { TagColor } from "common/schemas/tag/index";
 
 export type FolderNodeData = {
   label: string;
-  devices: {
-    id: string;
-    name: string;
-    ip: string;
-    tag: string;
-    tagId: string;
-  }[];
+  devices: DeviceRelations[];
   connectingTagId: string;
   folderType: "dest" | "source";
   count: number;

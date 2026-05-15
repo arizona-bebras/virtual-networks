@@ -129,17 +129,9 @@ export function deviceDataToNode(
         ? `dest-folder-${deviceTagId}`
         : `source-folder-${deviceTagId}`;
 
-      const deviceData = {
-        id: device.id,
-        name: device.name,
-        ip: device.ip,
-        tag: tag.name,
-        tagId: tag.id,
-      };
-
       const existingNode = nodesMap.get(nodeId);
       if (existingNode) {
-        existingNode.data.devices.push(deviceData);
+        existingNode.data.devices.push(device);
         existingNode.data.count += 1;
       } else {
         const positionY = tagPosMap.get(deviceTagId) ?? 100;
@@ -150,7 +142,7 @@ export function deviceDataToNode(
           type: "folder",
           data: {
             label: tag.name || "Unknown",
-            devices: [deviceData],
+            devices: [device],
             connectingTagId: deviceTagId,
             folderType: isDestFolders ? "dest" : "source",
             count: 1,
