@@ -10,9 +10,9 @@ import {
   primaryKey,
   text,
   timestamp,
+  unique,
   uuid,
   varchar,
-  unique,
 } from "drizzle-orm/pg-core";
 
 // Better Auth Tables
