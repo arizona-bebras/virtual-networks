@@ -75,7 +75,7 @@ export class DevicesService {
         .insert(schema.keys)
         .values({
           publicKey: publicKey.export({ type: "spki", format: "der" }),
-          privateKey: privateKey.export({ type: "spki", format: "der" }),
+          privateKey: privateKey.export({ type: "pkcs8", format: "der" }),
         })
         .returning();
       await tx
