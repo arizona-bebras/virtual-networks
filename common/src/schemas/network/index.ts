@@ -11,7 +11,7 @@ export const NetworkSchema = createSelectSchema(networks, {
   cidr: (schema) => schema.describe("The IP address range of the network"),
   creatorId: (schema) =>
     schema.describe("The unique identifier of the network creator"),
-});
+}).omit({ keysId: true });
 
 export const NetworkRelationsSchema = NetworkSchema.extend({
   creator: UserSchema.nullable().describe(

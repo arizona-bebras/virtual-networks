@@ -1,17 +1,1 @@
-export {
-  account,
-  colorEnum,
-  devices,
-  devicesTags,
-  jwks,
-  networks,
-  networkUsers,
-  protocolEnum,
-  relations,
-  roleEnum,
-  rules,
-  session,
-  tags,
-  user,
-  verification,
-} from "common/db/schema";
+export * from "common/db/schema";

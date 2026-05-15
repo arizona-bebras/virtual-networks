@@ -1,6 +1,7 @@
 import { defineRelations } from "drizzle-orm";
 import {
   boolean,
+  bytea,
   cidr,
   index,
   inet,
@@ -10,6 +11,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  unique,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -98,27 +100,39 @@ export const jwks = pgTable("jwks", {
 
 // App Tables
 
+export const keys = pgTable("keys", {
+  id: uuid(`id`).primaryKey().defaultRandom(),
+  publicKey: bytea("public_key"),
+  privateKey: bytea("private_key"),
+});
+
 export const networks = pgTable("networks", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
   description: varchar({ length: 255 }).notNull(),
   cidr: cidr().default("192.168.123.0/24").notNull(),
-  creatorId: text("creator_id").references(() => user.id, {
+  creatorId: text(`creator_id`).references(() => user.id, {
     onDelete: "no action",
   }),
+  keysId: uuid("keys_id").references(() => keys.id, { onDelete: "cascade" }),
 });
 
-export const devices = pgTable("devices", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: varchar({ length: 255 }).notNull(),
-  ip: inet().notNull(),
-  ownerId: text("owner_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  networkId: uuid("network_id")
-    .notNull()
-    .references(() => networks.id, { onDelete: "cascade" }),
-});
+export const devices = pgTable(
+  "devices",
+  {
+    id: uuid(`id`).primaryKey().defaultRandom(),
+    name: varchar({ length: 255 }).notNull(),
+    ip: inet().notNull(),
+    ownerId: text("owner_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    networkId: uuid("network_id")
+      .notNull()
+      .references(() => networks.id, { onDelete: "cascade" }),
+    keysId: uuid("keys_id").references(() => keys.id, { onDelete: "cascade" }),
+  },
+  (t) => [unique("network_ip_unique_idx").on(t.ip, t.networkId)],
+);
 
 export const colorEnum = pgEnum("color", [
   "red",
@@ -130,7 +144,7 @@ export const colorEnum = pgEnum("color", [
 ]);
 
 export const tags = pgTable("tags", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull().unique(),
   color: colorEnum("color"),
   networkId: uuid("network_id")
@@ -170,7 +184,7 @@ export const networkUsers = pgTable(
 export const protocolEnum = pgEnum("protocol", ["TCP", "UDP", "ICMP"]);
 
 export const rules = pgTable("rules", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: uuid(`id`).primaryKey().defaultRandom(),
   sourceId: uuid("source_id").references(() => tags.id),
   destId: uuid("dest_id").references(() => tags.id),
   description: varchar({ length: 255 }),
@@ -192,6 +206,7 @@ export const relations = defineRelations(
     devicesTags,
     rules,
     networkUsers,
+    keys,
   },
   (r) => ({
     user: {
@@ -229,6 +244,10 @@ export const relations = defineRelations(
         from: r.networks.creatorId,
         to: r.user.id,
       }),
+      keys: r.one.keys({
+        from: r.networks.keysId,
+        to: r.keys.id,
+      }),
     },
 
     devices: {
@@ -243,6 +262,10 @@ export const relations = defineRelations(
       owner: r.one.user({
         from: r.devices.ownerId,
         to: r.user.id,
+      }),
+      keys: r.one.keys({
+        from: r.devices.keysId,
+        to: r.keys.id,
       }),
     },
 
