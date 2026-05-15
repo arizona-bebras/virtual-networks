@@ -39,7 +39,7 @@ import { DevicesService } from "./devices.service";
 export class DevicesController {
   constructor(private readonly devicesService: DevicesService) {}
 
-  @Post("")
+  @Post()
   @Roles(Role.Admin)
   @ApiOperation({ summary: "Создать новое устройство" })
   @ApiBody({ type: CreateDeviceDto })
@@ -55,7 +55,7 @@ export class DevicesController {
     );
   }
 
-  @Get("")
+  @Get()
   @ApiOperation({ summary: "Получить устройства по фильтрам" })
   @ApiQuery({
     name: "q",

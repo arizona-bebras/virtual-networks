@@ -1,12 +1,18 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "a71ca659-20d5-4924-83dc-d593c7a28f0f",
+  "id": "3b4a04e8-aeb7-4cf4-8954-c81a10b23e0f",
   "prevIds": ["44d46245-286d-401a-adaa-28438022f4ff"],
   "ddl": [
     {
       "values": ["red", "green", "blue", "yellow", "purple", "orange"],
       "name": "color",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "values": ["TCP", "UDP", "ICMP"],
+      "name": "protocol",
       "entityType": "enums",
       "schema": "public"
     },
@@ -499,6 +505,19 @@
       "table": "networks"
     },
     {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "creator_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "networks"
+    },
+    {
       "type": "uuid",
       "typeSchema": null,
       "notNull": true,
@@ -519,7 +538,7 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "source",
+      "name": "source_id",
       "entityType": "columns",
       "schema": "public",
       "table": "rules"
@@ -532,14 +551,27 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "dest",
+      "name": "dest_id",
       "entityType": "columns",
       "schema": "public",
       "table": "rules"
     },
     {
-      "type": "varchar(32)",
+      "type": "varchar(255)",
       "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "description",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "rules"
+    },
+    {
+      "type": "protocol",
+      "typeSchema": "public",
       "notNull": false,
       "dimensions": 0,
       "default": null,
@@ -1057,7 +1089,20 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["source"],
+      "columns": ["creator_id"],
+      "schemaTo": "public",
+      "tableTo": "user",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "name": "networks_creator_id_user_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "networks"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["source_id"],
       "schemaTo": "public",
       "tableTo": "tags",
       "columnsTo": ["id"],
@@ -1070,7 +1115,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["dest"],
+      "columns": ["dest_id"],
       "schemaTo": "public",
       "tableTo": "tags",
       "columnsTo": ["id"],
@@ -1210,6 +1255,15 @@
     },
     {
       "nameExplicit": false,
+      "columns": ["ip"],
+      "nullsNotDistinct": false,
+      "name": "devices_ip_key",
+      "schema": "public",
+      "table": "devices",
+      "entityType": "uniques"
+    },
+    {
+      "nameExplicit": false,
       "columns": ["token"],
       "nullsNotDistinct": false,
       "name": "session_token_key",
@@ -1236,5 +1290,8 @@
       "entityType": "uniques"
     }
   ],
-  "renames": []
+  "renames": [
+    "public.rules.source->public.rules.source_id",
+    "public.rules.dest->public.rules.dest_id"
+  ]
 }
