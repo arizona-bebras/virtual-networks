@@ -8,8 +8,8 @@ import {
   ilike,
   inArray,
 } from "drizzle-orm/sql/expressions/conditions";
-import { type Database, DRIZZLE } from "../../db/database.module";
-import * as schema from "../../db/schema";
+import { type Database, DRIZZLE } from "../../db/database.module.js";
+import * as schema from "../../db/schema.js";
 
 @Injectable()
 export class RulesService {

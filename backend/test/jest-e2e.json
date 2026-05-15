@@ -3,16 +3,19 @@
   "rootDir": "..",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
+  "extensionsToTreatAsEsm": [".ts"],
   "transform": {
     "^.+\\.(t|j)s$": [
       "ts-jest",
       {
-        "tsconfig": "<rootDir>/tsconfig.spec.json"
+        "tsconfig": "<rootDir>/tsconfig.spec.json",
+        "useESM": true
       }
     ]
   },
   "moduleNameMapper": {
     "^@thallesp/nestjs-better-auth$": "<rootDir>/src/test-utils/nestjs-better-auth.mock.ts",
+    "^common/db/(.*)$": "<rootDir>/../common/src/db/$1",
     "^common/dto/(.*)$": "<rootDir>/../common/src/dto/$1",
     "^common/schemas/(.*)$": "<rootDir>/../common/src/schemas/$1",
     "^(\\.{1,2}/.*)\\.js$": "$1"

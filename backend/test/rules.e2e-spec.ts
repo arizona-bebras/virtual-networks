@@ -2,18 +2,18 @@ import type { INestApplication } from "@nestjs/common";
 import { Test, type TestingModule } from "@nestjs/testing";
 import type { RuleRelation } from "common/schemas/rule/index";
 import request from "supertest";
-import type { App } from "supertest/types";
-import { Role } from "../src/authorization/role.enum";
-import { RolesGuard } from "../src/authorization/roles.guard";
-import { DRIZZLE } from "../src/db/database.module";
-import * as schema from "../src/db/schema";
-import { RulesController } from "../src/modules/rules/rules.controller";
-import { RulesService } from "../src/modules/rules/rules.service";
+import type { App } from "supertest/types.js";
+import { Role } from "../src/authorization/role.enum.js";
+import { RolesGuard } from "../src/authorization/roles.guard.js";
+import { DRIZZLE } from "../src/db/database.module.js";
+import * as schema from "../src/db/schema.js";
+import { RulesController } from "../src/modules/rules/rules.controller.js";
+import { RulesService } from "../src/modules/rules/rules.service.js";
 import {
   closeTestDatabase,
   createTestDatabase,
   type TestDatabase,
-} from "./test-database";
+} from "./test-database.js";
 
 const userId = "user-1";
 const networkId = "11111111-1111-1111-1111-111111111111";

@@ -23,10 +23,10 @@ import { AuthGuard, Session } from "@thallesp/nestjs-better-auth";
 import { CreateDeviceDto } from "common/dto/device/create-device";
 import { DeviceRelationsDto } from "common/dto/device/index";
 import { UpdateDeviceDto } from "common/dto/device/update-device";
-import { Role } from "../../authorization/role.enum";
-import { Roles } from "../../authorization/roles.decorator";
-import { RolesGuard } from "../../authorization/roles.guard";
-import { DevicesService } from "./devices.service";
+import { Role } from "../../authorization/role.enum.js";
+import { Roles } from "../../authorization/roles.decorator.js";
+import { RolesGuard } from "../../authorization/roles.guard.js";
+import { DevicesService } from "./devices.service.js";
 
 @ApiTags("Devices")
 @ApiParam({

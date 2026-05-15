@@ -1,26 +1,20 @@
-import { z } from "zod";
+import { createSelectSchema } from "drizzle-orm/zod";
+import type { z } from "zod";
+import { protocolEnum, rules } from "../../db/schema.js";
 import { TagRelationsSchema } from "../tag/index.js";
 
-export const ProtocolSchema = z.enum(["TCP", "UDP", "ICMP"]);
+export const ProtocolSchema = createSelectSchema(protocolEnum);
 
-export const RuleSchema = z.object({
-  id: z.uuid().describe("The unique identifier of the rule"),
-  sourceId: z.uuid().describe("The source tag identifier").nullable(),
-  destId: z.uuid().describe("The destination tag identifier").nullable(),
-  description: z
-    .string()
-    .max(255)
-    .describe("A description of the rule")
-    .nullable(),
-  protocol: ProtocolSchema.describe("The network protocol").nullable(),
-  port: z
-    .number()
-    .int()
-    .min(0)
-    .max(65535)
-    .describe("The destination port")
-    .nullable(),
-});
+export const RuleSchema = createSelectSchema(rules, {
+  id: (schema) => schema.describe("The unique identifier of the rule"),
+  sourceId: (schema) => schema.describe("The source tag identifier"),
+  destId: (schema) => schema.describe("The destination tag identifier"),
+  description: (schema) =>
+    schema.max(255).describe("A description of the rule"),
+  protocol: (schema) => schema.describe("The network protocol"),
+  port: (schema) =>
+    schema.int().min(0).max(65535).describe("The destination port"),
+}).omit({ networkId: true });
 
 export const RuleRelationsSchema = RuleSchema.extend({
   source: TagRelationsSchema.nullable().describe("The source tag"),

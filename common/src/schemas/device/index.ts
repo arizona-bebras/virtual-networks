@@ -1,13 +1,15 @@
+import { createSelectSchema } from "drizzle-orm/zod";
 import { z } from "zod";
+import { devices } from "../../db/schema.js";
 import { TagSchema } from "../tag/index.js";
 import { UserSchema } from "../user/index.js";
 
-export const DeviceSchema = z.object({
-  id: z.uuid().describe("The unique identifier of the device"),
-  name: z.string().min(1).max(255).describe("The name of the device"),
-  ip: z.ipv4().describe("The IP address of the device"),
-  ownerId: z.string().describe("The identifier of the device owner"),
-});
+export const DeviceSchema = createSelectSchema(devices, {
+  id: (schema) => schema.describe("The unique identifier of the device"),
+  name: (schema) => schema.min(1).max(255).describe("The name of the device"),
+  ip: (schema) => schema.describe("The IP address of the device"),
+  ownerId: (schema) => schema.describe("The identifier of the device owner"),
+}).omit({ networkId: true, keysId: true });
 
 export const DeviceRelationsSchema = DeviceSchema.extend({
   tags: z
