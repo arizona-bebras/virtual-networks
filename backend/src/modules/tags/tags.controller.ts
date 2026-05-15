@@ -50,7 +50,7 @@ export class TagsController {
   }
 
   @Get()
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.User)
   @ApiOperation({ summary: "Получить теги сети" })
   @ApiQuery({
     name: "q",
@@ -72,6 +72,7 @@ export class TagsController {
   }
 
   @Get(":tag_id")
+  @Roles(Role.Admin, Role.User)
   @ApiOperation({ summary: "Получить тег по ID" })
   @ApiParam({
     name: "tag_id",

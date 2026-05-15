@@ -62,6 +62,7 @@ export class NetworksController {
 
   @Get(":network_id")
   @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.User)
   @ApiOperation({ summary: "Получить сеть по ID" })
   @ApiParam({
     name: "network_id",
@@ -80,6 +81,7 @@ export class NetworksController {
 
   @Get(":network_id/users")
   @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.User)
   @ApiOperation({ summary: "Получить пользователей сети" })
   @ApiParam({
     name: "network_id",
@@ -153,5 +155,22 @@ export class NetworksController {
   @ApiResponse({ status: 404, description: "Сеть не найдена" })
   async delete(@Param("network_id") id: string) {
     await this.networksService.delete(id);
+  }
+
+  @Get(":network_id/get_free_ip")
+  @Roles(Role.Admin)
+  @ApiOperation({ summary: "Добавить тег на устройство" })
+  @ApiResponse({
+    status: 200,
+    description: "IP адрес получен",
+  })
+  @ApiResponse({ status: 400, description: "Сеть переполнена" })
+  @ApiResponse({
+    status: 404,
+    description: "Сети с таким network_id не существует",
+  })
+  async getFreeIp(@Param("network_id") networkId: string) {
+    const ip = await this.networksService.getFreeIp(networkId);
+    return { ip: ip };
   }
 }

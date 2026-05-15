@@ -11,6 +11,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  unique,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -116,18 +117,22 @@ export const networks = pgTable("networks", {
   keysId: uuid("keys_id").references(() => keys.id, { onDelete: "cascade" }),
 });
 
-export const devices = pgTable("devices", {
-  id: uuid(`id`).primaryKey().defaultRandom(),
-  name: varchar({ length: 255 }).notNull(),
-  ip: inet().notNull(),
-  ownerId: text("owner_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  networkId: uuid("network_id")
-    .notNull()
-    .references(() => networks.id, { onDelete: "cascade" }),
-  keysId: uuid("keys_id").references(() => keys.id, { onDelete: "cascade" }),
-});
+export const devices = pgTable(
+  "devices",
+  {
+    id: uuid(`id`).primaryKey().defaultRandom(),
+    name: varchar({ length: 255 }).notNull(),
+    ip: inet().notNull(),
+    ownerId: text("owner_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    networkId: uuid("network_id")
+      .notNull()
+      .references(() => networks.id, { onDelete: "cascade" }),
+    keysId: uuid("keys_id").references(() => keys.id, { onDelete: "cascade" }),
+  },
+  (t) => [unique("network_ip_unique_idx").on(t.ip, t.networkId)],
+);
 
 export const colorEnum = pgEnum("color", [
   "red",

@@ -16,7 +16,8 @@ let {
   onclick,
   excludedTags,
 }: {
-  column?: Column<DeviceRelations, unknown>;
+  // biome-ignore lint/suspicious/noExplicitAny: <cuz literaly any>
+  column?: Column<any, any>;
   onclick?: (name: string) => void;
   excludedTags?: DeviceRelations["tags"];
 } = $props();
