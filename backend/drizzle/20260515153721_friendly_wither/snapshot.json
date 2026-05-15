@@ -1,12 +1,18 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "44d46245-286d-401a-adaa-28438022f4ff",
-  "prevIds": ["a6190483-7ec8-486c-8491-bc2e70497632"],
+  "id": "b1794db7-5b93-42c1-9885-5b26ca8150f3",
+  "prevIds": ["00000000-0000-0000-0000-000000000000"],
   "ddl": [
     {
       "values": ["red", "green", "blue", "yellow", "purple", "orange"],
       "name": "color",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "values": ["TCP", "UDP", "ICMP"],
+      "name": "protocol",
       "entityType": "enums",
       "schema": "public"
     },
@@ -37,6 +43,12 @@
     {
       "isRlsEnabled": false,
       "name": "jwks",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "keys",
       "entityType": "tables",
       "schema": "public"
     },
@@ -291,6 +303,19 @@
       "table": "devices"
     },
     {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "owner_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "devices"
+    },
+    {
       "type": "uuid",
       "typeSchema": null,
       "notNull": true,
@@ -304,14 +329,14 @@
       "table": "devices"
     },
     {
-      "type": "text",
+      "type": "uuid",
       "typeSchema": null,
       "notNull": false,
       "dimensions": 0,
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "owner_id",
+      "name": "keys_id",
       "entityType": "columns",
       "schema": "public",
       "table": "devices"
@@ -412,6 +437,45 @@
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "keys"
+    },
+    {
+      "type": "bytea",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "public_key",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "keys"
+    },
+    {
+      "type": "bytea",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "private_key",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "keys"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
       "default": null,
       "generated": null,
       "identity": null,
@@ -499,6 +563,32 @@
       "table": "networks"
     },
     {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "creator_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "networks"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "keys_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "networks"
+    },
+    {
       "type": "uuid",
       "typeSchema": null,
       "notNull": true,
@@ -519,7 +609,7 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "source",
+      "name": "source_id",
       "entityType": "columns",
       "schema": "public",
       "table": "rules"
@@ -532,14 +622,27 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "dest",
+      "name": "dest_id",
       "entityType": "columns",
       "schema": "public",
       "table": "rules"
     },
     {
-      "type": "varchar(32)",
+      "type": "varchar(255)",
       "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "description",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "rules"
+    },
+    {
+      "type": "protocol",
+      "typeSchema": "public",
       "notNull": false,
       "dimensions": 0,
       "default": null,
@@ -979,6 +1082,19 @@
     },
     {
       "nameExplicit": false,
+      "columns": ["owner_id"],
+      "schemaTo": "public",
+      "tableTo": "user",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "devices_owner_id_user_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "devices"
+    },
+    {
+      "nameExplicit": false,
       "columns": ["network_id"],
       "schemaTo": "public",
       "tableTo": "networks",
@@ -992,13 +1108,13 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["owner_id"],
+      "columns": ["keys_id"],
       "schemaTo": "public",
-      "tableTo": "user",
+      "tableTo": "keys",
       "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
-      "name": "devices_owner_id_user_id_fkey",
+      "name": "devices_keys_id_keys_id_fkey",
       "entityType": "fks",
       "schema": "public",
       "table": "devices"
@@ -1057,26 +1173,52 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["source"],
+      "columns": ["creator_id"],
+      "schemaTo": "public",
+      "tableTo": "user",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "name": "networks_creator_id_user_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "networks"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["keys_id"],
+      "schemaTo": "public",
+      "tableTo": "keys",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "networks_keys_id_keys_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "networks"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["source_id"],
       "schemaTo": "public",
       "tableTo": "tags",
       "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
-      "name": "rules_source_tags_id_fkey",
+      "name": "rules_source_id_tags_id_fkey",
       "entityType": "fks",
       "schema": "public",
       "table": "rules"
     },
     {
       "nameExplicit": false,
-      "columns": ["dest"],
+      "columns": ["dest_id"],
       "schemaTo": "public",
       "tableTo": "tags",
       "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
-      "name": "rules_dest_tags_id_fkey",
+      "name": "rules_dest_id_tags_id_fkey",
       "entityType": "fks",
       "schema": "public",
       "table": "rules"
@@ -1163,6 +1305,14 @@
     {
       "columns": ["id"],
       "nameExplicit": false,
+      "name": "keys_pkey",
+      "schema": "public",
+      "table": "keys",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
       "name": "networks_pkey",
       "schema": "public",
       "table": "networks",
@@ -1207,6 +1357,15 @@
       "schema": "public",
       "table": "verification",
       "entityType": "pks"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["ip", "network_id"],
+      "nullsNotDistinct": false,
+      "name": "network_ip_unique_idx",
+      "entityType": "uniques",
+      "schema": "public",
+      "table": "devices"
     },
     {
       "nameExplicit": false,

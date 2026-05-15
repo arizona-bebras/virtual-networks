@@ -1,3 +1,4 @@
+import { generateKeyPairSync } from "node:crypto";
 import {
   BadRequestException,
   ForbiddenException,
@@ -25,9 +26,21 @@ export class NetworksService {
     userId: string,
   ): Promise<NetworkDto | undefined> {
     return this.db.transaction(async (tx) => {
+      const { publicKey, privateKey } = generateKeyPairSync("x25519");
+      const [keys] = await tx
+        .insert(schema.keys)
+        .values({
+          publicKey: publicKey
+            .export({ type: "spki", format: "der" })
+            .slice(12),
+          privateKey: privateKey
+            .export({ type: "pkcs8", format: "der" })
+            .slice(16),
+        })
+        .returning();
       const [network] = await tx
         .insert(schema.networks)
-        .values({ ...networkData, creatorId: userId })
+        .values({ ...networkData, creatorId: userId, keysId: keys.id })
         .returning({
           id: schema.networks.id,
           name: schema.networks.name,
@@ -82,6 +95,7 @@ export class NetworksService {
         description: true,
         cidr: true,
         creatorId: true,
+        keysId: false,
       },
       where: {
         id,
@@ -155,6 +169,7 @@ export class NetworksService {
             description: true,
             cidr: true,
             creatorId: true,
+            keysId: false,
           },
           with: {
             creator: {

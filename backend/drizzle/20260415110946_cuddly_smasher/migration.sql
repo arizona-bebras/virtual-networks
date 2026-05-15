@@ -1,1 +1,0 @@
-ALTER TABLE "rules" ADD COLUMN "protocol" varchar(32) NOT NULL;

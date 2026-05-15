@@ -1,6 +1,7 @@
 import { defineRelations } from "drizzle-orm";
 import {
   boolean,
+  bytea,
   cidr,
   index,
   inet,
@@ -99,6 +100,12 @@ export const jwks = pgTable("jwks", {
 
 // App Tables
 
+export const keys = pgTable("keys", {
+  id: uuid(`id`).primaryKey().defaultRandom(),
+  publicKey: bytea("public_key"),
+  privateKey: bytea("private_key"),
+});
+
 export const networks = pgTable("networks", {
   id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
@@ -107,6 +114,7 @@ export const networks = pgTable("networks", {
   creatorId: text(`creator_id`).references(() => user.id, {
     onDelete: "no action",
   }),
+  keysId: uuid("keys_id").references(() => keys.id, { onDelete: "cascade" }),
 });
 
 export const devices = pgTable(
@@ -121,6 +129,7 @@ export const devices = pgTable(
     networkId: uuid("network_id")
       .notNull()
       .references(() => networks.id, { onDelete: "cascade" }),
+    keysId: uuid("keys_id").references(() => keys.id, { onDelete: "cascade" }),
   },
   (t) => [unique("network_ip_unique_idx").on(t.ip, t.networkId)],
 );
@@ -197,6 +206,7 @@ export const relations = defineRelations(
     devicesTags,
     rules,
     networkUsers,
+    keys,
   },
   (r) => ({
     user: {
@@ -234,6 +244,10 @@ export const relations = defineRelations(
         from: r.networks.creatorId,
         to: r.user.id,
       }),
+      keys: r.one.keys({
+        from: r.networks.keysId,
+        to: r.keys.id,
+      }),
     },
 
     devices: {
@@ -248,6 +262,10 @@ export const relations = defineRelations(
       owner: r.one.user({
         from: r.devices.ownerId,
         to: r.user.id,
+      }),
+      keys: r.one.keys({
+        from: r.devices.keysId,
+        to: r.keys.id,
       }),
     },
 
