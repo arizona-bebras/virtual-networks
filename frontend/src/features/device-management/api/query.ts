@@ -1,4 +1,4 @@
-import { mutationOptions } from "@tanstack/svelte-query";
+import { mutationOptions, queryOptions } from "@tanstack/svelte-query";
 import type { CreateDevice } from "common/schemas/device/create-device";
 import type { DeviceRelations } from "common/schemas/device/index";
 import type { UpdateDevice } from "common/schemas/device/update-device";
@@ -142,4 +142,19 @@ export const tagDeviceRemove = (onSuccess: () => void) =>
       if (error) throw error;
     },
     onSuccess,
+  });
+export const deviceOwners = (networkId: string) =>
+  queryOptions({
+    queryKey: ["deviceOwners", networkId],
+    queryFn: async () => {
+      const { data, error } = await client.GET("/networks/{network_id}/users", {
+        params: {
+          path: {
+            network_id: networkId,
+          },
+        },
+      });
+      if (error) throw error;
+      return data;
+    },
   });

@@ -111,14 +111,19 @@ $effect(() => {
           <Select.Root type="single" bind:value={$formData.sourceId!}>
             <Select.Trigger class="w-[180px] flex">
               {#if $formData.sourceId && selectedSourceTag}
-                <TagBadge tag={selectedSourceTag} />
+                <TagListItem
+                  name={selectedSourceTag.name}
+                  color={selectedSourceTag.color}
+                />
               {:else}
                 <span>Выберите тег</span>
               {/if}
             </Select.Trigger>
             <Select.Content>
               {#each userTags.data as tag (tag.id)}
-                <Select.Item value={tag.id}><TagBadge {tag} /></Select.Item>
+                <Select.Item value={tag.id}>
+                  <TagListItem name={tag.name} color={tag.color} />
+                </Select.Item>
               {/each}
             </Select.Content>
           </Select.Root>
@@ -134,14 +139,19 @@ $effect(() => {
           <Select.Root type="single" bind:value={$formData.destId!}>
             <Select.Trigger class="w-[180px] flex">
               {#if $formData.destId && selectedDestTag}
-                <TagBadge tag={selectedDestTag} />
+                <TagListItem
+                  name={selectedDestTag.name}
+                  color={selectedDestTag.color}
+                />
               {:else}
                 <span>Выберите тег</span>
               {/if}
             </Select.Trigger>
             <Select.Content>
               {#each userTags.data as tag (tag.id)}
-                <Select.Item value={tag.id}><TagBadge {tag} /></Select.Item>
+                <Select.Item value={tag.id}>
+                  <TagListItem name={tag.name} color={tag.color} />
+                </Select.Item>
               {/each}
             </Select.Content>
           </Select.Root>
@@ -156,7 +166,13 @@ $effect(() => {
       <Form.Control>
         {#snippet children({ props })}
           <Form.Label>Protocol</Form.Label>
-          <Select.Root type="single" bind:value={$formData.protocol!}>
+          <Select.Root
+            type="single"
+            bind:value={$formData.protocol!}
+            onValueChange={(value: string) => { 
+              if (!['TCP', 'UDP'].includes(value)) $formData.port = null
+          }}
+          >
             <Select.Trigger class="w-[180px]">
               {$formData.protocol ? $formData.protocol : 'Выберите протокол'}
             </Select.Trigger>
@@ -177,9 +193,10 @@ $effect(() => {
           <Form.Label>Port</Form.Label>
           <Input
             {...props}
-            value={$formData.port}
-            oninput={(e) => $formData.port = Number(e.currentTarget.value)}
+            bind:value={$formData.port}
+            type="number"
             placeholder="22"
+            disabled={!['TCP', 'UDP'].includes($formData.protocol ?? "")}
           />
         {/snippet}
       </Form.Control>

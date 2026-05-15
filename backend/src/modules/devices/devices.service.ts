@@ -1,3 +1,4 @@
+import { generateKeyPairSync } from "node:crypto";
 import {
   BadRequestException,
   Inject,
@@ -68,7 +69,23 @@ export class DevicesService {
   }
 
   async create(device: Required<CreateDeviceDto>, networkId: string) {
-    await this.db.insert(schema.devices).values({ ...device, networkId });
+    return this.db.transaction(async (tx) => {
+      const { publicKey, privateKey } = generateKeyPairSync("x25519");
+      const [keys] = await tx
+        .insert(schema.keys)
+        .values({
+          publicKey: publicKey
+            .export({ type: "spki", format: "der" })
+            .slice(12),
+          privateKey: privateKey
+            .export({ type: "pkcs8", format: "der" })
+            .slice(16),
+        })
+        .returning();
+      await tx
+        .insert(schema.devices)
+        .values({ ...device, keysId: keys.id, networkId });
+    });
   }
 
   async read(
@@ -91,6 +108,9 @@ export class DevicesService {
   ): Promise<DeviceRelations | DeviceRelations[] | undefined> {
     if (id) {
       return this.db.query.devices.findFirst({
+        columns: {
+          keysId: false,
+        },
         where: {
           RAW: (devices) =>
             and(
@@ -124,6 +144,9 @@ export class DevicesService {
     }
 
     return this.db.query.devices.findMany({
+      columns: {
+        keysId: false,
+      },
       where: {
         RAW: (devices) =>
           and(...this.buildReadFilters(devices, networkId, tags, ownerId, q))!,

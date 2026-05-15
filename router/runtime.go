@@ -185,7 +185,14 @@ func (r *Runtime) Start(ctx context.Context) error {
 		r.mu.Unlock()
 		return err
 	}
+	closeMetrics, err := startPrometheusExporter(ctx, r)
+	if err != nil {
+		closeRuntimeParts(r.cfg, r.overlays, r.protocols, closers)
+		r.mu.Unlock()
+		return err
+	}
 	r.closers = closers
+	r.metricsClose = closeMetrics
 	revision := r.revision
 	configWatch := r.configWatch
 	r.configWatch = nil
@@ -225,6 +232,15 @@ func startRuntimeParts(
 }
 
 func (r *Runtime) Close() {
+	r.mu.Lock()
+	closeMetrics := r.metricsClose
+	r.metricsClose = nil
+	r.mu.Unlock()
+
+	if closeMetrics != nil {
+		_ = closeMetrics()
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.closeCurrentLocked()

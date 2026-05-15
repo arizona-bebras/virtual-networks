@@ -15,7 +15,9 @@ let isAddRuleDialogOpen = $state(false);
 let isEditingDialogOpen = $state(false);
 
 const currentNetworkId = $derived(getNetworkId().id);
-const userRulesQuery = createQuery(() => userRules(currentNetworkId));
+const userRulesQuery = createQuery(() =>
+  userRules(currentNetworkId, globalFilter, sourceTagsFilter, destTagsFilter),
+);
 
 let ruleIdSearchParam = $derived(page.url.searchParams.get("editRule"));
 let editingRule = $derived(
@@ -72,7 +74,10 @@ function bulkRemoveSelected(_ids: string[]) {
       <DataTable
         {columns}
         data={userRulesQuery.data || []}
+        filterPlaceholder="Search by name..."
         onDeleteSelected={bulkRemoveSelected}
+        onGlobalFilterChange={(value) => (globalFilter = value)}
+        onColumnFiltersChange={(filters) => (columnFilters = filters)}
       />
     </Card.Content>
   </Card.Root>
