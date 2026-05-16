@@ -1,4 +1,5 @@
 <script lang="ts">
+import Link2Icon from "@lucide/svelte/icons/link-2";
 import {
   createMutation,
   createQuery,
@@ -6,13 +7,20 @@ import {
 } from "@tanstack/svelte-query";
 import { CreateDeviceSchema } from "common/schemas/device/create-device";
 import type { DeviceRelations } from "common/schemas/device/index";
+import slugify from "slugify";
+import { untrack } from "svelte";
+import { z } from "zod";
 import Tags from "$entities/device/ui/device-tags-cell.svelte";
 import TagSelector from "$features/tag-management/ui/tag-selector.svelte";
+import { networkConfig } from "$pages/app/network/[slug]/config/api/query";
 import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
+import * as ButtonGroup from "$shared/ui/button-group/index.js";
 import * as Form from "$shared/ui/form/index.js";
 import { Input } from "$shared/ui/input/index.js";
+import * as InputGroup from "$shared/ui/input-group/index.js";
+import * as Label from "$shared/ui/label/index.js";
 import * as Popover from "$shared/ui/popover/index";
 import {
   deviceUpdateMutation,
@@ -29,6 +37,7 @@ let {
 const queryClient = getQueryClientContext();
 let currentNetworkId = $derived(getNetworkId().id);
 
+const networkCfg = createQuery(() => networkConfig(currentNetworkId));
 const userTagsQuery = createQuery(() => deviceTags.userTags(currentNetworkId));
 
 const creationMutation = createMutation(() =>
@@ -57,12 +66,17 @@ let isTagSelectorOpen = $state(false);
 // svelte-ignore state_referenced_locally
 let deviceTagsArray = $state(device?.tags || []);
 
+//TODO: удалить после добавления поля в схему CreateDeviceSchema
+const CreateDeviceSchemaMock = CreateDeviceSchema.extend({
+  slug: z.string().optional(),
+});
+
 let {
   forms: form,
   formData,
   valid,
   enhance,
-} = useForm(CreateDeviceSchema, {
+} = useForm(CreateDeviceSchemaMock, {
   onSubmit: async () => {
     if (device) {
       updateMutation.mutate({
@@ -121,6 +135,7 @@ $effect(() => {
   if (device) {
     $formData.name = device.name;
     $formData.ip = device.ip;
+    untrack(() => ($formData.slug = slugify($formData.name)));
   }
 });
 </script>
@@ -130,7 +145,14 @@ $effect(() => {
     <Form.Control>
       {#snippet children({ props })}
         <Form.Label>Name</Form.Label>
-        <Input {...props} bind:value={$formData.name} />
+        <Input
+          {...props}
+          bind:value={$formData.name}
+          oninput={() => {
+            $formData.slug = slugify($formData.name) 
+          console.log("input", slugify($formData.name))
+        }}
+        />
       {/snippet}
     </Form.Control>
     <Form.Description />
@@ -146,6 +168,28 @@ $effect(() => {
     <Form.Description />
     <Form.FieldErrors />
   </Form.Field>
+  <Form.Field {form} name="slug">
+    <Form.Control>
+      {#snippet children({ props })}
+        <Form.Label>Device slug</Form.Label>
+        <ButtonGroup.Root>
+          <InputGroup.Root>
+            <InputGroup.Input id="url" bind:value={$formData.slug} />
+            <InputGroup.Addon align="inline-end">
+              <!-- <Link2Icon /> -->
+            </InputGroup.Addon>
+          </InputGroup.Root>
+          <!-- TODO: изменить после реализации свойства domain у сети на backend. После реализации брать домен из networkCfg -->
+          <ButtonGroup.Text>.com</ButtonGroup.Text>
+        </ButtonGroup.Root>
+      {/snippet}
+    </Form.Control>
+    <Form.Description />
+    <Form.FieldErrors />
+  </Form.Field>
+
+  <div class="grid w-full max-w-sm gap-6"></div>
+
   {#if device}
     <div class="flex gap-1 items-center">
       <Tags

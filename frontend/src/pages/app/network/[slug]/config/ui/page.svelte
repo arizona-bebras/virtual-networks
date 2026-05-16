@@ -6,6 +6,7 @@ import {
 } from "@tanstack/svelte-query";
 import { UpdateNetworkSchema } from "common/schemas/network/update-network";
 import { untrack } from "svelte";
+import { z } from "zod";
 import { goto } from "$app/navigation";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
@@ -24,6 +25,7 @@ const queryClient = useQueryClient();
 let networkId = $derived(getNetworkId().id);
 let networkCfg = createQuery(() => networkConfig(networkId));
 
+
 const updateMutation = createMutation(() =>
   networkUpdateMutation(() => {
     queryClient.invalidateQueries({ queryKey: ["networkConfig", networkId] });
@@ -39,12 +41,17 @@ const deleteMutation = createMutation(() =>
   }),
 );
 
+// TODO: Убрать после добавления поля в схему UpdateNetworkSchema
+const UpdateNetworkSchemaMock = UpdateNetworkSchema.extend({
+  domain: z.string().regex(/^\D+$/, "домен не может содержать цифры"),
+});
+
 let {
   forms: form,
   formData,
   valid,
   enhance,
-} = useForm(UpdateNetworkSchema, {
+} = useForm(UpdateNetworkSchemaMock, {
   onSubmit: async () => {
     updateMutation.mutate({
       networkId,
@@ -123,6 +130,16 @@ function handleDelete() {
             {#snippet children({ props })}
               <Form.Label>Description</Form.Label>
               <Input {...props} bind:value={$formData.description} />
+            {/snippet}
+          </Form.Control>
+          <Form.FieldErrors />
+        </Form.Field>
+
+        <Form.Field {form} name="domain">
+          <Form.Control>
+            {#snippet children({ props })}
+              <Form.Label>Domain</Form.Label>
+              <Input {...props} bind:value={$formData.domain} />
             {/snippet}
           </Form.Control>
           <Form.FieldErrors />
