@@ -127,12 +127,14 @@ function handleDelete() {
           {#if cidrFieldInfo}
             {#if cidrFieldInfo?.isValid}
               <p>
-                Диапазон хостов {cidrFieldInfo.firstHost} - {cidrFieldInfo.lastHost}
+                Диапазон хостов: {cidrFieldInfo.firstHost} - {cidrFieldInfo.lastHost}
               </p>
               <p>Диапазон сети: {cidrFieldInfo.hostCount}</p>
             {:else}
               {@const error = cidrFieldInfo?.error!}
-              <p class="text-sm font-medium text-destructive">Ближайшие цифры {error.suggestion.lower} и {error.suggestion.upper}</p>
+              <p class="text-sm font-medium text-destructive">
+                Ближайшие цифры {error.suggestion.lower} и {error.suggestion.upper}
+              </p>
             {/if}
           {/if}
         </div>

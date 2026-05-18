@@ -3,10 +3,10 @@ import { tick } from "svelte";
 import * as Select from "$shared/ui/select/index";
 import type { ValidationInfo } from "../model/types";
 
-let {
-  value = $bindable(),
-  info = $bindable<ValidationInfo | null>(null),
-} = $props();
+let { value = $bindable(), info = $bindable<ValidationInfo | null>(null) } =
+  $props();
+
+$inspect(value);
 
 let octets = $state(["", "", "", ""]);
 let maskValue = $state("24");
@@ -21,9 +21,10 @@ function intToIp(int: number): string {
   ].join(".");
 }
 
-// Initialize from value prop
+// Initialize from value prop ONLY on initial mount if provided
+let isInitialized = false;
 $effect(() => {
-  if (value) {
+  if (value && !isInitialized) {
     const [ip, mask] = value.split("/");
     if (ip) {
       const parts = ip.split(".");
@@ -34,97 +35,110 @@ $effect(() => {
     if (mask) {
       maskValue = mask;
     }
+    isInitialized = true;
   }
 });
 
+const numericMask = $derived(Number(maskValue));
+
 function isOctetDisabled(index: number) {
-  const m = Number(maskValue);
-  if (isNaN(m)) return false;
-  if (index === 1) return m <= 8;
-  if (index === 2) return m <= 16;
-  if (index === 3) return m <= 24;
+  if (Number.isNaN(numericMask)) return false;
+  if (index === 1) return numericMask <= 8;
+  if (index === 2) return numericMask <= 16;
+  if (index === 3) return numericMask <= 24;
   return false;
 }
 
-// Validation and Info logic
+// Automatically reset disabled octets to "0" when mask changes
 $effect(() => {
-  const m = Number(maskValue);
-
-  // Automatically reset disabled octets to "0"
-  if (!isNaN(m)) {
-    if (m <= 24 && octets[3] !== "0" && octets[3] !== "") octets[3] = "0";
-    if (m <= 16 && octets[2] !== "0" && octets[2] !== "") octets[2] = "0";
-    if (m <= 8 && octets[1] !== "0" && octets[1] !== "") octets[1] = "0";
+  if (!Number.isNaN(numericMask)) {
+    if (numericMask <= 24 && octets[3] !== "0" && octets[3] !== "")
+      octets[3] = "0";
+    if (numericMask <= 16 && octets[2] !== "0" && octets[2] !== "")
+      octets[2] = "0";
+    if (numericMask <= 8 && octets[1] !== "0" && octets[1] !== "")
+      octets[1] = "0";
   }
+});
 
-  if (isNaN(m)) {
-    info = {
+const calculatedInfo = $derived.by<ValidationInfo | null>(() => {
+  if (Number.isNaN(numericMask)) {
+    return {
       isValid: true,
       hostCount: 0,
       firstHost: "",
       lastHost: "",
     };
-  } else {
-    // Convert octets to a 32-bit integer
-    const ipInt =
-      octets.reduce((acc, oct) => {
-        const val = parseInt(oct || "0");
-        return (acc << 8) + (val & 0xff);
-      }, 0) >>> 0;
-
-    const bitmask = (m === 0 ? 0 : 0xffffffff << (32 - m)) >>> 0;
-    const netInt = (ipInt & bitmask) >>> 0;
-
-    const isValid = (ipInt & bitmask) >>> 0 === ipInt;
-
-    if (isValid) {
-      const hostBits = 32 - m;
-      const hostCount = m >= 31 ? 0 : 2 ** hostBits - 2;
-
-      info = {
-        isValid: true,
-        hostCount,
-        firstHost: m >= 31 ? "N/A" : intToIp(netInt + 1),
-        lastHost: m >= 31 ? "N/A" : intToIp(netInt + (2 ** hostBits - 2)),
-      };
-    } else {
-      // Find the first octet where the bitmask violation occurs
-      let errorOctet = -1;
-      for (let i = 0; i < 4; i++) {
-        const octVal = parseInt(octets[i] || "0");
-        const octMask = (bitmask >>> (24 - i * 8)) & 0xff;
-        if ((octVal & octMask) !== octVal) {
-          errorOctet = i;
-          break;
-        }
-      }
-
-      const lowerNet = netInt;
-      const upperNet = (netInt + (m === 0 ? 0 : 2 ** (32 - m))) >>> 0;
-
-      const getOctet = (ip: number, idx: number) =>
-        (ip >>> (24 - idx * 8)) & 0xff;
-
-      info = {
-        isValid: false,
-        hostCount: 0,
-        firstHost: "",
-        lastHost: "",
-        error: {
-          octetIndex: errorOctet + 1,
-          suggestion: {
-            lower: getOctet(lowerNet, errorOctet),
-            upper: getOctet(upperNet, errorOctet),
-          },
-        },
-      };
-    }
   }
 
-  const ip = octets.map((o) => (o === "" ? "0" : o)).join(".");
-  const newVal = `${ip}/${maskValue}`;
-  if (value !== newVal) {
-    value = newVal;
+  // Convert octets to a 32-bit integer
+  const ipInt =
+    octets.reduce((acc, oct) => {
+      const val = parseInt(oct || "0", 10);
+      return (acc << 8) + (val & 0xff);
+    }, 0) >>> 0;
+
+  const bitmask =
+    (numericMask === 0 ? 0 : 0xffffffff << (32 - numericMask)) >>> 0;
+  const netInt = (ipInt & bitmask) >>> 0;
+
+  const isValid = (ipInt & bitmask) >>> 0 === ipInt;
+
+  if (isValid) {
+    const hostBits = 32 - numericMask;
+    // Use exponentiation (**) instead of bitwise shift to avoid 32-bit signed integer overflow
+    const hostCount = numericMask >= 31 ? 0 : 2 ** hostBits - 2;
+
+    return {
+      isValid: true,
+      hostCount,
+      firstHost: numericMask >= 31 ? "N/A" : intToIp(netInt + 1),
+      lastHost:
+        numericMask >= 31 ? "N/A" : intToIp(netInt + (2 ** hostBits - 2)),
+    };
+  } else {
+    let errorOctet = -1;
+    for (let i = 0; i < 4; i++) {
+      const octVal = parseInt(octets[i] || "0", 10);
+      const octMask = (bitmask >>> (24 - i * 8)) & 0xff;
+      if ((octVal & octMask) !== octVal) {
+        errorOctet = i;
+        break;
+      }
+    }
+
+    const lowerNet = netInt;
+    const upperNet =
+      (netInt + (numericMask === 0 ? 0 : 2 ** (32 - numericMask))) >>> 0;
+
+    const getOctet = (ip: number, idx: number) =>
+      (ip >>> (24 - idx * 8)) & 0xff;
+
+    return {
+      isValid: false,
+      hostCount: 0,
+      firstHost: "",
+      lastHost: "",
+      error: {
+        octetIndex: errorOctet + 1,
+        suggestion: {
+          lower: getOctet(lowerNet, errorOctet),
+          upper: getOctet(upperNet, errorOctet),
+        },
+      },
+    };
+  }
+});
+
+const calculatedValue = $derived(
+  `${octets.map((o) => (o === "" ? "0" : o)).join(".")}/${maskValue}`,
+);
+
+// Sync derived state out to bindable props
+$effect(() => {
+  info = calculatedInfo;
+  if (value !== calculatedValue) {
+    value = calculatedValue;
   }
 });
 
@@ -148,8 +162,8 @@ function handleInput(index: number, e: Event) {
   }
 
   // Strictly enforce max 255
-  const num = parseInt(val);
-  if (!isNaN(num) && num > 255) {
+  const num = parseInt(val, 10);
+  if (!Number.isNaN(num) && num > 255) {
     val = "255";
   }
 
@@ -211,7 +225,7 @@ function handleKeydown(index: number, e: KeyboardEvent) {
         disabled={isOctetDisabled(i)}
         oninput={(e) => handleInput(i, e)}
         onkeydown={(e) => handleKeydown(i, e)}
-        placeholder={[192, 168, 1, 0][i].toString()}
+        placeholder={([192, 168, 1, 0][i] ?? 0).toString()}
         min="0"
         max="255"
         class="octet-input w-8 text-center bg-transparent border-none outline-none {!info?.isValid && info?.error?.octetIndex === i + 1 ? 'text-destructive' : ''} placeholder:text-slate-400 focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:text-slate-400 disabled:cursor-not-allowed"

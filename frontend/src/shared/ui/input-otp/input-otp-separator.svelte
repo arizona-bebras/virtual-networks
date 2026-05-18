@@ -1,27 +1,27 @@
 <script lang="ts">
-	import type { HTMLAttributes } from "svelte/elements";
-	import type { WithElementRef } from "$shared/lib/utils.js";
-	import { cn } from "$shared/lib/utils.js";
-	import MinusIcon from 'phosphor-svelte/lib/Minus';
+import MinusIcon from "phosphor-svelte/lib/Minus";
+import type { HTMLAttributes } from "svelte/elements";
+import type { WithElementRef } from "$shared/lib/utils.js";
+import { cn } from "$shared/lib/utils.js";
 
-	let {
-		ref = $bindable(null),
-		class: className,
-		children,
-		...restProps
-	}: WithElementRef<HTMLAttributes<HTMLDivElement>> = $props();
+let {
+  ref = $bindable(null),
+  class: className,
+  children,
+  ...restProps
+}: WithElementRef<HTMLAttributes<HTMLDivElement>> = $props();
 </script>
 
 <div
-	bind:this={ref}
-	data-slot="input-otp-separator"
-	role="separator"
-	class={cn("[&_svg:not([class*='size-'])]:size-4 flex items-center", className)}
-	{...restProps}
+  bind:this={ref}
+  data-slot="input-otp-separator"
+  role="separator"
+  class={cn("[&_svg:not([class*='size-'])]:size-4 flex items-center", className)}
+  {...restProps}
 >
-	{#if children}
-		{@render children?.()}
-	{:else}
-		<MinusIcon  />
-	{/if}
+  {#if children}
+    {@render children?.()}
+  {:else}
+    <MinusIcon />
+  {/if}
 </div>
