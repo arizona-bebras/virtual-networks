@@ -7,12 +7,16 @@ import {
 import { UpdateNetworkSchema } from "common/schemas/network/update-network";
 import { untrack } from "svelte";
 import { goto } from "$app/navigation";
+import type { ValidationInfo } from "$features/config/model/types";
+import CidrInput from "$features/config/ui/CidrInput.svelte";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { Button } from "$shared/ui/button/index.js";
 import * as Card from "$shared/ui/card/index.js";
 import * as Form from "$shared/ui/form/index.js";
 import { Input } from "$shared/ui/input/index.js";
+import * as InputOTP from "$shared/ui/input-otp";
+import * as Select from "$shared/ui/select/index.js";
 import { Separator } from "$shared/ui/separator/index.js";
 import {
   networkConfig,
@@ -23,6 +27,7 @@ import {
 const queryClient = useQueryClient();
 let networkId = $derived(getNetworkId().id);
 let networkCfg = createQuery(() => networkConfig(networkId));
+let cidrFieldInfo: ValidationInfo | null = $state(null);
 
 const updateMutation = createMutation(() =>
   networkUpdateMutation(() => {
@@ -105,7 +110,7 @@ function handleDelete() {
           <Form.FieldErrors />
         </Form.Field>
 
-        <Form.Field {form} name="cidr">
+        <!-- <Form.Field {form} name="cidr">
           <Form.Control>
             {#snippet children({ props })}
               <Form.Label>Network CIDR</Form.Label>
@@ -116,7 +121,21 @@ function handleDelete() {
             {/snippet}
           </Form.Control>
           <Form.FieldErrors />
-        </Form.Field>
+        </Form.Field> -->
+        <div>
+          <CidrInput bind:value={$formData.cidr} bind:info={cidrFieldInfo} />
+          {#if cidrFieldInfo}
+            {#if cidrFieldInfo?.isValid}
+              <p>
+                Диапазон хостов {cidrFieldInfo.firstHost} - {cidrFieldInfo.lastHost}
+              </p>
+              <p>Диапазон сети: {cidrFieldInfo.hostCount}</p>
+            {:else}
+              {@const error = cidrFieldInfo?.error!}
+              <p class="text-sm font-medium text-destructive">Ближайшие цифры {error.suggestion.lower} и {error.suggestion.upper}</p>
+            {/if}
+          {/if}
+        </div>
 
         <Form.Field {form} name="description">
           <Form.Control>
