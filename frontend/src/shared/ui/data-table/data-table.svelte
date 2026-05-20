@@ -4,8 +4,6 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  Trash,
-  X,
 } from "@lucide/svelte";
 import {
   type ColumnDef,
@@ -16,49 +14,40 @@ import {
   getSortedRowModel,
   type RowSelectionState,
   type SortingState,
+  type Table as TableType,
 } from "@tanstack/table-core";
-import { Debounced } from "runed";
 import { fade } from "svelte/transition";
-import { Badge } from "$shared/ui/badge/index.js";
 import { Button } from "$shared/ui/button/index.js";
 import { createSvelteTable, FlexRender } from "$shared/ui/data-table/index.js";
-import { Input } from "$shared/ui/input/index.js";
 import * as Table from "$shared/ui/table/index.js";
+import DataTableFilters from "./data-table-filters.svelte";
 
 type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  filterColumn?: string;
-  filterPlaceholder?: string;
-  onDeleteSelected?: (selectedIds: string[]) => void;
-  onGlobalFilterChange?: (value: string) => void;
   onColumnFiltersChange?: (filters: ColumnFiltersState) => void;
+  selectedIds?: string[];
+  table?: TableType<TData>;
+  showFilters?: boolean;
 };
 
 let {
   data,
   columns,
-  filterPlaceholder = "Filter...",
-  onDeleteSelected,
-  onGlobalFilterChange,
   onColumnFiltersChange,
+  selectedIds = $bindable([]),
+  table = $bindable(),
 }: DataTableProps<TData, TValue> = $props();
 
 let sorting = $state<SortingState>([]);
 let columnFilters = $state<ColumnFiltersState>([]);
 let rowSelection = $state<RowSelectionState>({});
-let globalFilter = $state("");
-const debounced = new Debounced(() => globalFilter, 500);
-
-$effect(() => {
-  onGlobalFilterChange?.(debounced.current);
-});
 
 $effect(() => {
   onColumnFiltersChange?.(columnFilters);
 });
 
-const table = createSvelteTable({
+const tableInstance = createSvelteTable({
   get data() {
     return data;
   },
@@ -74,9 +63,6 @@ const table = createSvelteTable({
     },
     get rowSelection() {
       return rowSelection;
-    },
-    get globalFilter() {
-      return globalFilter;
     },
   },
   manualFiltering: true,
@@ -95,13 +81,6 @@ const table = createSvelteTable({
       columnFilters = updater;
     }
   },
-  onGlobalFilterChange: (updater) => {
-    if (typeof updater === "function") {
-      globalFilter = updater(globalFilter);
-    } else {
-      globalFilter = updater;
-    }
-  },
   onRowSelectionChange: (updater) => {
     if (typeof updater === "function") {
       rowSelection = updater(rowSelection);
@@ -115,118 +94,28 @@ const table = createSvelteTable({
   getFilteredRowModel: getFilteredRowModel(),
 });
 
-const selectedRows = $derived(table.getFilteredSelectedRowModel().rows);
+$effect.pre(() => {
+  table = tableInstance;
+});
 
-function getFilterLabel(value: unknown): string {
-  if (typeof value === "object" && value !== null && "name" in value) {
-    return String((value as { name: unknown }).name);
+const selectedRows = $derived(tableInstance.getFilteredSelectedRowModel().rows);
+
+$effect(() => {
+  selectedIds = selectedRows.map((row) => row.original.id);
+});
+
+$effect(() => {
+  if (selectedIds.length === 0 && Object.keys(rowSelection).length > 0) {
+    rowSelection = {};
   }
-  return String(value);
-}
-
-function handleDeleteSelected() {
-  const ids = selectedRows.map((row) => row.original.id);
-  onDeleteSelected?.(ids);
-  rowSelection = {};
-}
+});
 </script>
 
 <div class="space-y-4">
-  <div class="flex flex-col gap-4 py-4">
-    <div class="flex items-center justify-between">
-      <div class="flex flex-1 items-center gap-2">
-        <Input
-          placeholder={filterPlaceholder}
-          value={globalFilter}
-          oninput={(e) => {
-            globalFilter = e.currentTarget.value;
-          }}
-          class="max-w-sm"
-        />
-        {#if selectedRows.length > 0 && onDeleteSelected}
-          <div in:fade={{ duration: 150 }}>
-            <Button
-              variant="destructive"
-              size="sm"
-              class="h-8 gap-1"
-              onclick={handleDeleteSelected}
-            >
-              <Trash class="size-3.5" />
-              Delete ({selectedRows.length}
-              )
-            </Button>
-          </div>
-        {/if}
-      </div>
-    </div>
-
-    {#if columnFilters.length > 0}
-      <div class="flex flex-wrap gap-2" in:fade>
-        {#each columnFilters as filter (filter.id)}
-          {@const column = table.getColumn(filter.id)}
-          {@const Icon = column?.columnDef.meta?.icon}
-
-          {#if Array.isArray(filter.value)}
-            {#each filter.value as value}
-              <Badge variant="secondary" class="h-7 gap-1 px-2 font-normal">
-                {#if Icon}
-                  <Icon class="mr-1 size-3 text-muted-foreground" />
-                {/if}
-                <span class="text-muted-foreground capitalize">
-                  {filter.id}
-                  :
-                </span>
-                <span class="capitalize">{getFilterLabel(value)}</span>
-                <button
-                  type="button"
-                  class="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  onclick={() => {
-                    const current = filter.value as unknown[];
-                    const next = current.filter((v) => v !== value);
-                    column?.setFilterValue(next.length > 0 ? next : undefined);
-                  }}
-                >
-                  <X
-                    class="size-3 text-muted-foreground hover:text-foreground"
-                  />
-                  <span class="sr-only">Remove filter</span>
-                </button>
-              </Badge>
-            {/each}
-          {:else}
-            <Badge variant="secondary" class="h-7 gap-1 px-2 font-normal">
-              {#if Icon}
-                <Icon class="mr-1 size-3 text-muted-foreground" />
-              {/if}
-              <span class="text-muted-foreground capitalize">{filter.id}:</span>
-              <span class="capitalize">{getFilterLabel(filter.value)}</span>
-              <button
-                type="button"
-                class="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                onclick={() => column?.setFilterValue(undefined)}
-              >
-                <X class="size-3 text-muted-foreground hover:text-foreground" />
-                <span class="sr-only">Remove filter</span>
-              </button>
-            </Badge>
-          {/if}
-        {/each}
-        <Button
-          variant="ghost"
-          size="sm"
-          class="h-7 px-2 text-xs"
-          onclick={() => table.resetColumnFilters()}
-        >
-          Clear all
-        </Button>
-      </div>
-    {/if}
-  </div>
-
   <div class="rounded-md border bg-card overflow-hidden">
     <Table.Root>
       <Table.Header>
-        {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+        {#each tableInstance.getHeaderGroups() as headerGroup (headerGroup.id)}
           <Table.Row>
             {#each headerGroup.headers as header (header.id)}
               <Table.Head colspan={header.colSpan}>
@@ -244,7 +133,7 @@ function handleDeleteSelected() {
         {/each}
       </Table.Header>
       <Table.Body>
-        {#each table.getRowModel().rows as row (row.id)}
+        {#each tableInstance.getRowModel().rows as row (row.id)}
           <tr
             class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
             data-state={row.getIsSelected() && 'selected'}
@@ -273,21 +162,21 @@ function handleDeleteSelected() {
 
   <div class="flex items-center justify-between px-2">
     <div class="flex-1 text-sm text-muted-foreground">
-      {selectedRows.length} of {table.getFilteredRowModel().rows.length} row(s)
+      {selectedRows.length} of {tableInstance.getFilteredRowModel().rows.length} row(s)
       selected.
     </div>
     <div class="flex items-center space-x-6 lg:space-x-8">
       <div class="flex items-center space-x-2">
         <p class="text-sm font-medium">
-          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+          Page {tableInstance.getState().pagination.pageIndex + 1} of {tableInstance.getPageCount()}
         </p>
       </div>
       <div class="flex items-center space-x-2">
         <Button
           variant="outline"
           class="hidden h-8 w-8 p-0 lg:flex"
-          onclick={() => table.setPageIndex(0)}
-          disabled={!table.getCanPreviousPage()}
+          onclick={() => tableInstance.setPageIndex(0)}
+          disabled={!tableInstance.getCanPreviousPage()}
         >
           <span class="sr-only">Go to first page</span>
           <ChevronsLeft class="h-4 w-4" />
@@ -295,8 +184,8 @@ function handleDeleteSelected() {
         <Button
           variant="outline"
           class="h-8 w-8 p-0"
-          onclick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
+          onclick={() => tableInstance.previousPage()}
+          disabled={!tableInstance.getCanPreviousPage()}
         >
           <span class="sr-only">Go to previous page</span>
           <ChevronLeft class="h-4 w-4" />
@@ -304,8 +193,8 @@ function handleDeleteSelected() {
         <Button
           variant="outline"
           class="h-8 w-8 p-0"
-          onclick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
+          onclick={() => tableInstance.nextPage()}
+          disabled={!tableInstance.getCanNextPage()}
         >
           <span class="sr-only">Go to next page</span>
           <ChevronRight class="h-4 w-4" />
@@ -313,8 +202,8 @@ function handleDeleteSelected() {
         <Button
           variant="outline"
           class="hidden h-8 w-8 p-0 lg:flex"
-          onclick={() => table.setPageIndex(table.getPageCount() - 1)}
-          disabled={!table.getCanNextPage()}
+          onclick={() => tableInstance.setPageIndex(tableInstance.getPageCount() - 1)}
+          disabled={!tableInstance.getCanNextPage()}
         >
           <span class="sr-only">Go to last page</span>
           <ChevronsRight class="h-4 w-4" />

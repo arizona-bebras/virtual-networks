@@ -120,7 +120,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
             (column.getFilterValue() as DeviceTagsFilterValue) ?? [];
           const next = current.some((t) => t.id === tag.id)
             ? current.filter((t) => t.id !== tag.id)
-            : [...current, { id: tag.id, name: tag.name }];
+            : [...current, tag];
           column.setFilterValue(next.length > 0 ? next : undefined);
         },
       });

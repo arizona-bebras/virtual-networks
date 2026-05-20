@@ -1,16 +1,20 @@
 <script lang="ts">
-import { Plus } from "@lucide/svelte";
+import { Plus, Search, Trash } from "@lucide/svelte";
 import { createQuery } from "@tanstack/svelte-query";
-import type { ColumnFiltersState } from "@tanstack/table-core";
+import type { ColumnFiltersState, Table } from "@tanstack/table-core";
+import { Debounced } from "runed";
+import { fade } from "svelte/transition";
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
 import { columns } from "$features/device-management/model/device-table-columns.js";
+import BreadCrumb from "$features/device-management/ui/breadcrumb.svelte";
 import DeviceDialog from "$features/device-management/ui/device-dialog.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { Button } from "$shared/ui/button/index.js";
 import * as Card from "$shared/ui/card/index.js";
 import DataTable from "$shared/ui/data-table/data-table.svelte";
-
+import DataTableFilters from "$shared/ui/data-table/data-table-filters.svelte";
+import { Input } from "$shared/ui/input/index.js";
 import { deviceQuery } from "../api/query";
 
 let isAddDeviceDialogOpen = $state(false);
@@ -18,7 +22,10 @@ let isEditingDialogOpen = $state(false);
 
 let currentNetworkId = $derived(getNetworkId().id);
 let globalFilter = $state("");
+const debounced = new Debounced(() => globalFilter, 500);
 let columnFilters = $state<ColumnFiltersState>([]);
+let selectedIds = $state<string[]>([]);
+let table = $state<Table<any>>();
 
 let tagsFilter = $derived(
   (
@@ -34,7 +41,7 @@ let onwerFilter = $derived(
 const userDevices = createQuery(() =>
   deviceQuery.userDevices({
     networkId: currentNetworkId,
-    q: globalFilter,
+    q: debounced.current,
     tags: tagsFilter,
     owner_id: onwerFilter,
   }),
@@ -60,22 +67,60 @@ $effect(() => {
 });
 
 // TODO: в ожидании реализации bulk delete на бэке
-function bulkRemoveSelected(_ids: string[]) {}
+function bulkRemoveSelected() {
+  console.log("Delete devices:", selectedIds);
+  selectedIds = [];
+}
 </script>
 
-<div class="p-8">
-  <div class="mb-8 flex items-center justify-between">
-    <div>
-      <h1 class="text-3xl font-bold tracking-tight">Devices</h1>
-      <p class="text-muted-foreground">
-        Manage and monitor your network devices.
-      </p>
+<div class="">
+  <div
+    class="pl-6 mt-2.5 py-4 mb-8 flex flex-col justify-between bg-background border rounded-tl-lg"
+  >
+    <BreadCrumb />
+    <div
+      class="mt-4 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
+    >
+      <div>
+        <h1 class="text-3xl font-bold tracking-tight">Devices</h1>
+        <p class="text-muted-foreground">
+          Уравляйте и отслеживайте свои устройства в сети.
+        </p>
+      </div>
     </div>
+    <div class="flex justify-between gap-2 pr-6 mb-3">
+      <div class="w-lg relative">
+        <Input
+          placeholder="Поиск по имени..."
+          bind:value={globalFilter}
+          class="w-full placeholder:text-[14px] mb-0 px-8.5 font-semibold"
+        />
+        <Search class="absolute top-1/2 ml-2 -translate-y-1/2 size-4.5 stroke-3" />
+      </div>
 
-    <Button onclick={() => (isAddDeviceDialogOpen = true)}>
-      <Plus class="mr-2 size-4" />
-      Add Device
-    </Button>
+      {#if selectedIds.length > 0}
+        <div in:fade={{ duration: 150 }}>
+          <Button
+            variant="destructive"
+            size="sm"
+            class="h-10 gap-1"
+            onclick={bulkRemoveSelected}
+          >
+            <Trash class="size-4" />
+            Delete ({selectedIds.length}
+            )
+          </Button>
+        </div>
+      {/if}
+      <Button
+        onclick={() => (isAddDeviceDialogOpen = true)}
+        class="rounded-[6px]"
+      >
+        Добавить устройство
+        <Plus class="mr-1 size-3" />
+      </Button>
+    </div>
+    <div class=""><DataTableFilters {table} /></div>
   </div>
 
   <DeviceDialog
@@ -96,9 +141,8 @@ function bulkRemoveSelected(_ids: string[]) {}
       <DataTable
         {columns}
         data={userDevices.data || []}
-        filterPlaceholder="Search by name..."
-        onDeleteSelected={bulkRemoveSelected}
-        onGlobalFilterChange={(value) => (globalFilter = value)}
+        bind:selectedIds
+        bind:table
         onColumnFiltersChange={(filters) => (columnFilters = filters)}
       />
     </Card.Content>
