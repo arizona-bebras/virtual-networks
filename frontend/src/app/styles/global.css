@@ -31,9 +31,9 @@
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
-  --sidebar: rgb(249, 250, 251);
+  --sidebar: rgb(255, 255, 255);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: rgb(206, 200, 200);
+  --sidebar-primary: rgb(236, 231, 231);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: rgb(231, 229, 229);
   --sidebar-accent-foreground: oklch(0.205 0 0);

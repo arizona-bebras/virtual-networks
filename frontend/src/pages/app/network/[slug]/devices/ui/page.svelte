@@ -75,7 +75,7 @@ function bulkRemoveSelected() {
 
 <div class="">
   <div
-    class="pl-6 mt-2.5 py-4 mb-8 flex flex-col justify-between bg-background border rounded-tl-lg"
+    class="pl-6 py-4 mb-4 flex flex-col justify-between bg-background border rounded-bl-[4px]"
   >
     <BreadCrumb />
     <div
@@ -83,7 +83,7 @@ function bulkRemoveSelected() {
     >
       <div>
         <h1 class="text-3xl font-bold tracking-tight">Devices</h1>
-        <p class="text-muted-foreground">
+        <p class="text-muted-foreground text-[14px]">
           Уравляйте и отслеживайте свои устройства в сети.
         </p>
       </div>
@@ -93,9 +93,11 @@ function bulkRemoveSelected() {
         <Input
           placeholder="Поиск по имени..."
           bind:value={globalFilter}
-          class="w-full placeholder:text-[14px] mb-0 px-8.5 font-semibold"
+          class="w-full placeholder:text-[12px] mb-0 px-8.5 font-semibold"
         />
-        <Search class="absolute top-1/2 ml-2 -translate-y-1/2 size-4.5 stroke-3" />
+        <Search
+          class="absolute top-1/2 ml-2 -translate-y-1/2 size-4 stroke-3"
+        />
       </div>
 
       {#if selectedIds.length > 0}
@@ -136,15 +138,11 @@ function bulkRemoveSelected() {
     description="Update the details for your device."
   />
 
-  <Card.Root>
-    <Card.Content class="p-6">
-      <DataTable
-        {columns}
-        data={userDevices.data || []}
-        bind:selectedIds
-        bind:table
-        onColumnFiltersChange={(filters) => (columnFilters = filters)}
-      />
-    </Card.Content>
-  </Card.Root>
+  <DataTable
+    {columns}
+    data={userDevices.data || []}
+    bind:selectedIds
+    bind:table
+    onColumnFiltersChange={(filters) => (columnFilters = filters)}
+  />
 </div>

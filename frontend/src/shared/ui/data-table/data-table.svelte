@@ -118,14 +118,12 @@ $effect(() => {
         {#each tableInstance.getHeaderGroups() as headerGroup (headerGroup.id)}
           <Table.Row>
             {#each headerGroup.headers as header (header.id)}
-              <Table.Head colspan={header.colSpan}>
+              <Table.Head colspan={header.colSpan} class="border border-border p-0 bg-accent">
                 {#if !header.isPlaceholder}
-                  <div class="flex items-center gap-2">
-                    <FlexRender
-                      content={header.column.columnDef.header}
-                      context={header.getContext()}
-                    />
-                  </div>
+                  <FlexRender
+                    content={header.column.columnDef.header}
+                    context={header.getContext()}
+                  />
                 {/if}
               </Table.Head>
             {/each}
@@ -134,6 +132,7 @@ $effect(() => {
       </Table.Header>
       <Table.Body>
         {#each tableInstance.getRowModel().rows as row (row.id)}
+          {console.log(row.getVisibleCells())}
           <tr
             class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
             data-state={row.getIsSelected() && 'selected'}
@@ -141,7 +140,10 @@ $effect(() => {
             out:fade={{ duration: 100 }}
           >
             {#each row.getVisibleCells() as cell (cell.id)}
-              <Table.Cell>
+            <!-- Убирем отступы у ячейки с checkbox -->
+              <Table.Cell
+                class="border-y border-border/65 {cell.id.includes('select') ? 'p-0' : ''}"
+              >
                 <FlexRender
                   content={cell.column.columnDef.cell}
                   context={cell.getContext()}

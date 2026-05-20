@@ -8,5 +8,5 @@ let { checked, onCheckedChange, ariaLabel } = $props();
   {checked}
   {onCheckedChange}
   aria-label={ariaLabel}
-  class="translate-y-[2px]"
+  class="mx-auto my-auto "
 />

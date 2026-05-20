@@ -1,4 +1,12 @@
-import { Activity, Tag, User } from "@lucide/svelte";
+import {
+  Activity,
+  MapPin,
+  MonitorSmartphone,
+  Tag,
+  Tags,
+  User,
+  WifiSync,
+} from "@lucide/svelte";
 import type { ColumnDef } from "@tanstack/table-core";
 import type { DeviceRelations } from "common/schemas/device/index";
 import type { Tag as TagType } from "common/schemas/tag/index";
@@ -43,6 +51,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
       return renderComponent(DataTableSortButton, {
         label: "Device",
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        icon: MonitorSmartphone,
       });
     },
     cell: ({ row }) => {
@@ -58,6 +67,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
       return renderComponent(DataTableSortButton, {
         label: "Status",
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        icon: WifiSync,
       });
     },
     cell: ({ row }) => {
@@ -77,6 +87,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
       return renderComponent(DataTableSortButton, {
         label: "IP Address",
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        icon: MapPin,
       });
     },
     cell: ({ row }) => {
@@ -91,6 +102,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
       return renderComponent(DeviceOwnerFilter, {
         label: "Owner",
         column,
+        icon: User,
       });
     },
     cell: ({ row }) => {
@@ -108,6 +120,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
       return renderComponent(DeviceTagsFilter, {
         label: "Tags",
         column,
+        icon: Tags,
       });
     },
     cell: ({ row, column }) => {
