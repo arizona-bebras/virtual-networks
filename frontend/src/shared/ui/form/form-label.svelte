@@ -7,8 +7,11 @@ let {
   ref = $bindable(null),
   children,
   class: className,
+  type = "optional",
   ...restProps
-}: WithoutChild<FormPrimitive.LabelProps> = $props();
+}: WithoutChild<FormPrimitive.LabelProps> & {
+  type?: "optional" | "required";
+} = $props();
 </script>
 
 <FormPrimitive.Label {...restProps} bind:ref>
@@ -16,9 +19,12 @@ let {
     <Label
       {...props}
       data-slot="form-label"
-      class={cn('data-[fs-error]:text-destructive', className)}
+      class={cn('data-[fs-error]:text-destructive font-medium gap-0.5 mb-1 text-[12px]', className)}
     >
       {@render children?.()}
+      {#if type === 'required'}
+        <p class="text-destructive">*</p>
+      {/if}
     </Label>
   {/snippet}
 </FormPrimitive.Label>
