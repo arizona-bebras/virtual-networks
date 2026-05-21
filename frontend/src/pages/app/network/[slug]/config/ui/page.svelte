@@ -25,7 +25,6 @@ const queryClient = useQueryClient();
 let networkId = $derived(getNetworkId().id);
 let networkCfg = createQuery(() => networkConfig(networkId));
 
-
 const updateMutation = createMutation(() =>
   networkUpdateMutation(() => {
     queryClient.invalidateQueries({ queryKey: ["networkConfig", networkId] });
@@ -42,8 +41,14 @@ const deleteMutation = createMutation(() =>
 );
 
 // TODO: Убрать после добавления поля в схему UpdateNetworkSchema
+const tldRegex = /^\.(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)$/i;
 const UpdateNetworkSchemaMock = UpdateNetworkSchema.extend({
-  domain: z.string().regex(/^\D+$/, "домен не может содержать цифры"),
+  domain: z
+    .string()
+    .max(9, "Домен верхнего уровня не может быть длиннее 9 символов")
+    .trim()
+    .toLowerCase()
+    .regex(tldRegex, { message: "Неверный формат домена верхнего уровня" }),
 });
 
 let {

@@ -1,19 +1,19 @@
 <script lang="ts">
-	import { cn, type WithElementRef } from "$shared/lib/utils.js";
-	import type { HTMLAttributes } from "svelte/elements";
+import type { HTMLAttributes } from "svelte/elements";
+import { cn, type WithElementRef } from "$shared/lib/utils.js";
 
-	let {
-		ref = $bindable(null),
-		class: className,
-		children,
-		...restProps
-	}: WithElementRef<HTMLAttributes<HTMLSpanElement>> = $props();
+let {
+  ref = $bindable(null),
+  class: className,
+  children,
+  ...restProps
+}: WithElementRef<HTMLAttributes<HTMLSpanElement>> = $props();
 </script>
 
 <span
-	bind:this={ref}
-	class={cn("text-muted-foreground gap-2 text-xs [&_svg:not([class*='size-'])]:size-4 flex items-center [&_svg]:pointer-events-none", className)}
-	{...restProps}
+  bind:this={ref}
+  class={cn("text-muted-foreground gap-2 text-xs [&_svg:not([class*='size-'])]:size-4 flex items-center [&_svg]:pointer-events-none", className)}
+  {...restProps}
 >
-	{@render children?.()}
+  {@render children?.()}
 </span>

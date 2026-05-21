@@ -68,7 +68,7 @@ let deviceTagsArray = $state(device?.tags || []);
 
 //TODO: удалить после добавления поля в схему CreateDeviceSchema
 const CreateDeviceSchemaMock = CreateDeviceSchema.extend({
-  slug: z.string().optional(),
+  slug: z.string().min(1, "Поле должно быть заполнено"),
 });
 
 let {
