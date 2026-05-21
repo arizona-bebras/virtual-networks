@@ -199,42 +199,51 @@ func (r *dnsResolver) resolve(query []byte, network string) ([]byte, error) {
 }
 
 func (r *dnsResolver) privateAnswers(questions []dnsmessage.Question) (bool, []dnsmessage.Resource, bool) {
-	private := false
 	nameExists := true
 	var answers []dnsmessage.Resource
 
 	for _, question := range questions {
-		if question.Class != dnsmessage.ClassINET {
+		private, exists, questionAnswers := r.privateQuestionAnswers(question)
+		if !private {
+			return false, nil, true
+		}
+		if !exists {
+			nameExists = false
 			continue
 		}
-		name := normalizeDNSName(question.Name.String())
-
-		switch {
-		case strings.HasSuffix(name, ".internal."):
-			private = true
-			addr, ok := r.records[name]
-			if !ok {
-				nameExists = false
-				continue
-			}
-			answers = append(answers, addressAnswers(question, addr)...)
-		case isReverseDNSName(name):
-			if ptr, ok := r.ptrRecords[name]; ok {
-				private = true
-				if question.Type != dnsmessage.TypePTR && question.Type != dnsmessage.TypeALL {
-					continue
-				}
-				answers = append(answers, ptrAnswer(question, ptr))
-				continue
-			}
-			if addr, ok := reverseAddr(name); ok && r.cfg.OverlayCIDR.Contains(addr) {
-				private = true
-				nameExists = false
-			}
-		}
+		answers = append(answers, questionAnswers...)
 	}
 
-	return private, answers, nameExists
+	return true, answers, nameExists
+}
+
+func (r *dnsResolver) privateQuestionAnswers(question dnsmessage.Question) (bool, bool, []dnsmessage.Resource) {
+	if question.Class != dnsmessage.ClassINET {
+		return false, true, nil
+	}
+	name := normalizeDNSName(question.Name.String())
+
+	if strings.HasSuffix(name, ".internal.") {
+		addr, ok := r.records[name]
+		if !ok {
+			return true, false, nil
+		}
+		return true, true, addressAnswers(question, addr)
+	}
+
+	if !isReverseDNSName(name) {
+		return false, true, nil
+	}
+	if ptr, ok := r.ptrRecords[name]; ok {
+		if question.Type != dnsmessage.TypePTR && question.Type != dnsmessage.TypeALL {
+			return true, true, nil
+		}
+		return true, true, []dnsmessage.Resource{ptrAnswer(question, ptr)}
+	}
+	if addr, ok := reverseAddr(name); ok && r.cfg.OverlayCIDR.Contains(addr) {
+		return true, false, nil
+	}
+	return false, true, nil
 }
 
 func addressAnswers(question dnsmessage.Question, addr netip.Addr) []dnsmessage.Resource {

@@ -2,6 +2,7 @@ package router
 
 import (
 	"encoding/binary"
+	"fmt"
 	"io"
 	"net"
 	"net/netip"
@@ -140,6 +141,68 @@ func TestDNSResolverReturnsNXDOMAINForUnknownOverlayPTR(t *testing.T) {
 	assertDNSRCode(t, response, dnsmessage.RCodeNameError)
 }
 
+func TestDNSResolverForwardsMixedPrivateAndPublicQuestions(t *testing.T) {
+	forwarder, err := net.ListenPacket("udp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_ = forwarder.Close()
+	})
+
+	errCh := make(chan error, 1)
+	go func() {
+		buf := make([]byte, dnsMaxUDPPacket)
+		n, addr, err := forwarder.ReadFrom(buf)
+		if err != nil {
+			errCh <- err
+			return
+		}
+		var query dnsmessage.Message
+		if err := query.Unpack(buf[:n]); err != nil {
+			errCh <- err
+			return
+		}
+		if got := len(query.Questions); got != 2 {
+			errCh <- fmt.Errorf("question count = %d, want 2", got)
+			return
+		}
+		response, err := packDNSResponse(query, nil, dnsmessage.RCodeSuccess)
+		if err != nil {
+			errCh <- err
+			return
+		}
+		_, err = forwarder.WriteTo(response, addr)
+		errCh <- err
+	}()
+
+	resolver := newDNSResolver(
+		OverlayConfig{
+			NetworkID:  "primary",
+			ServerAddr: netip.MustParseAddr("10.44.0.1"),
+		},
+		nil,
+		forwarder.LocalAddr().String(),
+	)
+
+	response, err := resolver.resolve(dnsQueryQuestions(
+		dnsQuestion("router.internal", dnsmessage.TypeA),
+		dnsQuestion("example.com", dnsmessage.TypeA),
+	), "udp")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := <-errCh; err != nil {
+		t.Fatal(err)
+	}
+
+	message := unpackDNSResponse(t, response)
+	if message.Header.Authoritative {
+		t.Fatal("mixed private/public response was answered locally")
+	}
+	assertDNSRCode(t, response, dnsmessage.RCodeSuccess)
+}
+
 func TestForwardDNSQueryUsesTCPFraming(t *testing.T) {
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
@@ -200,16 +263,24 @@ func TestForwardDNSQueryUsesTCPFraming(t *testing.T) {
 }
 
 func dnsQuery(name string, typ dnsmessage.Type) []byte {
+	return dnsQueryQuestions(dnsQuestion(name, typ))
+}
+
+func dnsQuestion(name string, typ dnsmessage.Type) dnsmessage.Question {
+	return dnsmessage.Question{
+		Name:  dnsmessage.MustNewName(normalizeDNSName(name)),
+		Type:  typ,
+		Class: dnsmessage.ClassINET,
+	}
+}
+
+func dnsQueryQuestions(questions ...dnsmessage.Question) []byte {
 	msg := dnsmessage.Message{
 		Header: dnsmessage.Header{
 			ID:               0x1234,
 			RecursionDesired: true,
 		},
-		Questions: []dnsmessage.Question{{
-			Name:  dnsmessage.MustNewName(normalizeDNSName(name)),
-			Type:  typ,
-			Class: dnsmessage.ClassINET,
-		}},
+		Questions: questions,
 	}
 	query, err := msg.Pack()
 	if err != nil {
