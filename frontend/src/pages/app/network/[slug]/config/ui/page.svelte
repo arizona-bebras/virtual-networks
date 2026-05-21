@@ -134,7 +134,8 @@ function handleDelete() {
               {:else}
                 {@const error = cidrFieldInfo.error}
                 <p class="text-sm font-medium text-destructive">
-                  Ближайшие цифры {error.suggestion.lower} и {error.suggestion.upper}
+                  Ближайшие цифры {error.suggestion.lower}
+                  {error.suggestion.upper === -1 ? '' : `и ${error.suggestion.upper}`}
                 </p>
               {/if}
             {/if}

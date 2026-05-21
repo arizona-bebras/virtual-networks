@@ -19,6 +19,7 @@ let inputs: HTMLInputElement[] = $state([]);
 onMount(() => {
   info = fillNetworkInfo();
 });
+
 function fillNetworkInfo(): ValidationResult {
   const mask = parseInt(selectedMask, 10);
   const ipInt =
@@ -77,22 +78,21 @@ function fillNetworkInfo(): ValidationResult {
         break;
       }
     }
-    const broadcastInt = (networkInt + totalIps - 1) >>> 0;
+    const bitsInOctet = Math.max(0, Math.min(8, mask - octetIndex * 8));
+    const step = 2 ** (8 - bitsInOctet);
 
-    const broadcastOctets = [
-      (broadcastInt >>> 24) & 255,
-      (broadcastInt >>> 16) & 255,
-      (broadcastInt >>> 8) & 255,
-      broadcastInt & 255,
-    ];
+    const currentNetValue = netOctets[octetIndex]!;
+    const lowerSuggestion = currentNetValue;
+    const upperSuggestion =
+      currentNetValue + step >= 255 ? -1 : currentNetValue + step;
 
     return {
       isValid: false,
       error: {
         octetIndex: octetIndex + 1,
         suggestion: {
-          lower: netOctets[octetIndex]!,
-          upper: broadcastOctets[octetIndex]! + 1,
+          lower: lowerSuggestion,
+          upper: upperSuggestion,
         },
       },
     };
@@ -101,7 +101,7 @@ function fillNetworkInfo(): ValidationResult {
 
 function inputHandler(e: Event, i: number) {
   const target = e.target as HTMLInputElement;
-  let inputValue = parseInt(target.value, 10);
+  let inputValue = target.value ? parseInt(target.value, 10) : 0;
 
   if (inputValue.toString().length >= 3) {
     if (inputValue > 255) {
