@@ -344,7 +344,30 @@ func forwardUDPDNSQuery(query []byte, forwarder string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return response[:n], nil
+	response = response[:n]
+	return finishForwardedUDPResponse(query, response, n == dnsMaxUDPPacket, func() ([]byte, error) {
+		return forwardTCPDNSQuery(query, forwarder)
+	})
+}
+
+func finishForwardedUDPResponse(
+	query []byte,
+	response []byte,
+	fullBuffer bool,
+	retryTCP func() ([]byte, error),
+) ([]byte, error) {
+	if !fullBuffer && !dnsResponseTruncated(response) {
+		return response, nil
+	}
+
+	tcpResponse, err := retryTCP()
+	if err != nil {
+		return response, nil
+	}
+	if len(tcpResponse) > dnsMaxUDPPacket {
+		return truncatedDNSResponse(query)
+	}
+	return tcpResponse, nil
 }
 
 func forwardTCPDNSQuery(query []byte, forwarder string) ([]byte, error) {
@@ -392,6 +415,31 @@ func dnsForwarderAddr() string {
 		return raw
 	}
 	return net.JoinHostPort(raw, "53")
+}
+
+func dnsResponseTruncated(response []byte) bool {
+	var message dnsmessage.Message
+	return message.Unpack(response) == nil && message.Header.Truncated
+}
+
+func truncatedDNSResponse(query []byte) ([]byte, error) {
+	var message dnsmessage.Message
+	if err := message.Unpack(query); err != nil {
+		return errorDNSResponse(query, dnsmessage.RCodeFormatError)
+	}
+	response := dnsmessage.Message{
+		Header: dnsmessage.Header{
+			ID:                 message.Header.ID,
+			Response:           true,
+			OpCode:             message.Header.OpCode,
+			Truncated:          true,
+			RecursionDesired:   message.Header.RecursionDesired,
+			RecursionAvailable: true,
+			RCode:              dnsmessage.RCodeSuccess,
+		},
+		Questions: message.Questions,
+	}
+	return response.Pack()
 }
 
 func normalizeDNSName(name string) string {

@@ -218,6 +218,56 @@ func dnsQuery(name string, typ dnsmessage.Type) []byte {
 	return query
 }
 
+func TestForwardedUDPResponseRetriesTruncatedResponseOverTCP(t *testing.T) {
+	query := dnsQuery("example.com", dnsmessage.TypeA)
+	udpResponse := mustPackDNS(t, dnsmessage.Message{
+		Header: dnsmessage.Header{
+			ID:                 0x1234,
+			Response:           true,
+			Truncated:          true,
+			RecursionDesired:   true,
+			RecursionAvailable: true,
+		},
+	})
+
+	tcpResponse := mustPackDNS(t, dnsmessage.Message{
+		Header: dnsmessage.Header{
+			ID:                 0x1234,
+			Response:           true,
+			RecursionDesired:   true,
+			RecursionAvailable: true,
+		},
+		Questions: []dnsmessage.Question{{
+			Name:  dnsmessage.MustNewName("example.com."),
+			Type:  dnsmessage.TypeA,
+			Class: dnsmessage.ClassINET,
+		}},
+		Answers: []dnsmessage.Resource{{
+			Header: dnsmessage.ResourceHeader{
+				Name:  dnsmessage.MustNewName("example.com."),
+				Type:  dnsmessage.TypeA,
+				Class: dnsmessage.ClassINET,
+				TTL:   dnsDefaultTTL,
+			},
+			Body: &dnsmessage.AResource{A: [4]byte{93, 184, 216, 34}},
+		}},
+	})
+
+	response, err := finishForwardedUDPResponse(query, udpResponse, false, func() ([]byte, error) {
+		return tcpResponse, nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	message := unpackDNSResponse(t, response)
+	if message.Header.Truncated {
+		t.Fatal("response is still marked truncated after TCP retry")
+	}
+	if got := len(message.Answers); got != 1 {
+		t.Fatalf("answer count = %d, want 1", got)
+	}
+}
+
 func assertDNSRCode(t *testing.T, response []byte, want dnsmessage.RCode) {
 	t.Helper()
 	message := unpackDNSResponse(t, response)
@@ -233,4 +283,13 @@ func unpackDNSResponse(t *testing.T, response []byte) dnsmessage.Message {
 		t.Fatal(err)
 	}
 	return message
+}
+
+func mustPackDNS(t *testing.T, message dnsmessage.Message) []byte {
+	t.Helper()
+	packet, err := message.Pack()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return packet
 }
