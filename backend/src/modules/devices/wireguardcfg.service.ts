@@ -1,6 +1,5 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { DeviceCfgDto } from "common/dto/device/device-cfg";
-import { Address4 } from "ip-address";
 import * as QRCode from "qrcode";
 import { type Database, DRIZZLE } from "../../db/database.module.js";
 
@@ -35,7 +34,7 @@ export class WireguardCfgService {
       `[Peer]`,
       `PublicKey = ${device?.network?.keys?.publicKey?.toString("base64")}`,
       `AllowedIps = ${device?.network?.cidr}`,
-      `Endpoint = ${new Address4(device?.network?.cidr ?? "").startAddress().correctForm()}:443`,
+      `Endpoint = ${process.env.WIREGUARD_ENDPOINT}`,
     ].join("\n");
 
     const qrCodeDataUrl = await QRCode.toDataURL(configData, {
