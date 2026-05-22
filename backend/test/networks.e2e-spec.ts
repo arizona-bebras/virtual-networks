@@ -9,7 +9,6 @@ import { DRIZZLE } from "../src/db/database.module.js";
 import * as schema from "../src/db/schema.js";
 import { NetworksController } from "../src/modules/networks/networks.controller.js";
 import { NetworksService } from "../src/modules/networks/networks.service.js";
-import { WireguardCfgService } from "../src/modules/networks/wireguardcfg.service.js";
 import {
   closeTestDatabase,
   createTestDatabase,
@@ -57,7 +56,6 @@ describe("NetworksController (e2e)", () => {
       controllers: [NetworksController],
       providers: [
         NetworksService,
-        WireguardCfgService,
         RolesGuard,
         {
           provide: DRIZZLE,
