@@ -41,11 +41,11 @@ const deleteMutation = createMutation(() =>
 );
 
 // TODO: Убрать после добавления поля в схему UpdateNetworkSchema
-const tldRegex = /^\.(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)$/i;
+const tldRegex = /^(?=.*[a-z])[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/;
 const UpdateNetworkSchemaMock = UpdateNetworkSchema.extend({
   domain: z
     .string()
-    .max(9, "Домен верхнего уровня не может быть длиннее 9 символов")
+    .max(16, "Домен верхнего уровня не может быть длиннее 9 символов")
     .trim()
     .toLowerCase()
     .regex(tldRegex, { message: "Неверный формат домена верхнего уровня" }),

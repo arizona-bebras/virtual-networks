@@ -149,8 +149,11 @@ $effect(() => {
           {...props}
           bind:value={$formData.name}
           oninput={() => {
-            $formData.slug = slugify($formData.name) 
-          console.log("input", slugify($formData.name))
+            $formData.slug = slugify($formData.name, {
+              lower: true,
+              strict: true,
+            // remove: /[\\^$|?*!"№+;:=`~.,_@/#'()\[\]{}]/g,
+        }) 
         }}
         />
       {/snippet}
