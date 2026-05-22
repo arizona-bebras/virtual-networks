@@ -14,6 +14,7 @@ import { getNetworkId } from "$shared/lib/network-id-context";
 import * as Form from "$shared/ui/form/index.js";
 import { Input } from "$shared/ui/input/index.js";
 import * as Popover from "$shared/ui/popover/index";
+import { Separator } from "$shared/ui/separator/index";
 import {
   deviceUpdateMutation,
   deviceСreationQuery,
@@ -125,11 +126,12 @@ $effect(() => {
 });
 </script>
 
-<form method="POST" use:enhance class="space-y-4">
+<form method="POST" use:enhance class="relative">
+  <Separator class="bg-border absolute -top-2 -left-4 w-124!" />
   <Form.Field {form} name="name">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label>Name</Form.Label>
+        <Form.Label type="required">Название</Form.Label>
         <Input {...props} bind:value={$formData.name} />
       {/snippet}
     </Form.Control>
@@ -139,7 +141,7 @@ $effect(() => {
   <Form.Field {form} name="ip">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label>IP Address</Form.Label>
+        <Form.Label type="required">IP-адрес</Form.Label>
         <Input {...props} bind:value={$formData.ip} />
       {/snippet}
     </Form.Control>
@@ -155,7 +157,7 @@ $effect(() => {
         }}
       />
       <Popover.Root bind:open={isTagSelectorOpen}>
-        <Popover.Trigger class="border-2 border-dashed px-4">+</Popover.Trigger>
+        <Popover.Trigger class="border-2 border-dashed px-4 rounded-[4px]">+</Popover.Trigger>
         <Popover.Content>
           <TagSelector
             onclick={(name) => {
@@ -170,7 +172,19 @@ $effect(() => {
       </Popover.Root>
     </div>
   {/if}
-  <Form.Button disabled={!valid()} class="w-full">
-    {device ? "Save Changes" : "Save Device"}
-  </Form.Button>
+  <div class="flex justify-end gap-2 mt-2 font-semibold">
+    <button
+      type="button"
+      class="px-2.5 py-1.25 border rounded-[8px] hover:bg-accent"
+      onclick={() => (dialogState = false)}
+    >
+      Закрыть
+    </button>
+    <Form.Button
+      disabled={!valid()}
+      class="rounded-[8px] text-secondary-foreground"
+    >
+      <span>{device ? "Сохранить" : "Создать"}</span>
+    </Form.Button>
+  </div>
 </form>

@@ -8,6 +8,7 @@ import { Button } from "$shared/ui/button/index.js";
 import * as Dialog from "$shared/ui/dialog/index.js";
 import * as DropdownMenu from "$shared/ui/dropdown-menu/index.js";
 import DeviceForm from "./device-form.svelte";
+  import DeviceDialog from "./device-dialog.svelte";
 
 let { device }: { device: DeviceRelations } = $props();
 
@@ -39,17 +40,24 @@ function handleDelete() {
     <DropdownMenu.Content align="end">
       <DropdownMenu.Item onSelect={() => isEditDialogOpen = true}>
         <Edit class="mr-2 size-4" />
-        Edit Device
+        Редактировать
       </DropdownMenu.Item>
       <DropdownMenu.Item class="text-destructive" onclick={handleDelete}>
         <Trash class="mr-2 size-4" />
-        Delete Device
+        Удалить
       </DropdownMenu.Item>
     </DropdownMenu.Content>
   </DropdownMenu.Root>
 </div>
 
-<Dialog.Root bind:open={isEditDialogOpen}>
+<DeviceDialog
+  bind:open={isEditDialogOpen}
+  title="Редактирование устройства"
+  {device}
+  description="Измените параметры своего устройства"
+/>
+
+<!-- <Dialog.Root bind:open={isEditDialogOpen}>
   <Dialog.Content>
     <Dialog.Header>
       <Dialog.Title>Edit Device</Dialog.Title>
@@ -59,4 +67,4 @@ function handleDelete() {
     </Dialog.Header>
     <DeviceForm {device} bind:dialogState={isEditDialogOpen} />
   </Dialog.Content>
-</Dialog.Root>
+</Dialog.Root> -->

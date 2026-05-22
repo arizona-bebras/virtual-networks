@@ -127,15 +127,15 @@ function bulkRemoveSelected() {
 
   <DeviceDialog
     bind:open={isAddDeviceDialogOpen}
-    title="Add Device"
-    description="Register a new device to your virtual network."
+    title="Создание устройства"
+    description="Заполните все необходимые поля, чтобы добавить новое устройство в сеть"
   />
 
   <DeviceDialog
     bind:open={isEditingDialogOpen}
-    title="Edit Device"
+    title="Редактирование устройства"
     device={editingDevice}
-    description="Update the details for your device."
+    description="Измените параметры своего устройства"
   />
 
   <DataTable
