@@ -304,6 +304,11 @@ func (ns *Network) ListenTCPAddrPort(addr netip.AddrPort) (*gonet.TCPListener, e
 	return gonet.ListenTCP(ns.stack, fullAddr, proto)
 }
 
+func (ns *Network) ListenUDPAddrPort(addr netip.AddrPort) (*gonet.UDPConn, error) {
+	fullAddr, proto := convertToFullAddr(addr)
+	return gonet.DialUDP(ns.stack, &fullAddr, nil, proto)
+}
+
 func convertToFullAddr(endpoint netip.AddrPort) (tcpip.FullAddress, tcpip.NetworkProtocolNumber) {
 	var proto tcpip.NetworkProtocolNumber
 	if endpoint.Addr().Is4() {

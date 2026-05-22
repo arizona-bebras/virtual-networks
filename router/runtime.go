@@ -221,6 +221,13 @@ func startRuntimeParts(
 			closeRuntimeParts(cfg, overlays, protocols, closers)
 			return nil, fmt.Errorf("network runtime %q is missing", overlayCfg.NetworkID)
 		}
+		closeDNS, err := startDNSResolver(overlay.net, overlay.cfg, cfg.Protocols)
+		if err != nil {
+			closeRuntimeParts(cfg, overlays, protocols, closers)
+			return nil, fmt.Errorf("start userspace netstack dns resolver for network %q: %w", overlay.networkID, err)
+		}
+		closers = append(closers, closeDNS)
+
 		closeStatus, err := startStatusServer(overlay.net, overlay.cfg, overlay.protocols)
 		if err != nil {
 			closeRuntimeParts(cfg, overlays, protocols, closers)
