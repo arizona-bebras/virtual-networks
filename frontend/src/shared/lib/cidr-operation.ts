@@ -15,15 +15,13 @@ export function changeCidrValue(
   params: changeCidrParams,
 ): string {
   const { ip, mask } = splitCidr(cidr);
+  const octets = ip.split(".") as [string, string, string, string];
   if (params.changeArea === "ip") {
-    const octets = ip.split(".") as [string, string, string, string];
     for (const [index, octetNum] of params.octetNumbers.entries()) {
       octets[octetNum - 1] = params.newValues[index]!;
     }
-    return `${octets.join(".")}/${mask}`;
-  } else {
-    return cidr.slice(0, -2) + params.newValue;
   }
+  return `${octets.join(".")}/${mask}`;
 }
 
 export function splitCidr(cidr: string): { ip: string; mask: string } {
