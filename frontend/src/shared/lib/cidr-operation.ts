@@ -20,8 +20,10 @@ export function changeCidrValue(
     for (const [index, octetNum] of params.octetNumbers.entries()) {
       octets[octetNum - 1] = params.newValues[index]!;
     }
+    return `${octets.join(".")}/${mask}`;
+  } else {
+    return `${octets.join(".")}/${params.newValue}`;
   }
-  return `${octets.join(".")}/${mask}`;
 }
 
 export function splitCidr(cidr: string): { ip: string; mask: string } {
