@@ -33,6 +33,7 @@ const seedNetworkMember = async (db: TestDatabase) => {
     creatorId: userId,
     description: "Primary network",
     name: "Primary",
+    domain: "primary",
   });
   await db.insert(schema.networkUsers).values({
     networkId,
@@ -122,6 +123,7 @@ describe("TagsController (e2e)", () => {
       id: deviceId,
       ip: "10.0.0.2",
       name: "Laptop",
+      slug: "laptop",
       networkId,
       ownerId: userId,
     });
@@ -206,6 +208,7 @@ describe("TagsController (e2e)", () => {
       creatorId: userId,
       description: "Primary network",
       name: "Primary",
+      domain: "primary",
     });
 
     await request(app.getHttpServer())

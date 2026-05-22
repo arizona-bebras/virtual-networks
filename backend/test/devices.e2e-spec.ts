@@ -38,6 +38,7 @@ const createDevicesTestDatabase = async () => {
       creatorId: userId,
       description: "Primary network",
       name: "Primary",
+      domain: "primary",
     },
     {
       id: otherNetworkId,
@@ -45,6 +46,7 @@ const createDevicesTestDatabase = async () => {
       creatorId: userId,
       description: "Other network",
       name: "Other",
+      domain: "other",
     },
   ]);
   await db.insert(schema.networkUsers).values({
@@ -98,7 +100,7 @@ describe("DevicesController (e2e)", () => {
   it("creates and reads devices through HTTP requests", async () => {
     await request(app.getHttpServer())
       .post(`/networks/${networkId}/devices`)
-      .send({ id: deviceId, ip: "10.0.0.2", name: "Laptop" })
+      .send({ id: deviceId, ip: "10.0.0.2", name: "Laptop", slug: "laptop" })
       .expect(201);
 
     await request(app.getHttpServer())
@@ -112,6 +114,7 @@ describe("DevicesController (e2e)", () => {
             id: deviceId,
             ip: "10.0.0.2",
             name: "Laptop",
+            slug: "laptop",
             networkId,
             ownerId: userId,
             owner: user,
@@ -130,6 +133,7 @@ describe("DevicesController (e2e)", () => {
           id: deviceId,
           ip: "10.0.0.2",
           name: "Laptop",
+          slug: "laptop",
           networkId,
           ownerId: userId,
           owner: user,
@@ -149,6 +153,7 @@ describe("DevicesController (e2e)", () => {
       id: deviceId,
       ip: "10.0.0.3",
       name: "Tablet",
+      slug: "tablet",
       networkId,
       ownerId: userId,
     });
@@ -180,6 +185,7 @@ describe("DevicesController (e2e)", () => {
       id: deviceId,
       ip: "10.0.0.4",
       name: "Server",
+      slug: "server",
       networkId,
       ownerId: userId,
     });
@@ -225,7 +231,7 @@ describe("DevicesController (e2e)", () => {
   it("persists changes in the in-memory PGlite database", async () => {
     await request(app.getHttpServer())
       .post(`/networks/${networkId}/devices`)
-      .send({ id: deviceId, ip: "10.0.0.5", name: "Desktop" })
+      .send({ id: deviceId, ip: "10.0.0.5", name: "Desktop", slug: "desktop" })
       .expect(201);
 
     const [{ count }] = await db

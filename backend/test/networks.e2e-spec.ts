@@ -34,6 +34,7 @@ const seedNetwork = async (db: TestDatabase) => {
     creatorId: userId,
     description: "Primary network",
     name: "Primary",
+    domain: "primary",
   });
 };
 
@@ -86,6 +87,7 @@ describe("NetworksController (e2e)", () => {
         cidr: "10.2.0.0/24",
         description: "Created over HTTP",
         name: "Created",
+        domain: "created",
       })
       .expect(201)
       .expect((response) => {
@@ -102,6 +104,7 @@ describe("NetworksController (e2e)", () => {
           description: "Created over HTTP",
           devicesCount: 0,
           name: "Created",
+          domain: "created",
         });
         expect(network.id).toEqual(expect.any(String));
       });
@@ -116,6 +119,7 @@ describe("NetworksController (e2e)", () => {
         expect(networks[0]).toMatchObject({
           description: "Created over HTTP",
           name: "Created",
+          domain: "created",
         });
       });
   });
@@ -133,6 +137,7 @@ describe("NetworksController (e2e)", () => {
         expect(network).toMatchObject({
           id: networkId,
           name: "Primary",
+          domain: "primary",
           devicesCount: 0,
         });
       });

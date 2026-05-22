@@ -33,6 +33,7 @@ const seedNetworkMember = async (db: TestDatabase) => {
     creatorId: userId,
     description: "Primary network",
     name: "Primary",
+    domain: "primary",
   });
   await db.insert(schema.networkUsers).values({
     networkId,
@@ -212,6 +213,7 @@ describe("RulesController (e2e)", () => {
       creatorId: userId,
       description: "Primary network",
       name: "Primary",
+      domain: "primary",
     });
 
     await request(app.getHttpServer())
