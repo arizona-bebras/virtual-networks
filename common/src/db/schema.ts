@@ -109,7 +109,7 @@ export const keys = pgTable("keys", {
 export const networks = pgTable("networks", {
   id: uuid(`id`).primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
-  domain: varchar({ length: 255 }).notNull(),
+  domain: varchar({ length: 63 }).notNull(),
   description: varchar({ length: 255 }).notNull(),
   cidr: cidr().default("192.168.123.0/24").notNull(),
   creatorId: text(`creator_id`).references(() => user.id, {

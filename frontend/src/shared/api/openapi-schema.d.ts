@@ -147,6 +147,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/networks/{network_id}/devices/{device_id}/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить конфиг для устройства */
+        get: operations["DevicesController_getDeviceConfig"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/networks/{network_id}/tags": {
         parameters: {
             query?: never;
@@ -342,6 +359,16 @@ export interface components {
             ip?: string;
             /** @description The identifier of the device owner */
             ownerId?: string;
+        };
+        DeviceCfgDto: {
+            /** @description The name of the .conf file */
+            name: string;
+            /** @description The data of config */
+            config: string;
+            /** @description The public key of client */
+            clientPublicKey: string;
+            /** @description base64 encoded qrcode image */
+            qrCode: string;
         };
         CreateTagDto: {
             /** @description The name of the tag */
@@ -883,12 +910,44 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Тег успешно добавлен к устройству */
-            201: {
+            /** @description Тег успешно удален с устройства */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Устройство не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DevicesController_getDeviceConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID устройства */
+                device_id: string;
+                /** @description UUID сети */
+                network_id: unknown;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Конфиг получен */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceCfgDto"];
+                };
             };
             /** @description Устройство не найдено */
             404: {

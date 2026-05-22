@@ -155,27 +155,27 @@ function handleDelete() {
             </div>
           </div>
 
-        <Form.Field {form} name="description">
-          <Form.Control>
-            {#snippet children({ props })}
-              <Form.Label>Description</Form.Label>
-              <Input {...props} bind:value={$formData.description} />
-            {/snippet}
-          </Form.Control>
-          <Form.FieldErrors />
-        </Form.Field>
+          <Form.Field {form} name="description">
+            <Form.Control>
+              {#snippet children({ props })}
+                <Form.Label>Description</Form.Label>
+                <Input {...props} bind:value={$formData.description} />
+              {/snippet}
+            </Form.Control>
+            <Form.FieldErrors />
+          </Form.Field>
 
-        <Form.Field {form} name="domain">
-          <Form.Control>
-            {#snippet children({ props })}
-              <Form.Label>Domain</Form.Label>
-              <Input {...props} bind:value={$formData.domain} />
-            {/snippet}
-          </Form.Control>
-          <Form.FieldErrors />
-        </Form.Field>
+          <Form.Field {form} name="domain">
+            <Form.Control>
+              {#snippet children({ props })}
+                <Form.Label>Domain</Form.Label>
+                <Input {...props} bind:value={$formData.domain} />
+              {/snippet}
+            </Form.Control>
+            <Form.FieldErrors />
+          </Form.Field>
 
-        <Separator />
+          <Separator />
 
           <Separator />
 

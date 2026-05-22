@@ -11,6 +11,7 @@ export const CreateNetworkSchema = createInsertSchema(networks, {
       .min(1)
       .max(32)
       .regex(/^[a-z0-9-]+$/)
+      .default("internal")
       .describe("The domain of the network"),
   cidr: (schema) => schema.describe("The IP address range of the network"),
 }).omit({ id: true, creatorId: true, keysId: true });

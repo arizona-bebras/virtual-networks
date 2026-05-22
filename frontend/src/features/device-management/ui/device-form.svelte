@@ -125,6 +125,7 @@ let {
         deviceInfo: {
           name: $formData.name,
           ip: $formData.ip,
+          slug: $formData.slug,
         },
       });
     }
