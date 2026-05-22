@@ -58,6 +58,7 @@
     "lucide-svelte": "^1.0.1",
     "openapi-fetch": "^0.17.0",
     "runed": "^0.37.1",
+    "slugify": "^1.6.9",
     "zod": "^4.3.6"
   }
 }

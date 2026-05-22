@@ -6,6 +6,7 @@ import {
 } from "@tanstack/svelte-query";
 import { UpdateNetworkSchema } from "common/schemas/network/update-network";
 import { untrack } from "svelte";
+import { z } from "zod";
 import { goto } from "$app/navigation";
 import type { ValidationResult } from "$features/config/model/types";
 import CidrInput from "$features/config/ui/CidrInput.svelte";
@@ -43,13 +44,23 @@ const deleteMutation = createMutation(() =>
   }),
 );
 
+// TODO: Убрать после добавления поля в схему UpdateNetworkSchema
+const tldRegex = /^(?=.*[a-z])[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/;
+const UpdateNetworkSchemaMock = UpdateNetworkSchema.extend({
+  domain: z
+    .string()
+    .max(16, "Домен верхнего уровня не может быть длиннее 9 символов")
+    .trim()
+    .toLowerCase()
+    .regex(tldRegex, { message: "Неверный формат домена верхнего уровня" }),
+});
+
 let {
   forms: form,
   formData,
   valid,
   enhance,
-} = useForm(UpdateNetworkSchema, {
-  resetForm: false,
+} = useForm(UpdateNetworkSchemaMock, {
   onSubmit: async () => {
     updateMutation.mutate({
       networkId,
@@ -144,15 +155,27 @@ function handleDelete() {
             </div>
           </div>
 
-          <Form.Field {form} name="description">
-            <Form.Control>
-              {#snippet children({ props })}
-                <Form.Label>Description</Form.Label>
-                <Input {...props} bind:value={$formData.description} />
-              {/snippet}
-            </Form.Control>
-            <Form.FieldErrors />
-          </Form.Field>
+        <Form.Field {form} name="description">
+          <Form.Control>
+            {#snippet children({ props })}
+              <Form.Label>Description</Form.Label>
+              <Input {...props} bind:value={$formData.description} />
+            {/snippet}
+          </Form.Control>
+          <Form.FieldErrors />
+        </Form.Field>
+
+        <Form.Field {form} name="domain">
+          <Form.Control>
+            {#snippet children({ props })}
+              <Form.Label>Domain</Form.Label>
+              <Input {...props} bind:value={$formData.domain} />
+            {/snippet}
+          </Form.Control>
+          <Form.FieldErrors />
+        </Form.Field>
+
+        <Separator />
 
           <Separator />
 
