@@ -6,7 +6,7 @@
   },
   "aliases": {
     "components": "$shared",
-    "utils": "$shared/utils",
+    "utils": "$shared/lib/utils",
     "ui": "$shared/ui",
     "hooks": "$shared/hooks",
     "lib": "$shared/lib"

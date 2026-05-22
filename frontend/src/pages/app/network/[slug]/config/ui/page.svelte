@@ -8,6 +8,9 @@ import { UpdateNetworkSchema } from "common/schemas/network/update-network";
 import { untrack } from "svelte";
 import { z } from "zod";
 import { goto } from "$app/navigation";
+import type { ValidationResult } from "$features/config/model/types";
+import CidrInput from "$features/config/ui/CidrInput.svelte";
+import CidrSuggestion from "$features/config/ui/CidrSuggestion.svelte";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { Button } from "$shared/ui/button/index.js";
@@ -24,6 +27,7 @@ import {
 const queryClient = useQueryClient();
 let networkId = $derived(getNetworkId().id);
 let networkCfg = createQuery(() => networkConfig(networkId));
+let cidrFieldInfo: ValidationResult | null = $state(null);
 
 const updateMutation = createMutation(() =>
   networkUpdateMutation(() => {
@@ -90,34 +94,35 @@ function handleDelete() {
 }
 </script>
 
-<div class="mx-auto max-w-2xl p-8">
-  <div class="mb-8">
-    <h1 class="text-3xl font-bold tracking-tight">Network Configuration</h1>
-    <p class="text-muted-foreground">
-      Configure your virtual network settings.
-    </p>
-  </div>
+{#if networkCfg.isSuccess && $formData.cidr}
+  <div class="mx-auto max-w-2xl p-8">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold tracking-tight">Network Configuration</h1>
+      <p class="text-muted-foreground">
+        Configure your virtual network settings.
+      </p>
+    </div>
 
-  <Card.Root>
-    <Card.Header>
-      <Card.Title>General Settings</Card.Title>
-      <Card.Description>
-        Update your network name and address space.
-      </Card.Description>
-    </Card.Header>
-    <Card.Content>
-      <form method="POST" use:enhance class="space-y-6">
-        <Form.Field {form} name="name">
-          <Form.Control>
-            {#snippet children({ props })}
-              <Form.Label>Network Name</Form.Label>
-              <Input {...props} bind:value={$formData.name} />
-            {/snippet}
-          </Form.Control>
-          <Form.FieldErrors />
-        </Form.Field>
+    <Card.Root>
+      <Card.Header>
+        <Card.Title>General Settings</Card.Title>
+        <Card.Description>
+          Update your network name and address space.
+        </Card.Description>
+      </Card.Header>
+      <Card.Content>
+        <form method="POST" use:enhance class="space-y-6">
+          <Form.Field {form} name="name">
+            <Form.Control>
+              {#snippet children({ props })}
+                <Form.Label>Network Name</Form.Label>
+                <Input {...props} bind:value={$formData.name} />
+              {/snippet}
+            </Form.Control>
+            <Form.FieldErrors />
+          </Form.Field>
 
-        <Form.Field {form} name="cidr">
+          <!-- <Form.Field {form} name="cidr">
           <Form.Control>
             {#snippet children({ props })}
               <Form.Label>Network CIDR</Form.Label>
@@ -128,7 +133,27 @@ function handleDelete() {
             {/snippet}
           </Form.Control>
           <Form.FieldErrors />
-        </Form.Field>
+        </Form.Field> -->
+          <div class="">
+            <CidrInput bind:value={$formData.cidr} bind:info={cidrFieldInfo} />
+            {#if cidrFieldInfo}
+              {#if cidrFieldInfo?.isValid}
+                <p>
+                  Диапазон хостов: {cidrFieldInfo.firstHost} - {cidrFieldInfo.lastHost}
+                </p>
+                <p>Размер сети: {cidrFieldInfo.hostCount}</p>
+              {:else}
+                {@const error = cidrFieldInfo.error}
+                <p class="text-sm font-medium text-destructive">
+                  Ближайшие цифры {error.suggestion.lower}
+                  {error.suggestion.upper === -1 ? '' : `и ${error.suggestion.upper}`}
+                </p>
+              {/if}
+            {/if}
+            <div class="mt-1">
+              <CidrSuggestion bind:cidr={$formData.cidr} />
+            </div>
+          </div>
 
         <Form.Field {form} name="description">
           <Form.Control>
@@ -152,35 +177,38 @@ function handleDelete() {
 
         <Separator />
 
-        <div class="flex flex-col gap-1">
-          <span class="text-sm font-medium">Network ID</span>
-          <span
-            class="rounded bg-muted p-2 text-xs font-mono text-muted-foreground"
-          >
-            {networkId}
-          </span>
-        </div>
+          <Separator />
 
-        <div class="flex justify-end gap-2 pt-4">
-          <Button type="submit" disabled={!valid()}>Save Changes</Button>
-        </div>
-      </form>
-    </Card.Content>
-  </Card.Root>
+          <div class="flex flex-col gap-1">
+            <span class="text-sm font-medium">Network ID</span>
+            <span
+              class="rounded bg-muted p-2 text-xs font-mono text-muted-foreground"
+            >
+              {networkId}
+            </span>
+          </div>
 
-  <div class="mt-8">
-    <Card.Root class="border-destructive/20 bg-destructive/5">
-      <Card.Header>
-        <Card.Title class="text-destructive">Danger Zone</Card.Title>
-        <Card.Description>
-          Permanently delete this network and all associated data.
-        </Card.Description>
-      </Card.Header>
-      <Card.Footer>
-        <Button variant="destructive" onclick={handleDelete}>
-          Delete Network
-        </Button>
-      </Card.Footer>
+          <div class="flex justify-end gap-2 pt-4">
+            <Button type="submit" disabled={!valid()}>Save Changes</Button>
+          </div>
+        </form>
+      </Card.Content>
     </Card.Root>
+
+    <div class="mt-8">
+      <Card.Root class="border-destructive/20 bg-destructive/5">
+        <Card.Header>
+          <Card.Title class="text-destructive">Danger Zone</Card.Title>
+          <Card.Description>
+            Permanently delete this network and all associated data.
+          </Card.Description>
+        </Card.Header>
+        <Card.Footer>
+          <Button variant="destructive" onclick={handleDelete}>
+            Delete Network
+          </Button>
+        </Card.Footer>
+      </Card.Root>
+    </div>
   </div>
-</div>
+{/if}
