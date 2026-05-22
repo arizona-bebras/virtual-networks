@@ -9,6 +9,7 @@ import { untrack } from "svelte";
 import { goto } from "$app/navigation";
 import type { ValidationResult } from "$features/config/model/types";
 import CidrInput from "$features/config/ui/CidrInput.svelte";
+import CidrSuggestion from "$features/config/ui/CidrSuggestion.svelte";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { Button } from "$shared/ui/button/index.js";
@@ -122,7 +123,7 @@ function handleDelete() {
           </Form.Control>
           <Form.FieldErrors />
         </Form.Field> -->
-          <div>
+          <div class="">
             <CidrInput bind:value={$formData.cidr} bind:info={cidrFieldInfo} />
             {#if cidrFieldInfo}
               {#if cidrFieldInfo?.isValid}
@@ -138,6 +139,9 @@ function handleDelete() {
                 </p>
               {/if}
             {/if}
+            <div class="mt-1">
+              <CidrSuggestion bind:cidr={$formData.cidr} />
+            </div>
           </div>
 
           <Form.Field {form} name="description">

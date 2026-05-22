@@ -1,5 +1,6 @@
 <script lang="ts">
 import { onMount } from "svelte";
+import { changeCidrValue } from "$shared/lib/cidr-operation";
 import * as Select from "$shared/ui/select/index";
 import type { ValidationResult } from "../model/types";
 
@@ -113,7 +114,11 @@ function inputHandler(e: Event, i: number) {
     inputs[i + 1]?.select();
   }
 
-  changeFormDataValue(i + 1, inputValue.toString());
+  value = changeCidrValue(value, {
+    changeArea: "ip",
+    octetNumbers: [i + 1],
+    newValues: [inputValue.toString()],
+  });
   info = fillNetworkInfo();
 }
 
@@ -126,18 +131,20 @@ function blockOctetInput(mask: string) {
     inputs[i]!.disabled =
       currentMask <= i * 8
         ? (() => {
-            changeFormDataValue(i + 1, "0");
+            value = changeCidrValue(value, {
+              changeArea: "ip",
+              octetNumbers: [i + 1],
+              newValues: ["0"],
+            });
             return true;
           })()
         : false;
   }
   info = fillNetworkInfo();
-}
-
-function changeFormDataValue(octetNumber: number, newValue: string) {
-  const currentOctets = [...octets.map(String)];
-  currentOctets[octetNumber - 1] = newValue;
-  value = `${currentOctets.join(".")}/${selectedMask}`;
+  value = changeCidrValue(value, {
+    changeArea: "mask",
+    newValue: mask,
+  });
 }
 </script>
 
