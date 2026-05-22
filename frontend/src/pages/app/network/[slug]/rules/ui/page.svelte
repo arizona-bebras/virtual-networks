@@ -1,9 +1,10 @@
 <script lang="ts">
 import { Plus } from "@lucide/svelte";
 import { createQuery } from "@tanstack/svelte-query";
-import type { ColumnFiltersState } from "@tanstack/table-core";
+import type { ColumnFiltersState, Table } from "@tanstack/table-core";
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
+import Header from "$entities/table-page/ui/Header.svelte";
 import { columns } from "$features/rule-management/model/rule-table-columns";
 import RuleDialog from "$features/rule-management/ui/rule-dialog.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
@@ -12,11 +13,13 @@ import * as Card from "$shared/ui/card/index.js";
 import DataTable from "$shared/ui/data-table/data-table.svelte";
 import { userRules } from "../api/query";
 
-let isAddRuleDialogOpen = $state(false);
+let isAddDialogOpen = $state(false);
 let isEditingDialogOpen = $state(false);
+let selectedIds = $state<string[]>([]);
 
 let globalFilter = $state("");
 let columnFilters = $state<ColumnFiltersState>([]);
+let table = $state<Table<any>>("");
 
 let sourceTagsFilter = $derived(
   (
@@ -63,23 +66,13 @@ function bulkRemoveSelected(_ids: string[]) {
 }
 </script>
 
-<div class="p-8">
-  <div class="mb-8 flex items-center justify-between">
-    <div>
-      <h1 class="text-3xl font-bold tracking-tight">Rules</h1>
-      <p class="text-muted-foreground">Manage network access control rules.</p>
-    </div>
-
-    <Button onclick={() => (isAddRuleDialogOpen = true)}>
-      <Plus class="mr-2 size-4" />
-      Add Rule
-    </Button>
-  </div>
-
-  <RuleDialog
-    bind:open={isAddRuleDialogOpen}
-    title="Add Rule"
-    description="Create a new network access control rule."
+<div class="">
+  <Header
+    title="Rules"
+    description="Создавайте свои правила для устройств"
+    {selectedIds}
+    bind:globalFilter
+    {table}
   />
 
   <RuleDialog

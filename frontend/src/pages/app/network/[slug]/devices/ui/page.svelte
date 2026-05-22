@@ -1,20 +1,19 @@
 <script lang="ts">
-import { Plus, Search, Trash } from "@lucide/svelte";
+
 import { createQuery } from "@tanstack/svelte-query";
 import type { ColumnFiltersState, Table } from "@tanstack/table-core";
 import { Debounced } from "runed";
-import { fade } from "svelte/transition";
+
 import { goto } from "$app/navigation";
-import { page } from "$app/state";
+import { page } from "$app/state"; 
+import Header from "$entities/table-page/ui/Header.svelte";
 import { columns } from "$features/device-management/model/device-table-columns.js";
-import BreadCrumb from "$features/device-management/ui/breadcrumb.svelte";
+
 import DeviceDialog from "$features/device-management/ui/device-dialog.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
-import { Button } from "$shared/ui/button/index.js";
-import * as Card from "$shared/ui/card/index.js";
+
 import DataTable from "$shared/ui/data-table/data-table.svelte";
-import DataTableFilters from "$shared/ui/data-table/data-table-filters.svelte";
-import { Input } from "$shared/ui/input/index.js";
+
 import { deviceQuery } from "../api/query";
 
 let isAddDeviceDialogOpen = $state(false);
@@ -74,56 +73,13 @@ function bulkRemoveSelected() {
 </script>
 
 <div class="">
-  <div
-    class="pl-6 py-4 mb-4 flex flex-col justify-between bg-background border rounded-bl-[4px]"
-  >
-    <BreadCrumb />
-    <div
-      class="mt-4 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
-    >
-      <div>
-        <h1 class="text-3xl font-bold tracking-tight">Devices</h1>
-        <p class="text-muted-foreground text-[14px]">
-          Уравляйте и отслеживайте свои устройства в сети.
-        </p>
-      </div>
-    </div>
-    <div class="flex justify-between gap-2 pr-6 mb-3">
-      <div class="w-lg relative">
-        <Input
-          placeholder="Поиск по имени..."
-          bind:value={globalFilter}
-          class="w-full placeholder:text-[12px] mb-0 px-8.5 font-semibold"
-        />
-        <Search
-          class="absolute top-1/2 ml-2 -translate-y-1/2 size-4 stroke-3"
-        />
-      </div>
-
-      {#if selectedIds.length > 0}
-        <div in:fade={{ duration: 150 }}>
-          <Button
-            variant="destructive"
-            size="sm"
-            class="h-10 gap-1"
-            onclick={bulkRemoveSelected}
-          >
-            <Trash class="size-4" />
-            Delete ({selectedIds.length}
-            )
-          </Button>
-        </div>
-      {/if}
-      <Button
-        onclick={() => (isAddDeviceDialogOpen = true)}
-        class="rounded-[6px]"
-      >
-        Добавить устройство
-        <Plus class="mr-1 size-3" />
-      </Button>
-    </div>
-    <div class=""><DataTableFilters {table} /></div>
-  </div>
+  <Header
+    title="Device"
+    description="Уравляйте и отслеживайте свои устройства в сети."
+    bind:globalFilter
+    {selectedIds}
+    {table}
+  />
 
   <DeviceDialog
     bind:open={isAddDeviceDialogOpen}
