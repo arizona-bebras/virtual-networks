@@ -1,7 +1,7 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "b1794db7-5b93-42c1-9885-5b26ca8150f3",
+  "id": "4ee8cb63-6af4-45c3-a13f-f0430a0e1fd2",
   "prevIds": ["00000000-0000-0000-0000-000000000000"],
   "ddl": [
     {
@@ -290,6 +290,19 @@
       "table": "devices"
     },
     {
+      "type": "varchar(255)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "slug",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "devices"
+    },
+    {
       "type": "inet",
       "typeSchema": null,
       "notNull": true,
@@ -532,6 +545,19 @@
       "generated": null,
       "identity": null,
       "name": "name",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "networks"
+    },
+    {
+      "type": "varchar(255)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "domain",
       "entityType": "columns",
       "schema": "public",
       "table": "networks"

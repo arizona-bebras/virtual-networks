@@ -44,6 +44,7 @@ export class NetworksService {
         .returning({
           id: schema.networks.id,
           name: schema.networks.name,
+          domain: schema.networks.domain,
           description: schema.networks.description,
           cidr: schema.networks.cidr,
           creatorId: schema.networks.creatorId,
@@ -92,6 +93,7 @@ export class NetworksService {
       columns: {
         id: true,
         name: true,
+        domain: true,
         description: true,
         cidr: true,
         creatorId: true,
@@ -166,6 +168,7 @@ export class NetworksService {
           columns: {
             id: true,
             name: true,
+            domain: true,
             description: true,
             cidr: true,
             creatorId: true,

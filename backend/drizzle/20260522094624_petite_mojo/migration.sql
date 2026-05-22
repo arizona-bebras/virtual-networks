@@ -20,6 +20,7 @@ CREATE TABLE "account" (
 CREATE TABLE "devices" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	"name" varchar(255) NOT NULL,
+	"slug" varchar(255) NOT NULL,
 	"ip" inet NOT NULL,
 	"owner_id" text NOT NULL,
 	"network_id" uuid NOT NULL,
@@ -57,6 +58,7 @@ CREATE TABLE "network_users" (
 CREATE TABLE "networks" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	"name" varchar(255) NOT NULL,
+	"domain" varchar(255) NOT NULL,
 	"description" varchar(255) NOT NULL,
 	"cidr" cidr DEFAULT '192.168.123.0/24' NOT NULL,
 	"creator_id" text,

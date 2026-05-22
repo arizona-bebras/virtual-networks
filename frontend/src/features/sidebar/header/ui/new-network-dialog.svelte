@@ -31,6 +31,7 @@ let {
       name: $formData.name,
       description: $formData.description,
       cidr: $formData.cidr,
+      domain: $formData.domain,
     });
     isDialogOpen = false;
   },
