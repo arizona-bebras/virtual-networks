@@ -15,8 +15,6 @@ import { Button } from "$shared/ui/button/index.js";
 import * as Card from "$shared/ui/card/index.js";
 import * as Form from "$shared/ui/form/index.js";
 import { Input } from "$shared/ui/input/index.js";
-import * as InputOTP from "$shared/ui/input-otp";
-import * as Select from "$shared/ui/select/index.js";
 import { Separator } from "$shared/ui/separator/index.js";
 import {
   networkConfig,
@@ -50,6 +48,7 @@ let {
   valid,
   enhance,
 } = useForm(UpdateNetworkSchema, {
+  resetForm: false,
   onSubmit: async () => {
     updateMutation.mutate({
       networkId,
@@ -130,7 +129,7 @@ function handleDelete() {
                 <p>
                   Диапазон хостов: {cidrFieldInfo.firstHost} - {cidrFieldInfo.lastHost}
                 </p>
-                <p>Диапазон сети: {cidrFieldInfo.hostCount}</p>
+                <p>Размер сети: {cidrFieldInfo.hostCount}</p>
               {:else}
                 {@const error = cidrFieldInfo.error}
                 <p class="text-sm font-medium text-destructive">

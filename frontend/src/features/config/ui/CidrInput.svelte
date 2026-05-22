@@ -18,6 +18,7 @@ let inputs: HTMLInputElement[] = $state([]);
 
 onMount(() => {
   info = fillNetworkInfo();
+  blockOctetInput(selectedMask);
 });
 
 function fillNetworkInfo(): ValidationResult {
