@@ -1,6 +1,5 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { NetworkCfgDto } from "common/dto/network/network-cfg";
-import { Address4 } from "ip-address";
 import * as QRCode from "qrcode";
 import { type Database, DRIZZLE } from "../../db/database.module.js";
 
@@ -23,11 +22,15 @@ export class WireguardCfgService {
       },
     });
 
+    if (!network) {
+      throw new NotFoundException("Network not found");
+    }
+
     const configData = [
       `[Interface]`,
       `PrivateKey = ${network?.keys?.privateKey?.toString("base64")}`,
       ``,
-      `Addres = ${network?.cidr}`,
+      `Address = ${network?.cidr}`,
       `DNS = 8.8.8.8`,
       `MTU = 1420`,
       ``,
@@ -38,7 +41,7 @@ export class WireguardCfgService {
         `[Peer]`,
         `PublicKey = ${device?.keys?.publicKey?.toString("base64")}`,
         ``,
-        `AllowedIps = ${network?.cidr}`,
+        `AllowedIps = ${device?.ip}/32`,
         ``,
       );
     }

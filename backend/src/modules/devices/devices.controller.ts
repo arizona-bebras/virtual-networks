@@ -208,10 +208,6 @@ export class DevicesController {
   async getDeviceConfig(@Param("device_id") id: string): Promise<DeviceCfgDto> {
     const config = await this.wireguardCfgService.genClientCfg(id);
 
-    if (!config) {
-      throw new NotFoundException(`Device with ID ${id} not found`);
-    }
-
     return config;
   }
 }

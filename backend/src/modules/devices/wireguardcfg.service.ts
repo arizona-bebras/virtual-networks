@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { DeviceCfgDto } from "common/dto/device/device-cfg";
 import { Address4 } from "ip-address";
 import * as QRCode from "qrcode";
@@ -22,6 +22,10 @@ export class WireguardCfgService {
         keys: true,
       },
     });
+
+    if (!device) {
+      throw new NotFoundException("Device not found");
+    }
 
     const configData = [
       `[Interface]`,

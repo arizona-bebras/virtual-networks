@@ -198,10 +198,6 @@ export class NetworksController {
   ): Promise<NetworkCfgDto> {
     const config = await this.wireguardCfgService.genServerCfg(id);
 
-    if (!config) {
-      throw new NotFoundException(`Network with ID ${id} not found`);
-    }
-
     return config;
   }
 }
