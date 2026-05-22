@@ -28,6 +28,7 @@
     "@nestjs/platform-express": "^11.1.18",
     "@nestjs/swagger": "^11.2.7",
     "@thallesp/nestjs-better-auth": "^2.6.0",
+    "@types/qrcode": "^1.5.6",
     "better-auth": "^1.6.5",
     "better-auth-localization": "^3.0.0",
     "class-transformer": "^0.5.1",
@@ -40,6 +41,7 @@
     "nestjs-zod": "^5.3.0",
     "pg": "^8.20.0",
     "proto": "workspace:*",
+    "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "ts-proto": "^2.11.8"

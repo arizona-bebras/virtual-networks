@@ -21,12 +21,14 @@ import {
 import type { UserSession } from "@thallesp/nestjs-better-auth";
 import { AuthGuard, Session } from "@thallesp/nestjs-better-auth";
 import { CreateDeviceDto } from "common/dto/device/create-device";
+import { DeviceCfgDto } from "common/dto/device/device-cfg";
 import { DeviceRelationsDto } from "common/dto/device/index";
 import { UpdateDeviceDto } from "common/dto/device/update-device";
 import { Role } from "../../authorization/role.enum.js";
 import { Roles } from "../../authorization/roles.decorator.js";
 import { RolesGuard } from "../../authorization/roles.guard.js";
 import { DevicesService } from "./devices.service.js";
+import { WireguardCfgService } from "./wireguardcfg.service.js";
 
 @ApiTags("Devices")
 @ApiParam({
@@ -37,7 +39,10 @@ import { DevicesService } from "./devices.service.js";
 @Controller("networks/:network_id/devices")
 @UseGuards(AuthGuard, RolesGuard)
 export class DevicesController {
-  constructor(private readonly devicesService: DevicesService) {}
+  constructor(
+    private readonly devicesService: DevicesService,
+    private readonly wireguardCfgService: WireguardCfgService,
+  ) {}
 
   @Post()
   @Roles(Role.Admin)
@@ -175,8 +180,8 @@ export class DevicesController {
   @ApiOperation({ summary: "Добавить тег на устройство" })
   @ApiBody({ type: DeviceRelationsDto })
   @ApiResponse({
-    status: 201,
-    description: "Тег успешно добавлен к устройству",
+    status: 204,
+    description: "Тег успешно удален с устройства",
   })
   @ApiResponse({ status: 404, description: "Устройство не найдено" })
   async deleteTagFromDevice(
@@ -184,5 +189,25 @@ export class DevicesController {
     @Param("tag_id") tagId: string,
   ) {
     await this.devicesService.deleteTag(deviceId, tagId);
+  }
+
+  @Get(":device_id/config")
+  @Roles(Role.Admin, Role.User)
+  @ApiOperation({ summary: "Получить конфиг для устройства" })
+  @ApiParam({
+    name: "device_id",
+    description: "UUID устройства",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Конфиг получен",
+    type: DeviceCfgDto,
+  })
+  @ApiResponse({ status: 404, description: "Устройство не найдено" })
+  async getDeviceConfig(@Param("device_id") id: string): Promise<DeviceCfgDto> {
+    const config = await this.wireguardCfgService.genClientCfg(id);
+
+    return config;
   }
 }

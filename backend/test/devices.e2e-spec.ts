@@ -10,6 +10,7 @@ import { DRIZZLE } from "../src/db/database.module.js";
 import * as schema from "../src/db/schema.js";
 import { DevicesController } from "../src/modules/devices/devices.controller.js";
 import { DevicesService } from "../src/modules/devices/devices.service.js";
+import { WireguardCfgService } from "../src/modules/devices/wireguardcfg.service.js";
 import {
   closeTestDatabase,
   createTestDatabase,
@@ -73,6 +74,7 @@ describe("DevicesController (e2e)", () => {
       providers: [
         DevicesService,
         RolesGuard,
+        WireguardCfgService,
         {
           provide: DRIZZLE,
           useValue: db,
