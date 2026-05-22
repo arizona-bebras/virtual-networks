@@ -22,17 +22,22 @@ import { AuthGuard } from "@thallesp/nestjs-better-auth";
 import { CreateNetworkDto } from "common/dto/network/create-network";
 import { NetworkEnterCredentialsDto } from "common/dto/network/enter-credentials";
 import { NetworkDto } from "common/dto/network/index";
+import { NetworkCfgDto } from "common/dto/network/network-cfg";
 import { NetworkUsersDto } from "common/dto/network/network-users";
 import { UpdateNetworkDto } from "common/dto/network/update-network";
 import { Role } from "../../authorization/role.enum.js";
 import { Roles } from "../../authorization/roles.decorator.js";
 import { RolesGuard } from "../../authorization/roles.guard.js";
 import { NetworksService } from "./networks.service.js";
+import { WireguardCfgService } from "./wireguardcfg.service.js";
 
 @ApiTags("Networks")
 @Controller("networks")
 export class NetworksController {
-  constructor(private readonly networksService: NetworksService) {}
+  constructor(
+    private readonly networksService: NetworksService,
+    private readonly wireguardCfgService: WireguardCfgService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: "Создать новую сеть" })
@@ -172,5 +177,31 @@ export class NetworksController {
   async getFreeIp(@Param("network_id") networkId: string) {
     const ip = await this.networksService.getFreeIp(networkId);
     return { ip: ip };
+  }
+
+  @Get(":network_id/config")
+  @Roles(Role.Admin, Role.User)
+  @ApiOperation({ summary: "Получить конфиг для сети" })
+  @ApiParam({
+    name: "network_id",
+    description: "UUID сети",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Конфиг получен",
+    type: NetworkCfgDto,
+  })
+  @ApiResponse({ status: 404, description: "Устройство не найдено" })
+  async getNetworkConfig(
+    @Param("network_id") id: string,
+  ): Promise<NetworkCfgDto> {
+    const config = await this.wireguardCfgService.genServerCfg(id);
+
+    if (!config) {
+      throw new NotFoundException(`Network with ID ${id} not found`);
+    }
+
+    return config;
   }
 }
