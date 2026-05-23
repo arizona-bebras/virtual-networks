@@ -50,7 +50,7 @@ function toggleTag(tag: FilterValueWithId) {
   if (current.some((t) => t.id === tag.id)) {
     next = current.filter((t) => t.id !== tag.id);
   } else {
-    next = [...current, { id: tag.id, name: tag.name }];
+    next = [...current, tag];
   }
   column?.setFilterValue(next.length > 0 ? next : undefined);
 }

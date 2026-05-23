@@ -7,6 +7,7 @@ import {
 import { CreateRuleSchema } from "common/schemas/rule/create-rule";
 import { ProtocolSchema, type RuleRelation } from "common/schemas/rule/index";
 import SuperDebug from "sveltekit-superforms";
+import FooterButtons from "$entities/table-page/ui/FooterButtons.svelte";
 import TagBadge from "$entities/tag/ui/tag-badge.svelte";
 import TagListItem from "$entities/tag/ui/tag-list-item.svelte";
 import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
@@ -15,6 +16,7 @@ import { getNetworkId } from "$shared/lib/network-id-context";
 import * as Form from "$shared/ui/form/index.js";
 import { Input } from "$shared/ui/input/index.js";
 import * as Select from "$shared/ui/select/index";
+import { Separator } from "$shared/ui/separator/index";
 import { ruleCreationMutation, ruleUpdateMutation } from "../api/query";
 
 let {
@@ -91,6 +93,7 @@ $effect(() => {
 </script>
 
 <form method="POST" use:enhance class="space-y-4">
+  <Separator class="bg-border absolute -top-2 -left-4 w-124!" />
   <Form.Field {form} name="description">
     <Form.Control>
       {#snippet children({ props })}
@@ -204,9 +207,7 @@ $effect(() => {
       <Form.FieldErrors />
     </Form.Field>
   </div>
-  <Form.Button class="w-full" disabled={!valid()}>
-    {pageData ? 'Update Rule' :'Create Rule'}
-  </Form.Button>
+  <FooterButtons {valid} bind:dialogState isEditing={pageData !== undefined} />
   {#if import.meta.env.DEV}
     <SuperDebug data={$formData} />
   {/if}

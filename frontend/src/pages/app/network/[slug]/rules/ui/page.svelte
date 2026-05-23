@@ -2,6 +2,7 @@
 import { Plus } from "@lucide/svelte";
 import { createQuery } from "@tanstack/svelte-query";
 import type { ColumnFiltersState, Table } from "@tanstack/table-core";
+import { Debounced } from "runed";
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
 import Header from "$entities/table-page/ui/Header.svelte";
@@ -18,6 +19,7 @@ let isEditingDialogOpen = $state(false);
 let selectedIds = $state<string[]>([]);
 
 let globalFilter = $state("");
+const debounced = new Debounced(() => globalFilter, 500);
 let columnFilters = $state<ColumnFiltersState>([]);
 let table = $state<Table<any>>("");
 
@@ -39,7 +41,12 @@ let destTagsFilter = $derived(
 
 const currentNetworkId = $derived(getNetworkId().id);
 const userRulesQuery = createQuery(() =>
-  userRules(currentNetworkId, globalFilter, sourceTagsFilter, destTagsFilter),
+  userRules(
+    currentNetworkId,
+    debounced.current,
+    sourceTagsFilter,
+    destTagsFilter,
+  ),
 );
 
 let ruleIdSearchParam = $derived(page.url.searchParams.get("editRule"));
@@ -82,16 +89,11 @@ function bulkRemoveSelected(_ids: string[]) {
     description="Update the details for your rule."
   />
 
-  <Card.Root>
-    <Card.Content class="p-6">
-      <DataTable
-        {columns}
-        data={userRulesQuery.data || []}
-        filterPlaceholder="Search by name..."
-        onDeleteSelected={bulkRemoveSelected}
-        onGlobalFilterChange={(value) => (globalFilter = value)}
-        onColumnFiltersChange={(filters) => (columnFilters = filters)}
-      />
-    </Card.Content>
-  </Card.Root>
+  <DataTable
+    {columns}
+    data={userRulesQuery.data || []}
+    bind:selectedIds
+    bind:table
+    onColumnFiltersChange={(filters) => (columnFilters = filters)}
+  />
 </div>

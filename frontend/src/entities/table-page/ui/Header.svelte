@@ -2,14 +2,14 @@
 import { Plus, Search, Trash } from "@lucide/svelte";
 import type { Table } from "@tanstack/table-core";
 import { fade } from "svelte/transition";
+import { page } from "$app/state";
+import type { Device } from "$entities/device/model/types";
 import BreadCrumb from "$features/device-management/ui/BreadCrumb.svelte";
+import DeviceDialog from "$features/device-management/ui/device-dialog.svelte";
 import RuleDialog from "$features/rule-management/ui/rule-dialog.svelte";
 import { Button } from "$shared/ui/button/index";
 import DataTableFilters from "$shared/ui/data-table/data-table-filters.svelte";
 import { Input } from "$shared/ui/input/index";
-  import DeviceDialog from "$features/device-management/ui/device-dialog.svelte";
-  import { page } from "$app/state";
-  import type { Device } from "$entities/device/model/types";
 
 // * as
 
@@ -29,8 +29,7 @@ let {
 
 let isAddDialogOpen = $state(false);
 
-let currentPage = $derived(page.url.pathname.split('/').at(-1))
-
+let currentPage = $derived(page.url.pathname.split("/").at(-1));
 
 function bulkRemoveSelected() {
   console.log("Delete rules:");
@@ -82,15 +81,16 @@ function bulkRemoveSelected() {
 </div>
 
 {#if currentPage === 'devices'}
-<DeviceDialog
-  bind:open={isAddDialogOpen}
-  title="Add Rule"
-  description="Create a new network access control rule."
-/>
+  {console.log("devicessssssss")}
+  <DeviceDialog
+    bind:open={isAddDialogOpen}
+    title="Add Device"
+    description="Create a new network access control rule."
+  />
 {:else if currentPage === 'rules'}
-<RuleDialog
-  bind:open={isAddDialogOpen}
-  title="Add Rule"
-  description="Create a new network access control rule."
-/>
+  <RuleDialog
+    bind:open={isAddDialogOpen}
+    title="Add Rule"
+    description="Create a new network access control rule."
+  />
 {/if}

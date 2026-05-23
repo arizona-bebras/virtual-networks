@@ -7,6 +7,7 @@ import {
 import { CreateDeviceSchema } from "common/schemas/device/create-device";
 import type { DeviceRelations } from "common/schemas/device/index";
 import Tags from "$entities/device/ui/device-tags-cell.svelte";
+import FooterButtons from "$entities/table-page/ui/FooterButtons.svelte";
 import TagSelector from "$features/tag-management/ui/tag-selector.svelte";
 import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
@@ -157,7 +158,9 @@ $effect(() => {
         }}
       />
       <Popover.Root bind:open={isTagSelectorOpen}>
-        <Popover.Trigger class="border-2 border-dashed px-4 rounded-[4px]">+</Popover.Trigger>
+        <Popover.Trigger class="border-2 border-dashed px-4 rounded-[4px]">
+          +
+        </Popover.Trigger>
         <Popover.Content>
           <TagSelector
             onclick={(name) => {
@@ -172,19 +175,5 @@ $effect(() => {
       </Popover.Root>
     </div>
   {/if}
-  <div class="flex justify-end gap-2 mt-2 font-semibold">
-    <button
-      type="button"
-      class="px-2.5 py-1.25 border rounded-[8px] hover:bg-accent"
-      onclick={() => (dialogState = false)}
-    >
-      Закрыть
-    </button>
-    <Form.Button
-      disabled={!valid()}
-      class="rounded-[8px] text-secondary-foreground"
-    >
-      <span>{device ? "Сохранить" : "Создать"}</span>
-    </Form.Button>
-  </div>
+  <FooterButtons {valid} bind:dialogState isEditing={device !== undefined} />
 </form>
