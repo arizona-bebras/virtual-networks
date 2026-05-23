@@ -51,7 +51,7 @@ function bulkRemoveSelected() {
 }
 </script>
 
-<div class="">
+<div class="p-2.5">
   <Header
     title="Tags"
     description="Organize your devices using tags."

@@ -71,7 +71,7 @@ function bulkRemoveSelected() {
 }
 </script>
 
-<div class="">
+<div class="p-2.5">
   <Header
     title="Device"
     description="Уравляйте и отслеживайте свои устройства в сети."

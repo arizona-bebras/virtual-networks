@@ -73,7 +73,7 @@ function bulkRemoveSelected(_ids: string[]) {
 }
 </script>
 
-<div class="">
+<div class="p-2.5">
   <Header
     title="Rules"
     description="Создавайте свои правила для устройств"

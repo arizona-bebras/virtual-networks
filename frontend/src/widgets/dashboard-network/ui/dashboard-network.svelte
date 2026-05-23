@@ -105,12 +105,12 @@ function handleNodeDragStop(event: { targetNode: Node | null }) {
 }
 </script>
 
-<div class="h-full w-full">
+<div class="w-screen h-screen">
   <SvelteFlow
     bind:nodes
     bind:edges
     {nodeTypes}
-    colorMode="dark"
+    // colorMode="dark"
     fitView
     onedgeclick={handleEdgeClick}
     onnodedragstop={handleNodeDragStop}
@@ -118,7 +118,6 @@ function handleNodeDragStop(event: { targetNode: Node | null }) {
     <Background />
     <Controls />
   </SvelteFlow>
-
   <Dialog.Root bind:open={isDialogOpen}>
     <Dialog.Content class="sm:max-w-[400px]">
       <Dialog.Header>
