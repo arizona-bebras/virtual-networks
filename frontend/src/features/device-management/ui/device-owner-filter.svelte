@@ -38,7 +38,7 @@ let filterValue = $derived(
 
 let filterOpenState = $state(false);
 let search = $state("");
-let Icon = $derived(icon)
+let Icon = $derived(icon);
 
 const query = createQuery(() => deviceOwners(networkID));
 
@@ -52,11 +52,10 @@ let filteredUsers = $derived(
 <div class="flex items-center justify-between gap-1 px-2">
   <div class="h-8 gap-2 flex items-center">
     {#if Icon}
-      <Icon class="mb-1 size-4"/>
+      <Icon class="mb-1 size-4" />
     {/if}
-    <p>{label}
-
-    </p></div>
+    <p>{label}</p>
+  </div>
   <div>
     <button
       type="button"

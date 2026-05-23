@@ -118,7 +118,10 @@ $effect(() => {
         {#each tableInstance.getHeaderGroups() as headerGroup (headerGroup.id)}
           <Table.Row>
             {#each headerGroup.headers as header (header.id)}
-              <Table.Head colspan={header.colSpan} class="border border-border p-0 bg-accent">
+              <Table.Head
+                colspan={header.colSpan}
+                class="border border-border p-0 bg-accent"
+              >
                 {#if !header.isPlaceholder}
                   <FlexRender
                     content={header.column.columnDef.header}
@@ -140,7 +143,7 @@ $effect(() => {
             out:fade={{ duration: 100 }}
           >
             {#each row.getVisibleCells() as cell (cell.id)}
-            <!-- Убирем отступы у ячейки с checkbox -->
+              <!-- Убирем отступы у ячейки с checkbox -->
               <Table.Cell
                 class="border-y border-border/65 {cell.id.includes('select') ? 'p-0' : ''}"
               >

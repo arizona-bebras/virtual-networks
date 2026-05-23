@@ -21,7 +21,7 @@ let selectedIds = $state<string[]>([]);
 let globalFilter = $state("");
 const debounced = new Debounced(() => globalFilter, 500);
 let columnFilters = $state<ColumnFiltersState>([]);
-let table = $state<Table<any>>("");
+let table = $state<Table<any>>();
 
 let sourceTagsFilter = $derived(
   (

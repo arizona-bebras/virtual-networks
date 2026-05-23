@@ -7,6 +7,7 @@ import type { Device } from "$entities/device/model/types";
 import BreadCrumb from "$features/device-management/ui/BreadCrumb.svelte";
 import DeviceDialog from "$features/device-management/ui/device-dialog.svelte";
 import RuleDialog from "$features/rule-management/ui/rule-dialog.svelte";
+import TagDialog from "$features/tag-management/ui/tag-dialog.svelte";
 import { Button } from "$shared/ui/button/index";
 import DataTableFilters from "$shared/ui/data-table/data-table-filters.svelte";
 import { Input } from "$shared/ui/input/index";
@@ -30,6 +31,12 @@ let {
 let isAddDialogOpen = $state(false);
 
 let currentPage = $derived(page.url.pathname.split("/").at(-1));
+
+const addLabels: Record<string, string> = {
+  devices: "Добавить устройство",
+  rules: "Добавить правило",
+  tags: "Добавить тег",
+};
 
 function bulkRemoveSelected() {
   console.log("Delete rules:");
@@ -63,7 +70,7 @@ function bulkRemoveSelected() {
         <Button
           variant="destructive"
           size="sm"
-          class="h-10 gap-1"
+          class="gap-1 py-3.5 rounded-[6px]"
           onclick={bulkRemoveSelected}
         >
           <Trash class="size-4" />
@@ -73,7 +80,7 @@ function bulkRemoveSelected() {
       </div>
     {/if}
     <Button onclick={() => (isAddDialogOpen = true)} class="rounded-[6px]">
-      Добавить устройство
+      {(currentPage && addLabels[currentPage]) || "Добавить"}
       <Plus class="mr-1 size-3" />
     </Button>
   </div>
@@ -92,5 +99,11 @@ function bulkRemoveSelected() {
     bind:open={isAddDialogOpen}
     title="Add Rule"
     description="Create a new network access control rule."
+  />
+{:else if currentPage === 'tags'}
+  <TagDialog
+    bind:open={isAddDialogOpen}
+    title="Add Tag"
+    description="Create a new tag to group your devices."
   />
 {/if}

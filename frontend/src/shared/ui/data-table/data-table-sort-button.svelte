@@ -18,7 +18,7 @@ let Icon = $derived(icon);
 >
   <div class="flex items-center gap-1">
     {#if Icon}
-      <Icon class="mb-1"/>
+      <Icon class="mb-1" />
     {/if}
     <span>{label}</span>
   </div>

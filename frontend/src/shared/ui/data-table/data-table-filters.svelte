@@ -42,7 +42,9 @@ function getFilterLabel(value: unknown): string {
           {#if Icon}
             <Icon class="mr-1 size-3 text-muted-foreground stroke-3" />
           {/if}
-          <span class="capitalize font-medium">{getFilterLabel(filter.value)}</span>
+          <span class="capitalize font-medium">
+            {getFilterLabel(filter.value)}
+          </span>
           <button
             type="button"
             class="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"

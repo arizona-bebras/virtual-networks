@@ -92,7 +92,7 @@ $effect(() => {
 });
 </script>
 
-<form method="POST" use:enhance class="space-y-4">
+<form method="POST" use:enhance class="relative">
   <Separator class="bg-border absolute -top-2 -left-4 w-124!" />
   <Form.Field {form} name="description">
     <Form.Control>

@@ -1,24 +1,28 @@
 <script lang="ts">
-import { Plus } from "@lucide/svelte";
 import { createQuery } from "@tanstack/svelte-query";
+import type { ColumnFiltersState, Table } from "@tanstack/table-core";
+import { Debounced } from "runed";
+
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
+import Header from "$entities/table-page/ui/Header.svelte";
 import { columns } from "$features/tag-management/model/tag-table-columns.js";
 import TagDialog from "$features/tag-management/ui/tag-dialog.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
-import { Button } from "$shared/ui/button/index.js";
-import * as Card from "$shared/ui/card/index.js";
 import DataTable from "$shared/ui/data-table/data-table.svelte";
 import { deviceTags } from "../api/query";
 
-let isDialogOpen = $state(false);
 let isEditingDialogOpen = $state(false);
 
 let currentNetworkId = $derived(getNetworkId().id);
 let globalFilter = $state("");
+const debounced = new Debounced(() => globalFilter, 500);
+let columnFilters = $state<ColumnFiltersState>([]);
+let selectedIds = $state<string[]>([]);
+let table = $state<Table<any>>();
 
 const userTags = createQuery(() =>
-  deviceTags.userTags(currentNetworkId, globalFilter),
+  deviceTags.userTags(currentNetworkId, debounced.current),
 );
 
 let tagIdSearchParam = $derived(page.url.searchParams.get("editTag"));
@@ -41,25 +45,19 @@ $effect(() => {
 });
 
 // TODO: в ожидании реализации bulk delete на бэке
-function bulkRemoveSelected(_ids: string[]) {}
+function bulkRemoveSelected() {
+  console.log("Delete tags:", selectedIds);
+  selectedIds = [];
+}
 </script>
 
-<div class="p-8">
-  <div class="mb-8 flex items-center justify-between">
-    <div>
-      <h1 class="text-3xl font-bold tracking-tight">Tags</h1>
-      <p class="text-muted-foreground">Organize your devices using tags.</p>
-    </div>
-    <Button onclick={() => isDialogOpen = true}>
-      <Plus class="mr-2 size-4" />
-      Add Tag
-    </Button>
-  </div>
-
-  <TagDialog
-    bind:open={isDialogOpen}
-    title="Add Tag"
-    description="Create a new tag to group your devices."
+<div class="">
+  <Header
+    title="Tags"
+    description="Organize your devices using tags."
+    bind:globalFilter
+    {selectedIds}
+    {table}
   />
 
   <TagDialog
@@ -69,14 +67,11 @@ function bulkRemoveSelected(_ids: string[]) {}
     description="Update the details for your tag."
   />
 
-  <Card.Root>
-    <Card.Content class="p-6">
-      <DataTable
-        {columns}
-        data={userTags.data || []}
-        onDeleteSelected={bulkRemoveSelected}
-        onGlobalFilterChange={(value) => (globalFilter = value)}
-      />
-    </Card.Content>
-  </Card.Root>
+  <DataTable
+    {columns}
+    data={userTags.data || []}
+    bind:selectedIds
+    bind:table
+    onColumnFiltersChange={(filters) => (columnFilters = filters)}
+  />
 </div>

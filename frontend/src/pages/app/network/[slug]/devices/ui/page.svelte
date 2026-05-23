@@ -1,11 +1,10 @@
 <script lang="ts">
-
 import { createQuery } from "@tanstack/svelte-query";
 import type { ColumnFiltersState, Table } from "@tanstack/table-core";
 import { Debounced } from "runed";
 
 import { goto } from "$app/navigation";
-import { page } from "$app/state"; 
+import { page } from "$app/state";
 import Header from "$entities/table-page/ui/Header.svelte";
 import { columns } from "$features/device-management/model/device-table-columns.js";
 

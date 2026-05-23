@@ -1,23 +1,27 @@
 <script lang="ts">
-	import type { HTMLAttributes } from "svelte/elements";
-	import { cn, type WithElementRef, type WithoutChildren } from "$shared/lib/utils.js";
-	import DotsThreeIcon from 'phosphor-svelte/lib/DotsThree';
+import DotsThreeIcon from "phosphor-svelte/lib/DotsThree";
+import type { HTMLAttributes } from "svelte/elements";
+import {
+  cn,
+  type WithElementRef,
+  type WithoutChildren,
+} from "$shared/lib/utils.js";
 
-	let {
-		ref = $bindable(null),
-		class: className,
-		...restProps
-	}: WithoutChildren<WithElementRef<HTMLAttributes<HTMLSpanElement>>> = $props();
+let {
+  ref = $bindable(null),
+  class: className,
+  ...restProps
+}: WithoutChildren<WithElementRef<HTMLAttributes<HTMLSpanElement>>> = $props();
 </script>
 
 <span
-	bind:this={ref}
-	data-slot="breadcrumb-ellipsis"
-	role="presentation"
-	aria-hidden="true"
-	class={cn("size-5 [&>svg]:size-4 flex items-center justify-center", className)}
-	{...restProps}
+  bind:this={ref}
+  data-slot="breadcrumb-ellipsis"
+  role="presentation"
+  aria-hidden="true"
+  class={cn("size-5 [&>svg]:size-4 flex items-center justify-center", className)}
+  {...restProps}
 >
-	<DotsThreeIcon  />
-	<span class="sr-only">More</span>
+  <DotsThreeIcon />
+  <span class="sr-only">More</span>
 </span>

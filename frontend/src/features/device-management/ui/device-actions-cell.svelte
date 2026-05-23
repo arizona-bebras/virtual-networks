@@ -7,8 +7,8 @@ import { getNetworkId } from "$shared/lib/network-id-context";
 import { Button } from "$shared/ui/button/index.js";
 import * as Dialog from "$shared/ui/dialog/index.js";
 import * as DropdownMenu from "$shared/ui/dropdown-menu/index.js";
+import DeviceDialog from "./device-dialog.svelte";
 import DeviceForm from "./device-form.svelte";
-  import DeviceDialog from "./device-dialog.svelte";
 
 let { device }: { device: DeviceRelations } = $props();
 
