@@ -12,6 +12,7 @@ onMount(() => {
 </script>
 
 <svelte:head>
+  <title>Qnlink</title>
   <link rel="icon" href={favicon}>
   <script>
   document.documentElement.classList.add("dark");
