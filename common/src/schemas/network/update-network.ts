@@ -1,9 +1,18 @@
+import { createUpdateSchema } from "drizzle-orm/zod";
 import type { z } from "zod";
-import { NetworkSchema } from "./index.js";
+import { networks } from "../../db/schema.js";
 
-export const UpdateNetworkSchema = NetworkSchema.omit({
-  id: true,
-  creatorId: true,
-}).partial();
+export const UpdateNetworkSchema = createUpdateSchema(networks, {
+  name: (schema) => schema.min(1).max(255).describe("The name of the network"),
+  description: (schema) =>
+    schema.max(255).describe("A description of the network"),
+  domain: (schema) =>
+    schema
+      .min(1)
+      .max(32)
+      .regex(/^[a-z0-9-]+$/)
+      .describe("The domain of the network"),
+  cidr: (schema) => schema.describe("The IP address range of the network"),
+}).omit({ id: true, creatorId: true, keysId: true });
 
 export type UpdateNetwork = z.infer<typeof UpdateNetworkSchema>;

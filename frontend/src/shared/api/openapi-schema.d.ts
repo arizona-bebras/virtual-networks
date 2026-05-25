@@ -75,6 +75,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/networks/{network_id}/get_free_ip": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Добавить тег на устройство */
+    get: operations["NetworksController_getFreeIp"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/networks/{network_id}/devices": {
     parameters: {
       query?: never;
@@ -125,6 +142,23 @@ export interface paths {
     post: operations["DevicesController_addTagOnDevice"];
     /** Добавить тег на устройство */
     delete: operations["DevicesController_deleteTagFromDevice"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/networks/{network_id}/devices/{device_id}/config": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Получить конфиг для устройства */
+    get: operations["DevicesController_getDeviceConfig"];
+    put?: never;
+    post?: never;
+    delete?: never;
     options?: never;
     head?: never;
     patch?: never;
@@ -211,13 +245,12 @@ export interface components {
     CreateNetworkDto: {
       /** @description The name of the network */
       name: string;
+      /** @description The domain of the network */
+      domain: string;
       /** @description A description of the network */
       description: string;
-      /**
-       * Format: cidrv4
-       * @description The IP address range of the network
-       */
-      cidr: string;
+      /** @description The IP address range of the network */
+      cidr?: string;
     };
     NetworkDto: {
       /**
@@ -227,14 +260,12 @@ export interface components {
       id: string;
       /** @description The name of the network */
       name: string;
+      /** @description The domain of the network */
+      domain: string;
       /** @description A description of the network */
       description: string;
-      /**
-       * Format: cidrv4
-       * @description The IP address range of the network
-       */
+      /** @description The IP address range of the network */
       cidr: string;
-      /** @description The unique identifier of the network creator */
       creatorId: string | null;
       /** @description The data of user who created network */
       creator: {
@@ -267,21 +298,19 @@ export interface components {
     UpdateNetworkDto: {
       /** @description The name of the network */
       name?: string;
+      /** @description The domain of the network */
+      domain?: string;
       /** @description A description of the network */
       description?: string;
-      /**
-       * Format: cidrv4
-       * @description The IP address range of the network
-       */
+      /** @description The IP address range of the network */
       cidr?: string;
     };
     CreateDeviceDto: {
       /** @description The name of the device */
       name: string;
-      /**
-       * Format: ipv4
-       * @description The IP address of the device
-       */
+      /** @description The domain of the device in the network */
+      slug: string;
+      /** @description The IP address of the device */
       ip: string;
       /** @description The identifier of the device owner */
       ownerId?: string;
@@ -294,10 +323,9 @@ export interface components {
       id: string;
       /** @description The name of the device */
       name: string;
-      /**
-       * Format: ipv4
-       * @description The IP address of the device
-       */
+      /** @description The domain of the device in the network */
+      slug: string;
+      /** @description The IP address of the device */
       ip: string;
       /** @description The identifier of the device owner */
       ownerId: string;
@@ -310,9 +338,8 @@ export interface components {
         id: string;
         /** @description The name of the tag */
         name: string;
-        /** @description The display color of the tag */
         color:
-          | ("red" | "blue" | "green" | "yellow" | "purple" | "orange")
+          | ("red" | "green" | "blue" | "yellow" | "purple" | "orange")
           | null;
       }[];
       /** @description The owner of the device */
@@ -328,19 +355,29 @@ export interface components {
     UpdateDeviceDto: {
       /** @description The name of the device */
       name?: string;
-      /**
-       * Format: ipv4
-       * @description The IP address of the device
-       */
+      /** @description The domain of the device in the network */
+      slug?: string;
+      /** @description The IP address of the device */
       ip?: string;
       /** @description The identifier of the device owner */
       ownerId?: string;
     };
+    DeviceCfgDto: {
+      /** @description The name of the .conf file */
+      name: string;
+      /** @description The data of config */
+      config: string;
+      /** @description The public key of client */
+      clientPublicKey: string;
+      /** @description base64 encoded qrcode image */
+      qrCode: string;
+    };
     CreateTagDto: {
       /** @description The name of the tag */
       name: string;
-      /** @description The display color of the tag */
-      color: ("red" | "blue" | "green" | "yellow" | "purple" | "orange") | null;
+      color?:
+        | ("red" | "green" | "blue" | "yellow" | "purple" | "orange")
+        | null;
     };
     TagDto: {
       /**
@@ -350,25 +387,23 @@ export interface components {
       id: string;
       /** @description The name of the tag */
       name: string;
-      /** @description The display color of the tag */
-      color: ("red" | "blue" | "green" | "yellow" | "purple" | "orange") | null;
+      color: ("red" | "green" | "blue" | "yellow" | "purple" | "orange") | null;
       /** @description The number of devices with this tag */
       devicesCount: number;
     };
     UpdateTagDto: {
       /** @description The name of the tag */
       name?: string;
-      /** @description The display color of the tag */
       color?:
-        | ("red" | "blue" | "green" | "yellow" | "purple" | "orange")
+        | ("red" | "green" | "blue" | "yellow" | "purple" | "orange")
         | null;
     };
     CreateRuleDto: {
-      sourceId: string | null;
-      destId: string | null;
-      description: string | null;
-      protocol: ("TCP" | "UDP" | "ICMP") | null;
-      port: number | null;
+      sourceId?: string | null;
+      destId?: string | null;
+      description?: string | null;
+      protocol?: ("TCP" | "UDP" | "ICMP") | null;
+      port?: number | null;
     };
     RuleDto: {
       /**
@@ -390,9 +425,8 @@ export interface components {
         id: string;
         /** @description The name of the tag */
         name: string;
-        /** @description The display color of the tag */
         color:
-          | ("red" | "blue" | "green" | "yellow" | "purple" | "orange")
+          | ("red" | "green" | "blue" | "yellow" | "purple" | "orange")
           | null;
         /** @description The number of devices with this tag */
         devicesCount: number;
@@ -406,9 +440,8 @@ export interface components {
         id: string;
         /** @description The name of the tag */
         name: string;
-        /** @description The display color of the tag */
         color:
-          | ("red" | "blue" | "green" | "yellow" | "purple" | "orange")
+          | ("red" | "green" | "blue" | "yellow" | "purple" | "orange")
           | null;
         /** @description The number of devices with this tag */
         devicesCount: number;
@@ -643,6 +676,40 @@ export interface operations {
       };
     };
   };
+  NetworksController_getFreeIp: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        network_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description IP адрес получен */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Сеть переполнена */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Сети с таким network_id не существует */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   DevicesController_getDevicesWithFilters: {
     parameters: {
       query?: {
@@ -853,12 +920,44 @@ export interface operations {
       };
     };
     responses: {
-      /** @description Тег успешно добавлен к устройству */
-      201: {
+      /** @description Тег успешно удален с устройства */
+      204: {
         headers: {
           [name: string]: unknown;
         };
         content?: never;
+      };
+      /** @description Устройство не найдено */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  DevicesController_getDeviceConfig: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description UUID устройства */
+        device_id: string;
+        /** @description UUID сети */
+        network_id: unknown;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Конфиг получен */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DeviceCfgDto"];
+        };
       };
       /** @description Устройство не найдено */
       404: {

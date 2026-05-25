@@ -6,6 +6,12 @@ import { UserSchema } from "../user/index.js";
 export const NetworkSchema = createSelectSchema(networks, {
   id: (schema) => schema.describe("The unique identifier of the network"),
   name: (schema) => schema.min(1).max(255).describe("The name of the network"),
+  domain: (schema) =>
+    schema
+      .min(1)
+      .max(32)
+      .regex(/^[a-z0-9-]+$/)
+      .describe("The domain of the network"),
   description: (schema) =>
     schema.max(255).describe("A description of the network"),
   cidr: (schema) => schema.describe("The IP address range of the network"),

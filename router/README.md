@@ -8,6 +8,7 @@ multiple configurable ingress servers. WireGuard is the implemented ingress prot
 - Creates a userspace TUN and netstack entirely in-process
 - Starts multiple WireGuard ingress servers on independent UDP ports
 - Loads network, protocol, and peer state from the gRPC control plane
+- Serves private DNS inside each overlay on `router.internal` and `<device_id>.internal`
 - Exposes an in-tunnel HTTP status page on `http://<server-tunnel-ip>:8080/`
 - Exposes a Prometheus metrics endpoint for WireGuard peer, network, and global stats
 - Wraps each WireGuard bind with a frontend that logs packet metadata and endpoint observations
@@ -72,6 +73,7 @@ Optional environment variables:
 - `ROUTER_CONTROL_PLANE_TIMEOUT`: startup fetch timeout as a Go duration or seconds
 - `ROUTER_CONNECTION_REPORT_INTERVAL`: peer connection report interval as a Go duration or seconds, defaults to `10s`
 - `ROUTER_PROMETHEUS_ADDR`: Prometheus exporter listen address, defaults to `:9090`; set to `off`, `false`, `disabled`, or `none` to disable
+- `ROUTER_DNS_FORWARDER`: upstream DNS resolver for non-private queries, defaults to `1.1.1.1:53`
 
 ## Prometheus metrics
 
