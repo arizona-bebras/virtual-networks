@@ -22,6 +22,7 @@ import { fly, slide } from "svelte/transition";
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
 import type { FolderNodeData } from "$entities/node/model/types";
+import LinkButton from "$entities/node/ui/LinkButton.svelte";
 import { Button } from "$shared/ui/button/index.js";
 import * as Card from "$shared/ui/card/index.js";
 import { Input } from "$shared/ui/input/index.js";
@@ -40,11 +41,6 @@ let filteredDevices = $derived(
 );
 
 function handleBurst() {}
-
-function handleDeviceEdit(deviceId: string) {
-  const slug = page.params.slug;
-  goto(`/app/network/${slug}/devices?editDevice=${deviceId}`);
-}
 </script>
 
 <NodeToolbar {id} isVisible={selected} position={Position.Top}>
@@ -152,17 +148,17 @@ function handleDeviceEdit(deviceId: string) {
           class="p-3 flex items-center gap-3 bg-muted/30 hover:bg-primary/5 rounded-xl transition-all border border-border/50 hover:border-primary/30 group relative overflow-hidden"
         >
           <div
-            class="p-2 bg-background/50 rounded-lg border border-border/50 group-hover:border-primary/30 transition-colors shadow-sm"
+            class="p-2 bg-background/50 rounded-lg border border-border/50 group-hover:border-primary/30 group-hover:bg-secondary/85 transition-all shadow-sm"
           >
             <Monitor
               size={16}
-              class="text-muted-foreground group-hover:text-primary transition-colors"
+              class="text-muted-foreground group-hover:stroke-white transition-colors"
             />
           </div>
 
           <div class="flex flex-col min-w-0 flex-1">
             <span
-              class="text-[11px] font-bold truncate group-hover:text-primary transition-colors"
+              class="text-[11px] font-bold truncate group-hover:text-secondary transition-colors"
             >
               {device.name}
             </span>
@@ -173,17 +169,9 @@ function handleDeviceEdit(deviceId: string) {
             </span>
           </div>
 
-          <button
-            type="button"
-            class="opacity-0 group-hover:opacity-100 transition-all p-1.5 hover:bg-primary/10 rounded-lg"
-            onclick={() => handleDeviceEdit(device.id)}
-            title="Edit Device"
-          >
-            <SquarePen
-              size={14}
-              class="text-muted-foreground hover:text-primary"
-            />
-          </button>
+          <LinkButton
+            redirectLink={`/app/network/${page.params.slug}/devices?editDevice=${device.id}`}
+          />
 
           <div
             class="absolute inset-0 bg-gradient-to-r from-primary/0 to-primary/5 translate-x-full group-hover:translate-x-0 transition-transform duration-500 -z-10"

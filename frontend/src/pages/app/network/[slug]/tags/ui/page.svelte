@@ -1,8 +1,8 @@
 <script lang="ts">
 import { createQuery } from "@tanstack/svelte-query";
 import type { ColumnFiltersState, Table } from "@tanstack/table-core";
+import type { Tag } from "common/schemas/tag/index";
 import { Debounced } from "runed";
-
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
 import Header from "$entities/table-page/ui/Header.svelte";
@@ -19,7 +19,7 @@ let globalFilter = $state("");
 const debounced = new Debounced(() => globalFilter, 500);
 let columnFilters = $state<ColumnFiltersState>([]);
 let selectedIds = $state<string[]>([]);
-let table = $state<Table<any>>();
+let table = $state<Table<Tag>>();
 
 const userTags = createQuery(() =>
   deviceTags.userTags(currentNetworkId, debounced.current),
@@ -45,6 +45,7 @@ $effect(() => {
 });
 
 // TODO: в ожидании реализации bulk delete на бэке
+// biome-ignore lint/correctness/noUnusedVariables: <waiting for implementation>
 function bulkRemoveSelected() {
   console.log("Delete tags:", selectedIds);
   selectedIds = [];

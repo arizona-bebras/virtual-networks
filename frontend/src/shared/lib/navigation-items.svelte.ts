@@ -8,7 +8,7 @@ import {
 
 export function getNavItemIcon(navItemTitle: string) {
   const navItemTitleLower = navItemTitle.toLowerCase();
-  switch (navItemTitle) {
+  switch (navItemTitleLower) {
     case "dashboard":
       return LayoutDashboard;
     case "devices":

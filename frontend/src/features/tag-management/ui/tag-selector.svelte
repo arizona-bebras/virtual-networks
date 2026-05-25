@@ -27,7 +27,6 @@ let networkID = $derived(getNetworkId().id);
 
 let search = $state("");
 const debounced = new Debounced(() => search, 500);
-console.log("Рендеримся");
 
 const query = createQuery(() =>
   deviceTags.userTags(networkID, debounced.current),

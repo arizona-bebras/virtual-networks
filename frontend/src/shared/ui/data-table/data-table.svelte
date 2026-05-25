@@ -135,7 +135,6 @@ $effect(() => {
       </Table.Header>
       <Table.Body>
         {#each tableInstance.getRowModel().rows as row (row.id)}
-          {console.log(row.getVisibleCells())}
           <tr
             class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
             data-state={row.getIsSelected() && 'selected'}

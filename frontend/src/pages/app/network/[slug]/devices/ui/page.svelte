@@ -1,18 +1,15 @@
 <script lang="ts">
 import { createQuery } from "@tanstack/svelte-query";
 import type { ColumnFiltersState, Table } from "@tanstack/table-core";
+import type { DeviceRelations } from "common/schemas/device/index";
 import { Debounced } from "runed";
-
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
 import Header from "$entities/table-page/ui/Header.svelte";
 import { columns } from "$features/device-management/model/device-table-columns.js";
-
 import DeviceDialog from "$features/device-management/ui/device-dialog.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
-
 import DataTable from "$shared/ui/data-table/data-table.svelte";
-
 import { deviceQuery } from "../api/query";
 
 let isAddDeviceDialogOpen = $state(false);
@@ -23,7 +20,7 @@ let globalFilter = $state("");
 const debounced = new Debounced(() => globalFilter, 500);
 let columnFilters = $state<ColumnFiltersState>([]);
 let selectedIds = $state<string[]>([]);
-let table = $state<Table<any>>();
+let table = $state<Table<DeviceRelations>>();
 
 let tagsFilter = $derived(
   (
@@ -65,6 +62,7 @@ $effect(() => {
 });
 
 // TODO: в ожидании реализации bulk delete на бэке
+// biome-ignore lint/correctness/noUnusedVariables: <waiting for implementation>
 function bulkRemoveSelected() {
   console.log("Delete devices:", selectedIds);
   selectedIds = [];

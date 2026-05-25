@@ -29,9 +29,9 @@ let isDialogOpen = $state(false);
     <Sidebar.MenuButton size="lg" class="w-full justify-between">
       <div class="flex items-center gap-2">
         <div
-          class="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"
+          class="flex aspect-square size-8 items-center justify-center rounded-lg bg-secondary text-primary-foreground"
         >
-          <LayoutDashboard class="size-4" />
+          <Network class="size-6.25" />
         </div>
         {#if !selectedNetwork}
           <span class="text-sm font-semibold truncate w-32">Выберите сеть</span>

@@ -64,8 +64,6 @@ let {
   errors,
 } = useForm(CreateRuleSchema, {
   onSubmit: async () => {
-    console.log("Adding new rule:", $formData);
-    console.log("Errors:", $errors._errors);
     if (pageData)
       updateMutationQuery.mutate({
         networkId: currentNetworkId,

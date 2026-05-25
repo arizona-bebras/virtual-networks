@@ -63,7 +63,6 @@ const navItems = $derived([
     icon: Settings,
   },
 ]);
-console.log(page.url.pathname);
 async function handleLogout() {
   await authClient.signOut({
     fetchOptions: {

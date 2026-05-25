@@ -25,6 +25,7 @@ let {
   description: string;
   globalFilter: string;
   selectedIds: string[];
+  // biome-ignore lint/suspicious/noExplicitAny: <any table type can be here>
   table: Table<any> | undefined;
 } = $props();
 
@@ -88,7 +89,6 @@ function bulkRemoveSelected() {
 </div>
 
 {#if currentPage === 'devices'}
-  {console.log("devicessssssss")}
   <DeviceDialog
     bind:open={isAddDialogOpen}
     title="Add Device"

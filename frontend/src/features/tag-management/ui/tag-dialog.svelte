@@ -1,9 +1,8 @@
 <script lang="ts">
+// biome-ignore lint/correctness/noUnusedImports: <he is using>
 import { Tag as TagIcon } from "@lucide/svelte";
 import type { Tag } from "common/schemas/tag/index";
-import { page } from "$app/state";
 import TagForm from "$features/tag-management/ui/tag-form.svelte";
-import { Button } from "$shared/ui/button/index.js";
 import * as Dialog from "$shared/ui/dialog/index.js";
 
 let {

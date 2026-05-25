@@ -16,12 +16,8 @@ setNetworkId({
 
 <Sidebar.Provider>
   <AppSidebar />
-  <main
-    class="relative flex flex-1 flex-col overflow-hidden bg-[#F3F4FF]"
-  >
-    <Sidebar.Trigger class="-ml-1" />
-    <div class="flex-1 overflow-auto absolute top-0 w-full">
-      {@render children?.()}
-    </div>
+  <main class="relative flex flex-1 flex-col overflow-hidden bg-[#F3F4FF]">
+    <Sidebar.Trigger class="absolute z-1 top-2 left-2" />
+    <div class="flex-1 overflow-auto top-0 w-full">{@render children?.()}</div>
   </main>
 </Sidebar.Provider>

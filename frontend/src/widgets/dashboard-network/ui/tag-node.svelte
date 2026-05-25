@@ -10,18 +10,13 @@ import {
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
 import type { TagNodeData } from "$entities/node/model/types";
+import LinkButton from "$entities/node/ui/LinkButton.svelte";
 import { colorVariants } from "$shared/lib/tag-color-mapping";
 import * as Card from "$shared/ui/card/index.js";
 
 let { id, data }: NodeProps<Node<TagNodeData>> = $props();
 
-function handleEdit(e: MouseEvent) {
-  e.stopPropagation();
-  const slug = page.params.slug;
-  goto(`/app/network/${slug}/tags?editTag=${data.id}`);
-}
-
-let color = data.color;
+let color = $derived(data.color);
 </script>
 
 <Card.Root
@@ -46,14 +41,9 @@ let color = data.color;
         </span>
       {/if} -->
     </div>
-    <button
-      type="button"
-      class="opacity-0 group-hover:opacity-100 transition-all p-1 hover:bg-primary/10 rounded-md"
-      onclick={handleEdit}
-      title="Edit Tag"
-    >
-      <SquarePen size={12} class="text-muted-foreground hover:text-primary" />
-    </button>
+    <LinkButton
+      redirectLink={`/app/network/${page.params.slug}/tags?editTag=${data.id}`}
+    />
   </div>
 </Card.Root>
 

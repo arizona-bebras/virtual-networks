@@ -2,6 +2,7 @@
 import { Plus } from "@lucide/svelte";
 import { createQuery } from "@tanstack/svelte-query";
 import type { ColumnFiltersState, Table } from "@tanstack/table-core";
+import type { RuleRelation } from "common/schemas/rule/index";
 import { Debounced } from "runed";
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
@@ -21,7 +22,7 @@ let selectedIds = $state<string[]>([]);
 let globalFilter = $state("");
 const debounced = new Debounced(() => globalFilter, 500);
 let columnFilters = $state<ColumnFiltersState>([]);
-let table = $state<Table<any>>();
+let table = $state<Table<RuleRelation>>();
 
 let sourceTagsFilter = $derived(
   (
@@ -68,6 +69,7 @@ $effect(() => {
   }
 });
 
+// biome-ignore lint/correctness/noUnusedVariables: <waitng for implementaion>
 function bulkRemoveSelected(_ids: string[]) {
   console.log("Delete rules:", _ids);
 }
