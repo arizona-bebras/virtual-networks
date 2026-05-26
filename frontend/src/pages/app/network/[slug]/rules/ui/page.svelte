@@ -77,7 +77,7 @@ function bulkRemoveSelected(_ids: string[]) {
 
 <div class="p-2.5">
   <Header
-    title="Rules"
+    title="Правила"
     description="Создавайте свои правила для устройств"
     {selectedIds}
     bind:globalFilter
@@ -86,9 +86,9 @@ function bulkRemoveSelected(_ids: string[]) {
 
   <RuleDialog
     bind:open={isEditingDialogOpen}
-    title="Edit Rule"
+    title="Редактировать правило"
     rule={editingRule}
-    description="Update the details for your rule."
+    description="Обновите данные вашего правила."
   />
 
   <DataTable

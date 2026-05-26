@@ -36,11 +36,11 @@ function handleDelete() {
     <DropdownMenu.Content align="end">
       <DropdownMenu.Item onSelect={() => (isEditDialogOpen = true)}>
         <Edit class="mr-2 size-4" />
-        Edit Rule
+        Редактировать
       </DropdownMenu.Item>
       <DropdownMenu.Item class="text-destructive" onclick={handleDelete}>
         <Trash class="mr-2 size-4" />
-        Delete Rule
+        Удалить
       </DropdownMenu.Item>
     </DropdownMenu.Content>
   </DropdownMenu.Root>
@@ -49,9 +49,9 @@ function handleDelete() {
 <Dialog.Root bind:open={isEditDialogOpen}>
   <Dialog.Content class="sm:max-w-[425px]">
     <Dialog.Header>
-      <Dialog.Title>Edit Rule</Dialog.Title>
+      <Dialog.Title>Редактирование правила</Dialog.Title>
       <Dialog.Description>
-        Update the details for this network rule.
+        Обновите данные этого сетевого правила.
       </Dialog.Description>
     </Dialog.Header>
     <RuleForm pageData={{...rule}} bind:dialogState={isEditDialogOpen} />

@@ -86,7 +86,7 @@ $effect(() => {
 function handleDelete() {
   if (
     confirm(
-      "Are you sure you want to delete this network? This action cannot be undone.",
+      "Вы уверены, что хотите удалить эту сеть? Это действие нельзя отменить.",
     )
   ) {
     deleteMutation.mutate(networkId);
@@ -97,17 +97,17 @@ function handleDelete() {
 {#if networkCfg.isSuccess && $formData.cidr}
   <div class="mx-auto max-w-2xl p-8">
     <div class="mb-8">
-      <h1 class="text-3xl font-bold tracking-tight">Network Configuration</h1>
+      <h1 class="text-3xl font-bold tracking-tight">Конфигурация сети</h1>
       <p class="text-muted-foreground">
-        Configure your virtual network settings.
+        Настройте параметры вашей виртуальной сети.
       </p>
     </div>
 
     <Card.Root>
       <Card.Header>
-        <Card.Title>General Settings</Card.Title>
+        <Card.Title>Общие настройки</Card.Title>
         <Card.Description>
-          Update your network name and address space.
+          Обновите название вашей сети и адресное пространство.
         </Card.Description>
       </Card.Header>
       <Card.Content>
@@ -115,7 +115,7 @@ function handleDelete() {
           <Form.Field {form} name="name">
             <Form.Control>
               {#snippet children({ props })}
-                <Form.Label>Network Name</Form.Label>
+                <Form.Label>Название сети</Form.Label>
                 <Input {...props} bind:value={$formData.name} />
               {/snippet}
             </Form.Control>
@@ -158,7 +158,7 @@ function handleDelete() {
           <Form.Field {form} name="description">
             <Form.Control>
               {#snippet children({ props })}
-                <Form.Label>Description</Form.Label>
+                <Form.Label>Описание</Form.Label>
                 <Input {...props} bind:value={$formData.description} />
               {/snippet}
             </Form.Control>
@@ -168,7 +168,7 @@ function handleDelete() {
           <Form.Field {form} name="domain">
             <Form.Control>
               {#snippet children({ props })}
-                <Form.Label>Domain</Form.Label>
+                <Form.Label>Домен</Form.Label>
                 <Input {...props} bind:value={$formData.domain} />
               {/snippet}
             </Form.Control>
@@ -180,7 +180,7 @@ function handleDelete() {
           <Separator />
 
           <div class="flex flex-col gap-1">
-            <span class="text-sm font-medium">Network ID</span>
+            <span class="text-sm font-medium">ID сети</span>
             <span
               class="rounded bg-muted p-2 text-xs font-mono text-muted-foreground"
             >
@@ -189,7 +189,7 @@ function handleDelete() {
           </div>
 
           <div class="flex justify-end gap-2 pt-4">
-            <Button type="submit" disabled={!valid()}>Save Changes</Button>
+            <Button type="submit" disabled={!valid()}>Сохранить изменения</Button>
           </div>
         </form>
       </Card.Content>
@@ -198,14 +198,14 @@ function handleDelete() {
     <div class="mt-8">
       <Card.Root class="border-destructive/20 bg-destructive/5">
         <Card.Header>
-          <Card.Title class="text-destructive">Danger Zone</Card.Title>
+          <Card.Title class="text-destructive">Опасная зона</Card.Title>
           <Card.Description>
-            Permanently delete this network and all associated data.
+            Навсегда удалить эту сеть и все связанные данные.
           </Card.Description>
         </Card.Header>
         <Card.Footer>
           <Button variant="destructive" onclick={handleDelete}>
-            Delete Network
+            Удалить сеть
           </Button>
         </Card.Footer>
       </Card.Root>

@@ -123,10 +123,10 @@ function handleNodeDragStop(event: { targetNode: Node | null }) {
       <Dialog.Header>
         <Dialog.Title class="flex items-center gap-2">
           <Activity class="size-5 text-primary" />
-          Connection Details
+          Детали подключения
         </Dialog.Title>
         <Dialog.Description>
-          Information about the relationship between these nodes.
+          Информация о связи между этими узлами.
         </Dialog.Description>
       </Dialog.Header>
 
@@ -139,7 +139,7 @@ function handleNodeDragStop(event: { targetNode: Node | null }) {
               <span
                 class="text-[9px] font-bold uppercase text-muted-foreground"
               >
-                Source
+                Источник
               </span>
               <span class="text-xs font-mono">{selectedEdge.source}</span>
             </div>
@@ -148,7 +148,7 @@ function handleNodeDragStop(event: { targetNode: Node | null }) {
               <span
                 class="text-[9px] font-bold uppercase text-muted-foreground"
               >
-                Target
+                Цель
               </span>
               <span class="text-xs font-mono">{selectedEdge.target}</span>
             </div>
@@ -159,7 +159,7 @@ function handleNodeDragStop(event: { targetNode: Node | null }) {
               <span
                 class="flex items-center gap-1 text-[9px] font-bold uppercase text-muted-foreground"
               >
-                <Zap class="size-2.5" /> Protocol
+                <Zap class="size-2.5" /> Протокол
               </span>
               <div class="text-xs font-semibold">
                 {selectedEdge.data?.protocol || "TCP"}
@@ -169,34 +169,34 @@ function handleNodeDragStop(event: { targetNode: Node | null }) {
               <span
                 class="flex items-center gap-1 text-[9px] font-bold uppercase text-muted-foreground"
               >
-                <Activity class="size-2.5" /> Latency
+                <Activity class="size-2.5" /> Задержка
               </span>
               <div class="text-xs font-semibold">
-                {selectedEdge.data?.latency || "N/A"}
+                {selectedEdge.data?.latency || "Н/Д"}
               </div>
             </div>
             <div class="space-y-0.5">
               <span
                 class="flex items-center gap-1 text-[9px] font-bold uppercase text-muted-foreground"
               >
-                <ShieldCheck class="size-2.5" /> Throughput
+                <ShieldCheck class="size-2.5" /> Пропускная способность
               </span>
               <div class="text-xs font-semibold">
-                {selectedEdge.data?.throughput || "N/A"}
+                {selectedEdge.data?.throughput || "Н/Д"}
               </div>
             </div>
             <div class="space-y-0.5">
               <span
                 class="flex items-center gap-1 text-[9px] font-bold uppercase text-muted-foreground"
               >
-                <Activity class="size-2.5" /> Status
+                <Activity class="size-2.5" /> Статус
               </span>
               <div>
                 <Badge
                   variant={selectedEdge.data?.status === 'Active' ? 'default' : 'secondary'}
                   class="h-4 px-1 text-[9px]"
                 >
-                  {selectedEdge.data?.status || "Unknown"}
+                  {selectedEdge.data?.status === 'Active' ? 'Активно' : 'Неизвестно'}
                 </Badge>
               </div>
             </div>

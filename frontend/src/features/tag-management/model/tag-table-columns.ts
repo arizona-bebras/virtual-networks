@@ -35,7 +35,7 @@ export const columns: ColumnDef<Tag>[] = [
     accessorKey: "name",
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
-        label: "Tag",
+        label: "Тег",
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
         icon: TagIcon,
       });
@@ -53,7 +53,7 @@ export const columns: ColumnDef<Tag>[] = [
     accessorKey: "color",
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
-        label: "Color",
+        label: "Цвет",
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
         icon: Palette,
       });
@@ -68,7 +68,7 @@ export const columns: ColumnDef<Tag>[] = [
     accessorKey: "devicesCount",
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
-        label: "Device Count",
+        label: "Кол-во устройств",
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
         icon: MonitorSmartphone,
       });

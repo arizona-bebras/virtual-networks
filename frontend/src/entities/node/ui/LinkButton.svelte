@@ -15,7 +15,7 @@ function handleEdit(e: MouseEvent) {
   type="button"
   class="opacity-0 group-hover:opacity-100 trasition-nall p-1 rounded-md"
   onclick={handleEdit}
-  title="Edit Rule"
+  title="Редактировать"
 >
   <SquarePen size={12} class="text-muted-foreground" />
 </button>

@@ -95,11 +95,11 @@ $effect(() => {
   <Form.Field {form} name="description">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label>Description</Form.Label>
+        <Form.Label>Описание</Form.Label>
         <Input
           {...props}
           bind:value={$formData.description}
-          placeholder="Allow SSH"
+          placeholder="Разрешить SSH"
         />
       {/snippet}
     </Form.Control>
@@ -109,7 +109,7 @@ $effect(() => {
     <Form.Field {form} name="sourceId">
       <Form.Control>
         {#snippet children({ props })}
-          <Form.Label>Source Tag</Form.Label>
+          <Form.Label>Тег источника</Form.Label>
           <Select.Root type="single" bind:value={$formData.sourceId!}>
             <Select.Trigger class="w-[180px] flex">
               {#if $formData.sourceId && selectedSourceTag}
@@ -137,7 +137,7 @@ $effect(() => {
     <Form.Field {form} name="destId">
       <Form.Control>
         {#snippet children({ props })}
-          <Form.Label>Destination Tag</Form.Label>
+          <Form.Label>Тег назначения</Form.Label>
           <Select.Root type="single" bind:value={$formData.destId!}>
             <Select.Trigger class="w-[180px] flex">
               {#if $formData.destId && selectedDestTag}
@@ -167,7 +167,7 @@ $effect(() => {
     <Form.Field {form} name="protocol">
       <Form.Control>
         {#snippet children({ props })}
-          <Form.Label>Protocol</Form.Label>
+          <Form.Label>Протокол</Form.Label>
           <Select.Root
             type="single"
             bind:value={$formData.protocol!}
@@ -192,7 +192,7 @@ $effect(() => {
     <Form.Field {form} name="port">
       <Form.Control>
         {#snippet children({ props })}
-          <Form.Label>Port</Form.Label>
+          <Form.Label>Порт</Form.Label>
           <Input
             {...props}
             bind:value={$formData.port}

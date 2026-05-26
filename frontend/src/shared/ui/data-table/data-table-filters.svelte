@@ -51,7 +51,7 @@ function getFilterLabel(value: unknown): string {
             onclick={() => column?.setFilterValue(undefined)}
           >
             <X class="size-3 text-muted-foreground hover:text-foreground" />
-            <span class="sr-only">Remove filter</span>
+            <span class="sr-only">Удалить фильтр</span>
           </button>
         </Badge>
       {/if}
@@ -62,7 +62,7 @@ function getFilterLabel(value: unknown): string {
       class="h-7 px-2 text-xs"
       onclick={() => table.resetColumnFilters()}
     >
-      Clear all
+      Очистить все
     </Button>
   </div>
 {/if}

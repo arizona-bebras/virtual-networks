@@ -176,7 +176,7 @@ function blockOctetInput(mask: string) {
       onValueChange={(value: string) => blockOctetInput(value)}
     >
       <Select.Trigger class="w-[80px] border-none bg-transparent! focus:ring-0">
-        {selectedMask ? `/${selectedMask}` : 'Mask'}
+        {selectedMask ? `/${selectedMask}` : 'Маска'}
       </Select.Trigger>
       <Select.Content class="max-h-[300px]">
         {#each maskRange as mask}

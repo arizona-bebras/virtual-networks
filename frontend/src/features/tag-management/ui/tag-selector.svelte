@@ -55,14 +55,14 @@ function toggleTag(tag: FilterValueWithId) {
 }
 </script>
 
-<Input placeholder="Search tags..." bind:value={search} class="h-8" />
+<Input placeholder="Поиск тегов..." bind:value={search} class="h-8" />
 
 {#if selectedTags.length > 0}
   <div class="space-y-2">
     <p
       class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
     >
-      Selected
+      Выбранные
     </p>
     {#if onclick}
       <DeviceCell tags={selectedTags} {onclick} {excludedTags} />
@@ -84,7 +84,7 @@ function toggleTag(tag: FilterValueWithId) {
     <p
       class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
     >
-      Available
+      Доступные
     </p>
   {/if}
   {#if availableTags.length > 0}
@@ -100,6 +100,6 @@ function toggleTag(tag: FilterValueWithId) {
       />
     {/if}
   {:else}
-    <p class="text-xs text-muted-foreground italic">No more tags found.</p>
+    <p class="text-xs text-muted-foreground italic">Теги не найдены.</p>
   {/if}
 </div>

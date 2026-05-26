@@ -148,7 +148,7 @@ $effect(() => {
   <Form.Field {form} name="name">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label>Name</Form.Label>
+        <Form.Label>Название</Form.Label>
         <Input
           {...props}
           bind:value={$formData.name}
@@ -178,7 +178,7 @@ $effect(() => {
   <Form.Field {form} name="slug">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label>Device slug</Form.Label>
+        <Form.Label>Slug устройства</Form.Label>
         <ButtonGroup.Root>
           <InputGroup.Root>
             <InputGroup.Input id="url" bind:value={$formData.slug} />

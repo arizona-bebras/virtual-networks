@@ -44,9 +44,9 @@ const {
 
 <Card.Root class="w-full max-w-md">
   <Card.Header>
-    <Card.Title class="text-2xl">Register</Card.Title>
+    <Card.Title class="text-2xl">Регистрация</Card.Title>
     <Card.Description>
-      Create an account to manage your virtual networks.
+      Создайте аккаунт для управления вашими виртуальными сетями.
     </Card.Description>
   </Card.Header>
   <Card.Content>
@@ -54,11 +54,11 @@ const {
       <Form.Field {form} name="username">
         <Form.Control>
           {#snippet children({ props })}
-            <Form.Label>Username</Form.Label>
+            <Form.Label>Имя пользователя</Form.Label>
             <Input
               {...props}
               bind:value={$formData.username}
-              placeholder="Username"
+              placeholder="Иван Иванов"
             />
           {/snippet}
         </Form.Control>
@@ -80,7 +80,7 @@ const {
       <Form.Field {form} name="password">
         <Form.Control>
           {#snippet children({ props })}
-            <Form.Label>Password</Form.Label>
+            <Form.Label>Пароль</Form.Label>
             <Input
               {...props}
               type="password"
@@ -100,17 +100,17 @@ const {
         {#if registerQuery.isPending}
           <LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
         {/if}
-        Register
+        Зарегистрироваться
       </Button>
     </form>
   </Card.Content>
   <Card.Footer class="flex flex-col space-y-2">
     <div class="text-sm text-center text-muted-foreground">
-      Already have an account? <a
+      Уже есть аккаунт? <a
         href="/auth/login"
         class="text-primary hover:underline"
       >
-        Login
+        Войти
       </a>
     </div>
     {#if registerQuery.isError}

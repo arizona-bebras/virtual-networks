@@ -11,14 +11,14 @@ let { open = $bindable() }: { open: boolean } = $props();
   <Dialog.Trigger>
     <Button>
       <Plus class="mr-2 size-4" />
-      Add Device
+      Добавить устройство
     </Button>
   </Dialog.Trigger>
   <Dialog.Content class="sm:max-w-[425px]">
     <Dialog.Header>
-      <Dialog.Title>Add Device</Dialog.Title>
+      <Dialog.Title>Добавить устройство</Dialog.Title>
       <Dialog.Description>
-        Register a new device to your virtual network.
+        Зарегистрируйте новое устройство в вашей виртуальной сети.
       </Dialog.Description>
     </Dialog.Header>
     <DeviceForm bind:dialogState={open} />

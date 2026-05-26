@@ -80,11 +80,11 @@ $effect(() => {
   <Form.Field {form} name="name">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label>Name</Form.Label>
+        <Form.Label>Название</Form.Label>
         <Input
           {...props}
           bind:value={$formData.name}
-          placeholder="e.g. Servers"
+          placeholder="Например: Серверы"
         />
       {/snippet}
     </Form.Control>
@@ -94,7 +94,7 @@ $effect(() => {
   <Form.Field {form} name="color">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label>Color</Form.Label>
+        <Form.Label>Цвет</Form.Label>
         <div class="flex gap-2">
           {#each colors as color}
             {@const isSelected = $formData.color === color.key}

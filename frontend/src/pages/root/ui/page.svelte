@@ -8,5 +8,5 @@ onMount(() => {
 </script>
 
 <div class="flex h-screen items-center justify-center">
-  <p class="text-muted-foreground animate-pulse">Redirecting...</p>
+  <p class="text-muted-foreground animate-pulse">Перенаправление...</p>
 </div>

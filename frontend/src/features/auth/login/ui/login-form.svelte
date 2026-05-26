@@ -44,9 +44,9 @@ const {
 
 <Card.Root class="w-full max-w-md">
   <Card.Header>
-    <Card.Title class="text-2xl">Login</Card.Title>
+    <Card.Title class="text-2xl">Вход</Card.Title>
     <Card.Description>
-      Enter your email and password to access your account.
+      Введите вашу почту и пароль для доступа к аккаунту.
     </Card.Description>
   </Card.Header>
   <Card.Content>
@@ -67,7 +67,7 @@ const {
       <Form.Field {form} name="password">
         <Form.Control>
           {#snippet children({ props })}
-            <Form.Label>Password</Form.Label>
+            <Form.Label>Пароль</Form.Label>
             <Input {...props} type="password" bind:value={$formData.password} />
           {/snippet}
         </Form.Control>
@@ -82,17 +82,17 @@ const {
         {#if loginQuery.isPending}
           <LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
         {/if}
-        Login
+        Войти
       </Button>
     </form>
   </Card.Content>
   <Card.Footer class="flex flex-col space-y-2">
     <div class="text-sm text-center text-muted-foreground">
-      Don't have an account? <a
+      Нет аккаунта? <a
         href="/auth/register"
         class="text-primary hover:underline"
       >
-        Register
+        Зарегистрироваться
       </a>
     </div>
     {#if loginQuery.isError}

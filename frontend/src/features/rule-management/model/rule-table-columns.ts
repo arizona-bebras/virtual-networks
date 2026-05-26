@@ -37,7 +37,7 @@ export const columns: ColumnDef<RuleRelation>[] = [
     accessorKey: "description",
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
-        label: "Description",
+        label: "Описание",
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
         icon: FileText,
       });
@@ -54,14 +54,14 @@ export const columns: ColumnDef<RuleRelation>[] = [
     accessorKey: "source",
     header: ({ column }) => {
       return renderComponent(RuleTagFilter, {
-        label: "Source Tag",
+        label: "Тег источника",
         column,
         icon: Tags,
       });
     },
     cell: ({ row, column }) => {
       const tag = row.original.source;
-      if (!tag) return "Any";
+      if (!tag) return "Любой";
       return renderComponent(TagBadge, {
         tag: tag,
         onclick: () => {
@@ -89,14 +89,14 @@ export const columns: ColumnDef<RuleRelation>[] = [
     accessorKey: "dest",
     header: ({ column }) => {
       return renderComponent(RuleTagFilter, {
-        label: "Destination Tag",
+        label: "Тег назначения",
         column,
         icon: Tags,
       });
     },
     cell: ({ row, column }) => {
       const tag = row.original.dest;
-      if (!tag) return "Any";
+      if (!tag) return "Любой";
       return renderComponent(TagBadge, {
         tag: tag,
         onclick: () => {
@@ -124,13 +124,13 @@ export const columns: ColumnDef<RuleRelation>[] = [
     accessorKey: "protocol",
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
-        label: "Protocol",
+        label: "Протокол",
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
         icon: Shield,
       });
     },
     cell: ({ row }) => {
-      return row.original?.protocol || "Any";
+      return row.original?.protocol || "Любой";
     },
     enableGlobalFilter: true,
     meta: {
@@ -141,13 +141,13 @@ export const columns: ColumnDef<RuleRelation>[] = [
     accessorKey: "port",
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
-        label: "Port",
+        label: "Порт",
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
         icon: Unplug,
       });
     },
     cell: ({ row }) => {
-      return row.original?.port || "Any";
+      return row.original?.port || "Любой";
     },
     enableGlobalFilter: true,
     meta: {

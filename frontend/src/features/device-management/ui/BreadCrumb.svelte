@@ -14,6 +14,20 @@ let currentNetwork = $derived(
 );
 let currentPageName = page.url.pathname.split("/").at(-1) ?? "dashboard";
 let Icon = $derived(getNavItemIcon(currentPageName));
+
+let displayingPageName = $derived.by(() => {
+  if (currentPageName === "dashboard") {
+    return "Панель управления";
+  } else if (currentPageName === "devices") {
+    return "Устройства";
+  } else if (currentPageName === "rules") {
+    return "Правила";
+  } else if (currentPageName === "tags") {
+    return "Теги";
+  } else {
+    return "Конфигурация";
+  }
+});
 </script>
 
 <Breadcrumb.Root>
@@ -30,9 +44,7 @@ let Icon = $derived(getNavItemIcon(currentPageName));
         class="flex text-foreground font-semibold gap-1"
       >
         <Icon class="size-5" />
-        <p>
-          {currentPageName.charAt(0).toUpperCase() + currentPageName.slice(1)}
-        </p>
+        <p>{displayingPageName}</p>
       </Breadcrumb.Link>
     </Breadcrumb.Item>
   </Breadcrumb.List>

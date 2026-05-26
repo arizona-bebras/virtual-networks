@@ -67,13 +67,13 @@ let filteredUsers = $derived(
       <Popover.Trigger><Funnel class="size-3" /></Popover.Trigger>
       <Popover.Content class="w-64 p-4" align="start">
         <div class="space-y-2">
-          <h4 class="font-medium leading-none">Filter by {label}</h4>
+          <h4 class="font-medium leading-none">Фильтр по: {label}</h4>
           <p class="text-sm text-muted-foreground">
-            Type the name to filter devices.
+            Введите имя для фильтрации устройств.
           </p>
           <div class="relative">
             <Input
-              placeholder="Owner name..."
+              placeholder="Имя владельца..."
               bind:value={search}
               class="h-8 pr-8"
             />
@@ -97,7 +97,7 @@ let filteredUsers = $derived(
                 class="h-8 justify-between font-normal text-xs"
                 onclick={() => column.setFilterValue(undefined)}
               >
-                Clear filter
+                Очистить фильтр
                 <X class="h-3 w-3 opacity-50" />
               </Button>
               <Separator class="my-1" />
@@ -137,7 +137,7 @@ let filteredUsers = $derived(
                 </Button>
               {:else}
                 <p class="text-sm text-muted-foreground text-center py-4">
-                  {search ? "No users found" : "No users available"}
+                  {search ? "Пользователи не найдены" : "Нет доступных пользователей"}
                 </p>
               {/each}
             </div>

@@ -38,27 +38,27 @@ let selectedNetwork = $derived(
 
 const navItems = $derived([
   {
-    title: "Dashboard",
+    title: "Панель управления",
     url: `/app/network/${currentNetworkUUID}/dashboard`,
     icon: LayoutDashboard,
   },
   {
-    title: "Devices",
+    title: "Устройства",
     url: `/app/network/${currentNetworkUUID}/devices`,
     icon: Monitor,
   },
   {
-    title: "Rules",
+    title: "Правила",
     url: `/app/network/${currentNetworkUUID}/rules`,
     icon: ShieldAlert,
   },
   {
-    title: "Tags",
+    title: "Теги",
     url: `/app/network/${currentNetworkUUID}/tags`,
     icon: Tag,
   },
   {
-    title: "Configuration",
+    title: "Конфигурация",
     url: `/app/network/${currentNetworkUUID}/config`,
     icon: Settings,
   },
@@ -93,7 +93,7 @@ async function handleLogout() {
     <Sidebar.Content>
       {#if selectedNetwork}
         <Sidebar.Group>
-          <Sidebar.GroupLabel>Management</Sidebar.GroupLabel>
+          <Sidebar.GroupLabel>Управление</Sidebar.GroupLabel>
           <Sidebar.GroupContent>
             <Sidebar.Menu class="gap-0.5">
               {#each navItems as item (item.title)}
@@ -121,7 +121,7 @@ async function handleLogout() {
         <Sidebar.MenuItem>
           <Sidebar.MenuButton onclick={handleLogout}>
             <LogOut class="size-4" />
-            <span>Logout</span>
+            <span>Выйти</span>
           </Sidebar.MenuButton>
         </Sidebar.MenuItem>
       </Sidebar.Menu>

@@ -75,7 +75,7 @@ function bulkRemoveSelected() {
           onclick={bulkRemoveSelected}
         >
           <Trash class="size-4" />
-          Delete ({selectedIds.length}
+          Удалить ({selectedIds.length}
           )
         </Button>
       </div>
@@ -91,19 +91,19 @@ function bulkRemoveSelected() {
 {#if currentPage === 'devices'}
   <DeviceDialog
     bind:open={isAddDialogOpen}
-    title="Add Device"
-    description="Create a new network access control rule."
+    title="Добавить устройство"
+    description="Добавьте новое устройство в вашу сеть."
   />
 {:else if currentPage === 'rules'}
   <RuleDialog
     bind:open={isAddDialogOpen}
-    title="Add Rule"
-    description="Create a new network access control rule."
+    title="Добавить правило"
+    description="Создайте новое правило контроля доступа к сети."
   />
 {:else if currentPage === 'tags'}
   <TagDialog
     bind:open={isAddDialogOpen}
-    title="Add Tag"
-    description="Create a new tag to group your devices."
+    title="Добавить тег"
+    description="Создайте новый тег для группировки ваших устройств."
   />
 {/if}
