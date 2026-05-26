@@ -8,7 +8,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "openapi-types": "pnpm openapi-typescript http://localhost:3000/api/docs-json -o src/shared/api/openapi-schema.d.ts",
-    "preview": "vite preview",
+    "preview": "vite preview --port 5173",
     "prepare": "svelte-kit sync || echo ''",
     "type-check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "type-check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",

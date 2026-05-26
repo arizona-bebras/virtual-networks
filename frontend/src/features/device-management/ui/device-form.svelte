@@ -180,7 +180,7 @@ $effect(() => {
       {#snippet children({ props })}
         <Form.Label>Slug устройства</Form.Label>
         <ButtonGroup.Root>
-          <InputGroup.Root>
+          <InputGroup.Root class="rounded-[6px]">
             <InputGroup.Input id="url" bind:value={$formData.slug} />
             <InputGroup.Addon align="inline-end">
               <!-- <Link2Icon /> -->

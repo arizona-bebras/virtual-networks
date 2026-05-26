@@ -76,11 +76,11 @@ const {
 
       <Button
         type="submit"
-        class="w-full"
+        class="w-full rounded-[6px]"
         disabled={!valid() || loginQuery.isPending}
       >
         {#if loginQuery.isPending}
-          <LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
+          <LoaderCircle class="mr-2 h-4 w-4 animate-spin " />
         {/if}
         Войти
       </Button>
@@ -90,7 +90,7 @@ const {
     <div class="text-sm text-center text-muted-foreground">
       Нет аккаунта? <a
         href="/auth/register"
-        class="text-primary hover:underline"
+        class="text-secondary hover:underline"
       >
         Зарегистрироваться
       </a>

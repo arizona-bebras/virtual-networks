@@ -177,8 +177,6 @@ function handleDelete() {
 
           <Separator />
 
-          <Separator />
-
           <div class="flex flex-col gap-1">
             <span class="text-sm font-medium">ID сети</span>
             <span
@@ -189,7 +187,9 @@ function handleDelete() {
           </div>
 
           <div class="flex justify-end gap-2 pt-4">
-            <Button type="submit" disabled={!valid()}>Сохранить изменения</Button>
+            <Button type="submit" disabled={!valid()}>
+              Сохранить изменения
+            </Button>
           </div>
         </form>
       </Card.Content>

@@ -94,7 +94,7 @@ const {
 
       <Button
         type="submit"
-        class="w-full"
+        class="w-full rounded-[6px]"
         disabled={!valid() || registerQuery.isPending}
       >
         {#if registerQuery.isPending}
@@ -108,7 +108,7 @@ const {
     <div class="text-sm text-center text-muted-foreground">
       Уже есть аккаунт? <a
         href="/auth/login"
-        class="text-primary hover:underline"
+        class="text-secondary hover:underline"
       >
         Войти
       </a>
