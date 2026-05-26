@@ -1,16 +1,15 @@
 <script lang="ts">
-import { Plus } from "@lucide/svelte";
 import { createQuery } from "@tanstack/svelte-query";
-import type { ColumnFiltersState } from "@tanstack/table-core";
+import type { ColumnFiltersState, Table } from "@tanstack/table-core";
+import type { DeviceRelations } from "common/schemas/device/index";
+import { Debounced } from "runed";
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
+import Header from "$entities/table-page/ui/Header.svelte";
 import { columns } from "$features/device-management/model/device-table-columns.js";
 import DeviceDialog from "$features/device-management/ui/device-dialog.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
-import { Button } from "$shared/ui/button/index.js";
-import * as Card from "$shared/ui/card/index.js";
 import DataTable from "$shared/ui/data-table/data-table.svelte";
-
 import { deviceQuery } from "../api/query";
 
 let isAddDeviceDialogOpen = $state(false);
@@ -18,7 +17,10 @@ let isEditingDialogOpen = $state(false);
 
 let currentNetworkId = $derived(getNetworkId().id);
 let globalFilter = $state("");
+const debounced = new Debounced(() => globalFilter, 500);
 let columnFilters = $state<ColumnFiltersState>([]);
+let selectedIds = $state<string[]>([]);
+let table = $state<Table<DeviceRelations>>();
 
 let tagsFilter = $derived(
   (
@@ -34,7 +36,7 @@ let onwerFilter = $derived(
 const userDevices = createQuery(() =>
   deviceQuery.userDevices({
     networkId: currentNetworkId,
-    q: globalFilter,
+    q: debounced.current,
     tags: tagsFilter,
     owner_id: onwerFilter,
   }),
@@ -60,47 +62,40 @@ $effect(() => {
 });
 
 // TODO: в ожидании реализации bulk delete на бэке
-function bulkRemoveSelected(_ids: string[]) {}
+// biome-ignore lint/correctness/noUnusedVariables: <waiting for implementation>
+function bulkRemoveSelected() {
+  console.log("Delete devices:", selectedIds);
+  selectedIds = [];
+}
 </script>
 
-<div class="p-8">
-  <div class="mb-8 flex items-center justify-between">
-    <div>
-      <h1 class="text-3xl font-bold tracking-tight">Devices</h1>
-      <p class="text-muted-foreground">
-        Manage and monitor your network devices.
-      </p>
-    </div>
-
-    <Button onclick={() => (isAddDeviceDialogOpen = true)}>
-      <Plus class="mr-2 size-4" />
-      Add Device
-    </Button>
-  </div>
+<div class="p-2.5">
+  <Header
+    title="Устройства"
+    description="Уравляйте и отслеживайте свои устройства в сети."
+    bind:globalFilter
+    {selectedIds}
+    {table}
+  />
 
   <DeviceDialog
     bind:open={isAddDeviceDialogOpen}
-    title="Add Device"
-    description="Register a new device to your virtual network."
+    title="Создание устройства"
+    description="Заполните все необходимые поля, чтобы добавить новое устройство в сеть"
   />
 
   <DeviceDialog
     bind:open={isEditingDialogOpen}
-    title="Edit Device"
+    title="Редактирование устройства"
     device={editingDevice}
-    description="Update the details for your device."
+    description="Измените параметры своего устройства"
   />
 
-  <Card.Root>
-    <Card.Content class="p-6">
-      <DataTable
-        {columns}
-        data={userDevices.data || []}
-        filterPlaceholder="Search by name..."
-        onDeleteSelected={bulkRemoveSelected}
-        onGlobalFilterChange={(value) => (globalFilter = value)}
-        onColumnFiltersChange={(filters) => (columnFilters = filters)}
-      />
-    </Card.Content>
-  </Card.Root>
+  <DataTable
+    {columns}
+    data={userDevices.data || []}
+    bind:selectedIds
+    bind:table
+    onColumnFiltersChange={(filters) => (columnFilters = filters)}
+  />
 </div>

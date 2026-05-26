@@ -2,10 +2,12 @@
 import { createMutation, getQueryClientContext } from "@tanstack/svelte-query";
 import { CreateTagSchema } from "common/schemas/tag/create-tag";
 import type { Tag } from "common/schemas/tag/index";
+import FooterButtons from "$entities/table-page/ui/FooterButtons.svelte";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import * as Form from "$shared/ui/form/index.js";
 import { Input } from "$shared/ui/input/index.js";
+import { Separator } from "$shared/ui/separator/index";
 import { tagCreationMutation, tagUpdateMutation } from "../api/query";
 
 let { tag, dialogState = $bindable() }: { tag?: Tag; dialogState: boolean } =
@@ -73,15 +75,16 @@ $effect(() => {
 });
 </script>
 
-<form method="POST" use:enhance class="space-y-4">
+<form method="POST" use:enhance class="relative">
+  <Separator class="bg-border absolute -top-2 -left-4 w-124!" />
   <Form.Field {form} name="name">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label>Name</Form.Label>
+        <Form.Label>Название</Form.Label>
         <Input
           {...props}
           bind:value={$formData.name}
-          placeholder="e.g. Servers"
+          placeholder="Например: Серверы"
         />
       {/snippet}
     </Form.Control>
@@ -91,15 +94,20 @@ $effect(() => {
   <Form.Field {form} name="color">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label>Color</Form.Label>
+        <Form.Label>Цвет</Form.Label>
         <div class="flex gap-2">
           {#each colors as color}
+            {@const isSelected = $formData.color === color.key}
             <button
               type="button"
-              class={`size-6 rounded-full ${color.value} ring-primary ring-offset-2 ring-offset-background transition-all hover:ring-2 ${$formData.color === color.key ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+              class={`size-6 rounded-full ${color.value} transition-all hover:ring-1! ${isSelected ? 'ring-2 ring-secondary' : ''}`}
               title={color.name}
               onclick={() => $formData.color = color.key}
-            ></button>
+            >
+              <!-- {#if isSelected}
+                <span class="text-background">✔</span>
+              {/if} -->
+            </button>
           {/each}
         </div>
       {/snippet}
@@ -107,7 +115,5 @@ $effect(() => {
     <Form.Description />
     <Form.FieldErrors />
   </Form.Field>
-  <Form.Button disabled={!valid()} class="w-full">
-    {tag ? "Save Changes" : "Save Tag"}
-  </Form.Button>
+  <FooterButtons {valid} bind:dialogState isEditing={tag !== undefined} />
 </form>

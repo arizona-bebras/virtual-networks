@@ -39,25 +39,25 @@ function setFilter(value: string | undefined) {
       </Button>
     </DropdownMenu.Trigger>
     <DropdownMenu.Content align="start">
-      <DropdownMenu.Label>Filter by Status</DropdownMenu.Label>
+      <DropdownMenu.Label>Фильтр по статусу</DropdownMenu.Label>
       <DropdownMenu.Separator />
       <DropdownMenu.CheckboxItem
         checked={filterValue === undefined}
         onCheckedChange={() => setFilter(undefined)}
       >
-        All
+        Все
       </DropdownMenu.CheckboxItem>
       <DropdownMenu.CheckboxItem
         checked={filterValue === "online"}
         onCheckedChange={() => setFilter("online")}
       >
-        Online
+        В сети
       </DropdownMenu.CheckboxItem>
       <DropdownMenu.CheckboxItem
         checked={filterValue === "offline"}
         onCheckedChange={() => setFilter("offline")}
       >
-        Offline
+        Не в сети
       </DropdownMenu.CheckboxItem>
     </DropdownMenu.Content>
   </DropdownMenu.Root>

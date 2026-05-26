@@ -1,9 +1,12 @@
 <script lang="ts">
 import { Plus } from "@lucide/svelte";
 import { createQuery } from "@tanstack/svelte-query";
-import type { ColumnFiltersState } from "@tanstack/table-core";
+import type { ColumnFiltersState, Table } from "@tanstack/table-core";
+import type { RuleRelation } from "common/schemas/rule/index";
+import { Debounced } from "runed";
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
+import Header from "$entities/table-page/ui/Header.svelte";
 import { columns } from "$features/rule-management/model/rule-table-columns";
 import RuleDialog from "$features/rule-management/ui/rule-dialog.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
@@ -12,11 +15,14 @@ import * as Card from "$shared/ui/card/index.js";
 import DataTable from "$shared/ui/data-table/data-table.svelte";
 import { userRules } from "../api/query";
 
-let isAddRuleDialogOpen = $state(false);
+let isAddDialogOpen = $state(false);
 let isEditingDialogOpen = $state(false);
+let selectedIds = $state<string[]>([]);
 
 let globalFilter = $state("");
+const debounced = new Debounced(() => globalFilter, 500);
 let columnFilters = $state<ColumnFiltersState>([]);
+let table = $state<Table<RuleRelation>>();
 
 let sourceTagsFilter = $derived(
   (
@@ -36,7 +42,12 @@ let destTagsFilter = $derived(
 
 const currentNetworkId = $derived(getNetworkId().id);
 const userRulesQuery = createQuery(() =>
-  userRules(currentNetworkId, globalFilter, sourceTagsFilter, destTagsFilter),
+  userRules(
+    currentNetworkId,
+    debounced.current,
+    sourceTagsFilter,
+    destTagsFilter,
+  ),
 );
 
 let ruleIdSearchParam = $derived(page.url.searchParams.get("editRule"));
@@ -58,47 +69,33 @@ $effect(() => {
   }
 });
 
+// biome-ignore lint/correctness/noUnusedVariables: <waitng for implementaion>
 function bulkRemoveSelected(_ids: string[]) {
   console.log("Delete rules:", _ids);
 }
 </script>
 
-<div class="p-8">
-  <div class="mb-8 flex items-center justify-between">
-    <div>
-      <h1 class="text-3xl font-bold tracking-tight">Rules</h1>
-      <p class="text-muted-foreground">Manage network access control rules.</p>
-    </div>
-
-    <Button onclick={() => (isAddRuleDialogOpen = true)}>
-      <Plus class="mr-2 size-4" />
-      Add Rule
-    </Button>
-  </div>
-
-  <RuleDialog
-    bind:open={isAddRuleDialogOpen}
-    title="Add Rule"
-    description="Create a new network access control rule."
+<div class="p-2.5">
+  <Header
+    title="Правила"
+    description="Создавайте свои правила для устройств"
+    {selectedIds}
+    bind:globalFilter
+    {table}
   />
 
   <RuleDialog
     bind:open={isEditingDialogOpen}
-    title="Edit Rule"
+    title="Редактировать правило"
     rule={editingRule}
-    description="Update the details for your rule."
+    description="Обновите данные вашего правила."
   />
 
-  <Card.Root>
-    <Card.Content class="p-6">
-      <DataTable
-        {columns}
-        data={userRulesQuery.data || []}
-        filterPlaceholder="Search by name..."
-        onDeleteSelected={bulkRemoveSelected}
-        onGlobalFilterChange={(value) => (globalFilter = value)}
-        onColumnFiltersChange={(filters) => (columnFilters = filters)}
-      />
-    </Card.Content>
-  </Card.Root>
+  <DataTable
+    {columns}
+    data={userRulesQuery.data || []}
+    bind:selectedIds
+    bind:table
+    onColumnFiltersChange={(filters) => (columnFilters = filters)}
+  />
 </div>

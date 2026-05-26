@@ -41,11 +41,11 @@ function handleDelete() {
     <DropdownMenu.Content align="end">
       <DropdownMenu.Item onSelect={() => isEditDialogOpen = true}>
         <Edit class="mr-2 size-4" />
-        Edit Tag
+        Редактировать
       </DropdownMenu.Item>
       <DropdownMenu.Item class="text-destructive" onclick={handleDelete}>
         <Trash class="mr-2 size-4" />
-        Delete Tag
+        Удалить
       </DropdownMenu.Item>
     </DropdownMenu.Content>
   </DropdownMenu.Root>
@@ -53,7 +53,7 @@ function handleDelete() {
 
 <TagDialog
   bind:open={isEditDialogOpen}
-  title="Edit Tag"
+  title="Редактирование тега"
   {tag}
-  description="Update the details for your tag."
+  description="Обновите данные вашего тега."
 />

@@ -149,7 +149,7 @@ function blockOctetInput(mask: string) {
 </script>
 
 <div
-  class="flex bg-input/50 border gap-2 justify-between transition-colors focus-within:ring-2 focus-within:ring-offset-2 {info?.isValid ? 'border-slate-200 focus-within:ring-slate-950' : 'border-destructive/40 focus-within:ring-red-500'} mb-2"
+  class="flex bg-input/50 border gap-2 justify-between transition-colors focus-within:ring-2 focus-within:ring-offset-2 {info?.isValid ? 'border-slate-200 focus-within:ring-slate-950' : 'border-destructive/40 focus-within:ring-red-500'} mb-2 rounded-[6px]"
 >
   <div class="flex items-center px-2 py-1" id="ip-container">
     {#each octets as octet, i}
@@ -176,7 +176,7 @@ function blockOctetInput(mask: string) {
       onValueChange={(value: string) => blockOctetInput(value)}
     >
       <Select.Trigger class="w-[80px] border-none bg-transparent! focus:ring-0">
-        {selectedMask ? `/${selectedMask}` : 'Mask'}
+        {selectedMask ? `/${selectedMask}` : 'Маска'}
       </Select.Trigger>
       <Select.Content class="max-h-[300px]">
         {#each maskRange as mask}

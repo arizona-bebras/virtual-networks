@@ -11,6 +11,7 @@ import slugify from "slugify";
 import { untrack } from "svelte";
 import { z } from "zod";
 import Tags from "$entities/device/ui/device-tags-cell.svelte";
+import FooterButtons from "$entities/table-page/ui/FooterButtons.svelte";
 import TagSelector from "$features/tag-management/ui/tag-selector.svelte";
 import { networkConfig } from "$pages/app/network/[slug]/config/api/query";
 import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
@@ -22,6 +23,7 @@ import { Input } from "$shared/ui/input/index.js";
 import * as InputGroup from "$shared/ui/input-group/index.js";
 import * as Label from "$shared/ui/label/index.js";
 import * as Popover from "$shared/ui/popover/index";
+import { Separator } from "$shared/ui/separator/index";
 import {
   deviceUpdateMutation,
   deviceСreationQuery,
@@ -141,11 +143,12 @@ $effect(() => {
 });
 </script>
 
-<form method="POST" use:enhance class="space-y-4">
+<form method="POST" use:enhance class="relative">
+  <Separator class="bg-border absolute -top-2 -left-4 w-124!" />
   <Form.Field {form} name="name">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label>Name</Form.Label>
+        <Form.Label>Название</Form.Label>
         <Input
           {...props}
           bind:value={$formData.name}
@@ -165,7 +168,7 @@ $effect(() => {
   <Form.Field {form} name="ip">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label>IP Address</Form.Label>
+        <Form.Label type="required">IP-адрес</Form.Label>
         <Input {...props} bind:value={$formData.ip} />
       {/snippet}
     </Form.Control>
@@ -175,9 +178,9 @@ $effect(() => {
   <Form.Field {form} name="slug">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label>Device slug</Form.Label>
+        <Form.Label>Slug устройства</Form.Label>
         <ButtonGroup.Root>
-          <InputGroup.Root>
+          <InputGroup.Root class="rounded-[6px]">
             <InputGroup.Input id="url" bind:value={$formData.slug} />
             <InputGroup.Addon align="inline-end">
               <!-- <Link2Icon /> -->
@@ -203,7 +206,9 @@ $effect(() => {
         }}
       />
       <Popover.Root bind:open={isTagSelectorOpen}>
-        <Popover.Trigger class="border-2 border-dashed px-4">+</Popover.Trigger>
+        <Popover.Trigger class="border-2 border-dashed px-4 rounded-[4px]">
+          +
+        </Popover.Trigger>
         <Popover.Content>
           <TagSelector
             onclick={(name) => {
@@ -218,7 +223,5 @@ $effect(() => {
       </Popover.Root>
     </div>
   {/if}
-  <Form.Button disabled={!valid()} class="w-full">
-    {device ? "Save Changes" : "Save Device"}
-  </Form.Button>
+  <FooterButtons {valid} bind:dialogState isEditing={device !== undefined} />
 </form>

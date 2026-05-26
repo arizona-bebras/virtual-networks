@@ -1,4 +1,12 @@
-import { Activity, Tag, User } from "@lucide/svelte";
+import {
+  Activity,
+  MapPin,
+  MonitorSmartphone,
+  Tag,
+  Tags,
+  User,
+  WifiSync,
+} from "@lucide/svelte";
 import type { ColumnDef } from "@tanstack/table-core";
 import type { DeviceRelations } from "common/schemas/device/index";
 import type { Tag as TagType } from "common/schemas/tag/index";
@@ -41,8 +49,9 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     accessorKey: "name",
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
-        label: "Device",
+        label: "Устройство",
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        icon: MonitorSmartphone,
       });
     },
     cell: ({ row }) => {
@@ -56,8 +65,9 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     accessorKey: "status",
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
-        label: "Status",
+        label: "Статус",
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        icon: WifiSync,
       });
     },
     cell: ({ row }) => {
@@ -75,8 +85,9 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     accessorKey: "ip",
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
-        label: "IP Address",
+        label: "IP-адрес",
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        icon: MapPin,
       });
     },
     cell: ({ row }) => {
@@ -89,8 +100,9 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     accessorKey: "owner",
     header: ({ column }) => {
       return renderComponent(DeviceOwnerFilter, {
-        label: "Owner",
+        label: "Владелец",
         column,
+        icon: User,
       });
     },
     cell: ({ row }) => {
@@ -106,8 +118,9 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     accessorKey: "tags",
     header: ({ column }) => {
       return renderComponent(DeviceTagsFilter, {
-        label: "Tags",
+        label: "Теги",
         column,
+        icon: Tags,
       });
     },
     cell: ({ row, column }) => {
@@ -120,7 +133,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
             (column.getFilterValue() as DeviceTagsFilterValue) ?? [];
           const next = current.some((t) => t.id === tag.id)
             ? current.filter((t) => t.id !== tag.id)
-            : [...current, { id: tag.id, name: tag.name }];
+            : [...current, tag];
           column.setFilterValue(next.length > 0 ? next : undefined);
         },
       });

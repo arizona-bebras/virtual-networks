@@ -11,14 +11,14 @@ let { open = $bindable() }: { open: boolean } = $props();
   <Dialog.Trigger>
     <Button>
       <Plus class="mr-2 size-4" />
-      Add Tag
+      Добавить тег
     </Button>
   </Dialog.Trigger>
   <Dialog.Content class="sm:max-w-[425px]">
     <Dialog.Header>
-      <Dialog.Title>Add Tag</Dialog.Title>
+      <Dialog.Title>Добавить тег</Dialog.Title>
       <Dialog.Description>
-        Create a new tag to group your devices.
+        Создайте новый тег для группировки ваших устройств.
       </Dialog.Description>
     </Dialog.Header>
     <TagForm bind:dialogState={open} />

@@ -7,6 +7,7 @@ import {
 import { CreateRuleSchema } from "common/schemas/rule/create-rule";
 import { ProtocolSchema, type RuleRelation } from "common/schemas/rule/index";
 import SuperDebug from "sveltekit-superforms";
+import FooterButtons from "$entities/table-page/ui/FooterButtons.svelte";
 import TagBadge from "$entities/tag/ui/tag-badge.svelte";
 import TagListItem from "$entities/tag/ui/tag-list-item.svelte";
 import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
@@ -15,6 +16,7 @@ import { getNetworkId } from "$shared/lib/network-id-context";
 import * as Form from "$shared/ui/form/index.js";
 import { Input } from "$shared/ui/input/index.js";
 import * as Select from "$shared/ui/select/index";
+import { Separator } from "$shared/ui/separator/index";
 import { ruleCreationMutation, ruleUpdateMutation } from "../api/query";
 
 let {
@@ -62,8 +64,6 @@ let {
   errors,
 } = useForm(CreateRuleSchema, {
   onSubmit: async () => {
-    console.log("Adding new rule:", $formData);
-    console.log("Errors:", $errors._errors);
     if (pageData)
       updateMutationQuery.mutate({
         networkId: currentNetworkId,
@@ -90,15 +90,16 @@ $effect(() => {
 });
 </script>
 
-<form method="POST" use:enhance class="space-y-4">
+<form method="POST" use:enhance class="relative">
+  <Separator class="bg-border absolute -top-2 -left-4 w-124!" />
   <Form.Field {form} name="description">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label>Description</Form.Label>
+        <Form.Label>Описание</Form.Label>
         <Input
           {...props}
           bind:value={$formData.description}
-          placeholder="Allow SSH"
+          placeholder="Разрешить SSH"
         />
       {/snippet}
     </Form.Control>
@@ -108,7 +109,7 @@ $effect(() => {
     <Form.Field {form} name="sourceId">
       <Form.Control>
         {#snippet children({ props })}
-          <Form.Label>Source Tag</Form.Label>
+          <Form.Label>Тег источника</Form.Label>
           <Select.Root type="single" bind:value={$formData.sourceId!}>
             <Select.Trigger class="w-[180px] flex">
               {#if $formData.sourceId && selectedSourceTag}
@@ -136,7 +137,7 @@ $effect(() => {
     <Form.Field {form} name="destId">
       <Form.Control>
         {#snippet children({ props })}
-          <Form.Label>Destination Tag</Form.Label>
+          <Form.Label>Тег назначения</Form.Label>
           <Select.Root type="single" bind:value={$formData.destId!}>
             <Select.Trigger class="w-[180px] flex">
               {#if $formData.destId && selectedDestTag}
@@ -166,7 +167,7 @@ $effect(() => {
     <Form.Field {form} name="protocol">
       <Form.Control>
         {#snippet children({ props })}
-          <Form.Label>Protocol</Form.Label>
+          <Form.Label>Протокол</Form.Label>
           <Select.Root
             type="single"
             bind:value={$formData.protocol!}
@@ -191,7 +192,7 @@ $effect(() => {
     <Form.Field {form} name="port">
       <Form.Control>
         {#snippet children({ props })}
-          <Form.Label>Port</Form.Label>
+          <Form.Label>Порт</Form.Label>
           <Input
             {...props}
             bind:value={$formData.port}
@@ -204,9 +205,7 @@ $effect(() => {
       <Form.FieldErrors />
     </Form.Field>
   </div>
-  <Form.Button class="w-full" disabled={!valid()}>
-    {pageData ? 'Update Rule' :'Create Rule'}
-  </Form.Button>
+  <FooterButtons {valid} bind:dialogState isEditing={pageData !== undefined} />
   {#if import.meta.env.DEV}
     <SuperDebug data={$formData} />
   {/if}

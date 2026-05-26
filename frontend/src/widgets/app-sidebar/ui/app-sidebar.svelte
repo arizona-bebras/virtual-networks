@@ -13,11 +13,10 @@ import { createQuery, getQueryClientContext } from "@tanstack/svelte-query";
 import { getContext, untrack } from "svelte";
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
-import AddNetworkBtn from "$features/sidebar/header/ui/new-network-dialog.svelte";
 import { authClient } from "$shared/api/auth-client";
 import { getNetworkId } from "$shared/lib/network-id-context";
-import * as DropdownMenu from "$shared/ui/dropdown-menu/index.js";
 import * as Sidebar from "$shared/ui/sidebar/index.js";
+import NetworkSelector from "$widgets/app-sidebar/ui/network-select.svelte";
 import { sidebarQuerys } from "../api/index.svelte";
 
 // Mock networks.
@@ -39,32 +38,31 @@ let selectedNetwork = $derived(
 
 const navItems = $derived([
   {
-    title: "Dashboard",
+    title: "Панель управления",
     url: `/app/network/${currentNetworkUUID}/dashboard`,
     icon: LayoutDashboard,
   },
   {
-    title: "Devices",
+    title: "Устройства",
     url: `/app/network/${currentNetworkUUID}/devices`,
     icon: Monitor,
   },
   {
-    title: "Rules",
+    title: "Правила",
     url: `/app/network/${currentNetworkUUID}/rules`,
     icon: ShieldAlert,
   },
   {
-    title: "Tags",
+    title: "Теги",
     url: `/app/network/${currentNetworkUUID}/tags`,
     icon: Tag,
   },
   {
-    title: "Configuration",
+    title: "Конфигурация",
     url: `/app/network/${currentNetworkUUID}/config`,
     icon: Settings,
   },
 ]);
-
 async function handleLogout() {
   await authClient.signOut({
     fetchOptions: {
@@ -87,59 +85,7 @@ async function handleLogout() {
     <Sidebar.Header>
       <Sidebar.Menu>
         <Sidebar.MenuItem>
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger class="w-full">
-              <Sidebar.MenuButton size="lg" class="w-full justify-between">
-                <div class="flex items-center gap-2">
-                  <div
-                    class="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"
-                  >
-                    <LayoutDashboard class="size-4" />
-                  </div>
-                  {#if !selectedNetwork}
-                    <span class="text-sm font-semibold truncate w-32">
-                      Выберите сеть
-                    </span>
-                  {:else}
-                    <div class="flex flex-col gap-0.5 text-left">
-                      <span class="text-sm font-semibold truncate w-32">
-                        {selectedNetwork?.name ?? userNetworks.data[0]?.name}
-                      </span>
-                      <span class="text-xs text-muted-foreground">
-                        {selectedNetwork?.cidr ?? userNetworks.data[0]?.cidr}
-                      </span>
-                    </div>
-                  {/if}
-                </div>
-                <ChevronDown class="size-4 opacity-50" />
-              </Sidebar.MenuButton>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content class="w-56" align="start">
-              {#if userNetworks.data.length > 0}
-                <DropdownMenu.Label>Networks</DropdownMenu.Label>
-                {#each userNetworks.data as network}
-                  <DropdownMenu.Item
-                    onSelect={async () => {
-                  goto(`/app/network/${network.id}/dashboard`);
-                }}
-                  >
-                    {network.name}
-                  </DropdownMenu.Item>
-                {/each}
-                <DropdownMenu.Separator />
-              {/if}
-              <DropdownMenu.Item
-                onSelect={(e) => {
-                e.preventDefault();
-                isDialogOpen = true;
-              }}
-              >
-                <Plus class="mr-2 size-4" />
-                <span>New Network</span>
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
-          <AddNetworkBtn bind:isDialogOpen />
+          <NetworkSelector {userNetworks} {selectedNetwork} />
         </Sidebar.MenuItem>
       </Sidebar.Menu>
     </Sidebar.Header>
@@ -147,16 +93,18 @@ async function handleLogout() {
     <Sidebar.Content>
       {#if selectedNetwork}
         <Sidebar.Group>
-          <Sidebar.GroupLabel>Management</Sidebar.GroupLabel>
+          <Sidebar.GroupLabel>Управление</Sidebar.GroupLabel>
           <Sidebar.GroupContent>
-            <Sidebar.Menu>
+            <Sidebar.Menu class="gap-0.5">
               {#each navItems as item (item.title)}
-                <Sidebar.MenuItem>
-                  <Sidebar.MenuButton>
+                <Sidebar.MenuItem class="pl-1">
+                  <Sidebar.MenuButton
+                    class="rounded-[6px] {page.url.pathname === item.url ? 'border border-border bg-sidebar-primary font-medium':''}"
+                  >
                     {#snippet child({ props })}
                       <a href={item.url} {...props}>
                         <item.icon class="size-4" />
-                        <span>{item.title}</span>
+                        <span class="">{item.title}</span>
                       </a>
                     {/snippet}
                   </Sidebar.MenuButton>
@@ -173,7 +121,7 @@ async function handleLogout() {
         <Sidebar.MenuItem>
           <Sidebar.MenuButton onclick={handleLogout}>
             <LogOut class="size-4" />
-            <span>Logout</span>
+            <span>Выйти</span>
           </Sidebar.MenuButton>
         </Sidebar.MenuItem>
       </Sidebar.Menu>

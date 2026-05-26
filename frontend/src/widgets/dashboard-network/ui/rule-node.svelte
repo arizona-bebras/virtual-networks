@@ -10,15 +10,10 @@ import {
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
 import type { RuleNodeData } from "$entities/node/model/types";
+import LinkButton from "$entities/node/ui/LinkButton.svelte";
 import * as Card from "$shared/ui/card/index.js";
 
 let { id, data }: NodeProps<Node<RuleNodeData>> = $props();
-
-function handleEdit(e: MouseEvent) {
-  e.stopPropagation();
-  const slug = page.params.slug;
-  goto(`/app/network/${slug}/rules?editRule=${id}`);
-}
 </script>
 
 <Card.Root
@@ -51,14 +46,9 @@ function handleEdit(e: MouseEvent) {
         {data.name || 'Default Rule'}
       </span>
     </div>
-    <button
-      type="button"
-      class="opacity-0 group-hover:opacity-100 transition-all p-1 hover:bg-primary/10 rounded-md"
-      onclick={handleEdit}
-      title="Edit Rule"
-    >
-      <SquarePen size={12} class="text-muted-foreground hover:text-primary" />
-    </button>
+    <LinkButton
+      redirectLink={`/app/network/${page.params.slug}/rules?editRule=${id}`}
+    />
   </div>
 </Card.Root>
 

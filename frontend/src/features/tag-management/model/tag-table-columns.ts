@@ -1,3 +1,4 @@
+import { MonitorSmartphone, Palette, Tag as TagIcon } from "@lucide/svelte";
 import type { ColumnDef } from "@tanstack/table-core";
 import type { Tag } from "common/schemas/tag/index";
 import TagColorCell from "$entities/tag/ui/tag-color-cell.svelte";
@@ -34,8 +35,9 @@ export const columns: ColumnDef<Tag>[] = [
     accessorKey: "name",
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
-        label: "Tag",
+        label: "Тег",
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        icon: TagIcon,
       });
     },
     cell: ({ row }) => {
@@ -51,8 +53,9 @@ export const columns: ColumnDef<Tag>[] = [
     accessorKey: "color",
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
-        label: "Color",
+        label: "Цвет",
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        icon: Palette,
       });
     },
     cell: ({ row }) => {
@@ -65,8 +68,9 @@ export const columns: ColumnDef<Tag>[] = [
     accessorKey: "devicesCount",
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
-        label: "Device Count",
+        label: "Кол-во устройств",
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        icon: MonitorSmartphone,
       });
     },
     cell: ({ row }) => {

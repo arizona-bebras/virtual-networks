@@ -1,4 +1,4 @@
-import { Tag } from "@lucide/svelte";
+import { FileText, Shield, Tag, Tags, Unplug } from "@lucide/svelte";
 import type { ColumnDef } from "@tanstack/table-core";
 import type { RuleRelation } from "common/schemas/rule/index";
 import TagBadge from "$entities/tag/ui/tag-badge.svelte";
@@ -30,30 +30,38 @@ export const columns: ColumnDef<RuleRelation>[] = [
     },
     enableSorting: false,
     enableHiding: false,
+    enableGlobalFilter: false,
+    size: 40,
   },
   {
     accessorKey: "description",
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
-        label: "Description",
+        label: "Описание",
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        icon: FileText,
       });
     },
     cell: ({ row }) => {
-      return row.original.description || "";
+      return row.original.description || "-";
+    },
+    enableGlobalFilter: true,
+    meta: {
+      icon: FileText,
     },
   },
   {
-    accessorKey: "sourceTag",
+    accessorKey: "source",
     header: ({ column }) => {
       return renderComponent(RuleTagFilter, {
-        label: "Source Tag",
+        label: "Тег источника",
         column,
+        icon: Tags,
       });
     },
     cell: ({ row, column }) => {
       const tag = row.original.source;
-      if (!tag) return "Any";
+      if (!tag) return "Любой";
       return renderComponent(TagBadge, {
         tag: tag,
         onclick: () => {
@@ -61,26 +69,34 @@ export const columns: ColumnDef<RuleRelation>[] = [
             (column.getFilterValue() as FilterValueWithId[]) ?? [];
           const next = current.some((t) => t.id === tag.id)
             ? current.filter((t) => t.id !== tag.id)
-            : [...current, { id: tag.id, name: tag.name }];
+            : [...current, tag];
           column.setFilterValue(next.length > 0 ? next : undefined);
         },
       });
     },
+    enableGlobalFilter: false,
     meta: {
       icon: Tag,
     },
+    filterFn: (row, columnId, filterValue: FilterValueWithId[]) => {
+      const tag = row.getValue(columnId) as { id: string } | null;
+      if (!filterValue || filterValue.length === 0) return true;
+      if (!tag) return false;
+      return filterValue.some((f) => f.id === tag.id);
+    },
   },
   {
-    accessorKey: "destTag",
+    accessorKey: "dest",
     header: ({ column }) => {
       return renderComponent(RuleTagFilter, {
-        label: "Destination Tag",
+        label: "Тег назначения",
         column,
+        icon: Tags,
       });
     },
     cell: ({ row, column }) => {
       const tag = row.original.dest;
-      if (!tag) return "Any";
+      if (!tag) return "Любой";
       return renderComponent(TagBadge, {
         tag: tag,
         onclick: () => {
@@ -88,37 +104,54 @@ export const columns: ColumnDef<RuleRelation>[] = [
             (column.getFilterValue() as FilterValueWithId[]) ?? [];
           const next = current.some((t) => t.id === tag.id)
             ? current.filter((t) => t.id !== tag.id)
-            : [...current, { id: tag.id, name: tag.name }];
+            : [...current, tag];
           column.setFilterValue(next.length > 0 ? next : undefined);
         },
       });
     },
+    enableGlobalFilter: false,
     meta: {
       icon: Tag,
+    },
+    filterFn: (row, columnId, filterValue: FilterValueWithId[]) => {
+      const tag = row.getValue(columnId) as { id: string } | null;
+      if (!filterValue || filterValue.length === 0) return true;
+      if (!tag) return false;
+      return filterValue.some((f) => f.id === tag.id);
     },
   },
   {
     accessorKey: "protocol",
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
-        label: "Protocol",
+        label: "Протокол",
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        icon: Shield,
       });
     },
     cell: ({ row }) => {
-      return row.original?.protocol || "Any";
+      return row.original?.protocol || "Любой";
+    },
+    enableGlobalFilter: true,
+    meta: {
+      icon: Shield,
     },
   },
   {
     accessorKey: "port",
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
-        label: "Port",
+        label: "Порт",
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        icon: Unplug,
       });
     },
     cell: ({ row }) => {
-      return row.original?.port || "Any";
+      return row.original?.port || "Любой";
+    },
+    enableGlobalFilter: true,
+    meta: {
+      icon: Unplug,
     },
   },
   {
@@ -126,5 +159,7 @@ export const columns: ColumnDef<RuleRelation>[] = [
     cell: ({ row }) => {
       return renderComponent(RuleActionsCell, { rule: row.original });
     },
+    enableGlobalFilter: false,
+    size: 50,
   },
 ];

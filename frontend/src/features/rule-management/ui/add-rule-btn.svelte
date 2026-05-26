@@ -11,14 +11,14 @@ let { open = $bindable() }: { open: boolean } = $props();
   <Dialog.Trigger>
     <Button>
       <Plus class="mr-2 size-4" />
-      Add Rule
+      Добавить правило
     </Button>
   </Dialog.Trigger>
   <Dialog.Content class="sm:max-w-[425px]">
     <Dialog.Header>
-      <Dialog.Title>Add Rule</Dialog.Title>
+      <Dialog.Title>Добавить правило</Dialog.Title>
       <Dialog.Description>
-        Create a new network access control rule.
+        Создайте новое правило контроля доступа к сети.
       </Dialog.Description>
     </Dialog.Header>
     <RuleForm bind:dialogState={open} />
