@@ -7,6 +7,7 @@ import { Button } from "$shared/ui/button/index.js";
 import * as Dialog from "$shared/ui/dialog/index.js";
 import * as DropdownMenu from "$shared/ui/dropdown-menu/index.js";
 import { ruleDeletionMutation } from "../api/query";
+import RuleDialog from "./rule-dialog.svelte";
 import RuleForm from "./rule-form.svelte";
 
 let { rule }: { rule: RuleRelation } = $props();
@@ -46,14 +47,9 @@ function handleDelete() {
   </DropdownMenu.Root>
 </div>
 
-<Dialog.Root bind:open={isEditDialogOpen}>
-  <Dialog.Content class="sm:max-w-[425px]">
-    <Dialog.Header>
-      <Dialog.Title>Редактирование правила</Dialog.Title>
-      <Dialog.Description>
-        Обновите данные этого сетевого правила.
-      </Dialog.Description>
-    </Dialog.Header>
-    <RuleForm pageData={{...rule}} bind:dialogState={isEditDialogOpen} />
-  </Dialog.Content>
-</Dialog.Root>
+<RuleDialog
+  bind:open={isEditDialogOpen}
+  title="Редактировать правило"
+  {rule}
+  description="Обновите данные вашего правила."
+/>

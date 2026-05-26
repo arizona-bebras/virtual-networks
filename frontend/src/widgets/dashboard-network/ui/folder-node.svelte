@@ -133,7 +133,7 @@ function handleBurst() {}
           class="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within/search:text-primary transition-colors"
         />
         <Input
-          placeholder="Search devices..."
+          placeholder="Название устройства..."
           bind:value={searchQuery}
           class="h-7 pl-6 pr-2 text-[10px] bg-background/50 border-border/50 focus:bg-background transition-all"
         />
