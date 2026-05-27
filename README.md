@@ -16,6 +16,12 @@
   <a href="https://img.shields.io/badge/Architecture-Distributed-blue.svg">
     <img src="https://img.shields.io/badge/Architecture-Distributed-blue.svg">
   </a>
+  <a href="https://img.shields.io/badge/Линчик-Сипнут-purple.svg">
+    <img src="https://img.shields.io/badge/Линчик-Сипнут-purple.svg">
+  </a>
+  <a href="https://img.shields.io/badge/Заны-В%20животике-white.svg">
+    <img src="https://img.shields.io/badge/Заны-В%20животике-white.svg">
+  </a>
 </p>
 
 <p align="center">
