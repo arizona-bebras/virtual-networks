@@ -3,7 +3,7 @@ import type { TagColor } from "common/schemas/tag/index";
 import { colorVariants } from "$shared/lib/tag-color-mapping";
 
 let { color }: { color: TagColor } = $props();
-let colorObj = $derived(colorVariants[color ?? "gray"] );
+let colorObj = $derived(colorVariants[color ?? "gray"]);
 </script>
 
 <div class="flex items-center gap-2">

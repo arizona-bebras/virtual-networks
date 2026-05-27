@@ -26,7 +26,7 @@ let colorObj = $derived(colorVariants[data.color ?? "gray"]);
     <div
       class="flex items-center justify-center size-6 rounded-md shrink-0 {colorObj.backgroundColor}"
     >
-      <Tag size={14} class={colorObj.textColor}  />
+      <Tag size={14} class={colorObj.textColor} />
     </div>
     <div class="flex flex-col min-w-0 flex-1">
       <span class="text-[10px] font-bold truncate leading-tight">

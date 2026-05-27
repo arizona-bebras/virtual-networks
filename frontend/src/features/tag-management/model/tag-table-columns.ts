@@ -60,7 +60,7 @@ export const columns: ColumnDef<Tag>[] = [
     },
     cell: ({ row }) => {
       return renderComponent(TagColorCell, {
-        color: row.getValue("color"),
+        color: row.original.color,
       });
     },
   },
