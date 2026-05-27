@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Download, Ellipsis, QrCode, SquarePen, Trash } from "@lucide/svelte";
+import { Download, QrCode, SquarePen, Trash } from "@lucide/svelte";
 import {
   createMutation,
   createQuery,
@@ -10,12 +10,10 @@ import {
   deviceConfigQuery,
   deviceDeletionMutation,
 } from "$features/device-management/api/query";
+import { queryKeys } from "$shared/api/query-keys";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { Button } from "$shared/ui/button/index.js";
-import * as Dialog from "$shared/ui/dialog/index.js";
-import * as DropdownMenu from "$shared/ui/dropdown-menu/index.js";
 import DeviceDialog from "./device-dialog.svelte";
-import DeviceForm from "./device-form.svelte";
 import QrDialog from "./qr-dialog.svelte";
 
 let { device }: { device: DeviceRelations } = $props();
@@ -26,27 +24,39 @@ let currentNetworkId = $derived(getNetworkId().id);
 
 const deleteDeviceMutation = createMutation(() =>
   deviceDeletionMutation(() => {
-    queryClient.invalidateQueries({ queryKey: ["userDevices"] });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.network(currentNetworkId),
+    });
   }),
 );
 
 let isQrCodeDialogOpen = $state(false);
+let qrCode = $state<string>();
 const queryOptions = () => deviceConfigQuery(currentNetworkId, device.id);
 const config = createQuery(queryOptions);
 
-async function downloadConfig() {
-  await queryClient.ensureQueryData({ queryKey: queryOptions().queryKey });
+function fetchConfig() {
+  return queryClient.fetchQuery(queryOptions());
+}
 
-  if (!config.data) return;
-  const blob = new Blob([config.data.config], { type: "text/plain" });
+async function downloadConfig() {
+  const data = await fetchConfig();
+
+  const blob = new Blob([data.config], { type: "text/plain" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = config.data.name;
+  a.download = data.name;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+async function openQrCode() {
+  const data = await fetchConfig();
+  qrCode = data.qrCode;
+  isQrCodeDialogOpen = true;
 }
 
 function handleDelete() {
@@ -55,7 +65,6 @@ function handleDelete() {
     deviceId: device.id,
   });
 }
-$inspect(config.data?.qrCode);
 </script>
 
 <div class="text-right">
@@ -65,14 +74,17 @@ $inspect(config.data?.qrCode);
   <Button
     variant="ghost"
     size="icon"
-    onclick={() => {
-      queryClient.ensureQueryData({ queryKey: queryOptions().queryKey });
-      isQrCodeDialogOpen = true;
-    }}
+    onclick={openQrCode}
+    disabled={config.isFetching}
   >
     <QrCode class="size-4" />
   </Button>
-  <Button variant="ghost" size="icon" onclick={downloadConfig}>
+  <Button
+    variant="ghost"
+    size="icon"
+    onclick={downloadConfig}
+    disabled={config.isFetching}
+  >
     <Download class="size-4" />
   </Button>
   <Button
@@ -92,7 +104,7 @@ $inspect(config.data?.qrCode);
   description="Измените параметры своего устройства"
 />
 
-<QrDialog bind:open={isQrCodeDialogOpen} qr={config.data?.qrCode} />
+<QrDialog bind:open={isQrCodeDialogOpen} qr={qrCode} />
 
 <!-- <Dialog.Root bind:open={isEditDialogOpen}>
   <Dialog.Content>

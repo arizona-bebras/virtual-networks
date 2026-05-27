@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/svelte-query";
 
 import { client } from "$shared/api/openapi-client";
+import { queryKeys } from "$shared/api/query-keys";
 
 export const deviceQuery = {
   userDevices: ({
@@ -15,7 +16,11 @@ export const deviceQuery = {
     owner_id?: string;
   }) =>
     queryOptions({
-      queryKey: ["userDevices", networkId, q, tags, owner_id],
+      queryKey: queryKeys.networkDevicesList(networkId, {
+        q,
+        tags,
+        ownerId: owner_id,
+      }),
       queryFn: async () => {
         const { data, error } = await client.GET(
           "/networks/{network_id}/devices",

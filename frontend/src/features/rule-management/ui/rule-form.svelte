@@ -11,6 +11,7 @@ import FooterButtons from "$entities/table-page/ui/FooterButtons.svelte";
 import TagBadge from "$entities/tag/ui/tag-badge.svelte";
 import TagListItem from "$entities/tag/ui/tag-list-item.svelte";
 import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
+import { queryKeys } from "$shared/api/query-keys";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import * as Form from "$shared/ui/form/index.js";
@@ -34,7 +35,7 @@ const queryClient = useQueryClient();
 const createMutationQuery = createMutation(() =>
   ruleCreationMutation(() => {
     queryClient.invalidateQueries({
-      queryKey: ["userRules", currentNetworkId],
+      queryKey: queryKeys.networkRules(currentNetworkId),
     }),
       (dialogState = false);
   }),
@@ -43,7 +44,7 @@ const createMutationQuery = createMutation(() =>
 const updateMutationQuery = createMutation(() =>
   ruleUpdateMutation(() => {
     queryClient.invalidateQueries({
-      queryKey: ["userRules", currentNetworkId],
+      queryKey: queryKeys.networkRules(currentNetworkId),
     }),
       (dialogState = false);
   }),

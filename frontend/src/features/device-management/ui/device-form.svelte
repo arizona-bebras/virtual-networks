@@ -15,6 +15,7 @@ import FooterButtons from "$entities/table-page/ui/FooterButtons.svelte";
 import TagSelector from "$features/tag-management/ui/tag-selector.svelte";
 import { networkConfig } from "$pages/app/network/[slug]/config/api/query";
 import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
+import { queryKeys } from "$shared/api/query-keys";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import * as ButtonGroup from "$shared/ui/button-group/index.js";
@@ -45,20 +46,13 @@ const userTagsQuery = createQuery(() => deviceTags.userTags(currentNetworkId));
 const creationMutation = createMutation(() =>
   deviceСreationQuery(() => {
     queryClient.invalidateQueries({
-      queryKey: ["userDevices", currentNetworkId],
+      queryKey: queryKeys.networkDevices(currentNetworkId),
     });
     dialogState = false;
   }),
 );
 
-const updateMutation = createMutation(() =>
-  deviceUpdateMutation(() => {
-    queryClient.invalidateQueries({
-      queryKey: ["userDevices", currentNetworkId],
-    });
-    dialogState = false;
-  }),
-);
+const updateMutation = createMutation(() => deviceUpdateMutation(() => {}));
 
 const createTagMutation = createMutation(() => tagDeviceCreation(() => {}));
 const deleteTagMutation = createMutation(() => tagDeviceRemove(() => {}));
@@ -75,7 +69,7 @@ let {
 } = useForm(CreateDeviceSchema, {
   onSubmit: async () => {
     if (device) {
-      updateMutation.mutate({
+      await updateMutation.mutateAsync({
         networkId: currentNetworkId,
         deviceId: device.id,
         deviceInfo: {
@@ -93,27 +87,27 @@ let {
         (current) => !device.tags.some((orig) => orig.id === current.id),
       );
 
-      for (const tag of tagsToRemove) {
-        deleteTagMutation.mutate({
-          networkId: currentNetworkId,
-          tagId: tag.id,
-          deviceId: device.id,
-          deviceInfo: device,
-        });
-      }
-      for (const tag of tagsToAdd) {
-        createTagMutation.mutate({
-          networkId: currentNetworkId,
-          tagId: tag.id,
-          deviceId: device.id,
-          deviceInfo: device,
-        });
-      }
-      queryClient.invalidateQueries({
-        queryKey: ["userDevices", currentNetworkId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["userTags", currentNetworkId],
+      await Promise.all([
+        ...tagsToRemove.map((tag) =>
+          deleteTagMutation.mutateAsync({
+            networkId: currentNetworkId,
+            tagId: tag.id,
+            deviceId: device.id,
+            deviceInfo: device,
+          }),
+        ),
+        ...tagsToAdd.map((tag) =>
+          createTagMutation.mutateAsync({
+            networkId: currentNetworkId,
+            tagId: tag.id,
+            deviceId: device.id,
+            deviceInfo: device,
+          }),
+        ),
+      ]);
+
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.network(currentNetworkId),
       });
       dialogState = false;
     } else {

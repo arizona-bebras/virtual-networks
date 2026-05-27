@@ -3,6 +3,7 @@ import type { CreateDevice } from "common/schemas/device/create-device";
 import type { DeviceRelations } from "common/schemas/device/index";
 import type { UpdateDevice } from "common/schemas/device/update-device";
 import { client } from "$shared/api/openapi-client";
+import { queryKeys } from "$shared/api/query-keys";
 
 export const deviceСreationQuery = (onSuccess: () => void) =>
   mutationOptions({
@@ -145,7 +146,7 @@ export const tagDeviceRemove = (onSuccess: () => void) =>
   });
 export const deviceOwners = (networkId: string) =>
   queryOptions({
-    queryKey: ["deviceOwners", networkId],
+    queryKey: queryKeys.networkUsers(networkId),
     queryFn: async () => {
       const { data, error } = await client.GET("/networks/{network_id}/users", {
         params: {
@@ -161,7 +162,7 @@ export const deviceOwners = (networkId: string) =>
 
 export const deviceConfigQuery = (networkId: string, deviceId: string) =>
   queryOptions({
-    queryKey: ["device", networkId, deviceId, "config"],
+    queryKey: queryKeys.networkDeviceConfig(networkId, deviceId),
     enabled: false,
     queryFn: async () => {
       const { data, error } = await client.GET(
@@ -176,6 +177,7 @@ export const deviceConfigQuery = (networkId: string, deviceId: string) =>
         },
       );
       if (error) throw error;
+      if (!data) throw new Error("Device config response is empty");
       return data;
     },
   });

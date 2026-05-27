@@ -3,6 +3,7 @@ import { SquarePen, Trash } from "@lucide/svelte";
 import { createMutation, getQueryClientContext } from "@tanstack/svelte-query";
 import type { Tag } from "common/schemas/tag/index";
 import { page } from "$app/state";
+import { queryKeys } from "$shared/api/query-keys";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { Button } from "$shared/ui/button/index.js";
 import * as Dialog from "$shared/ui/dialog/index.js";
@@ -19,7 +20,9 @@ let currentNetworkId = $derived(getNetworkId().id);
 
 const deleteMutation = createMutation(() =>
   tagDeletionMutation(() => {
-    queryClient.invalidateQueries({ queryKey: ["userTags"] });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.network(currentNetworkId),
+    });
   }),
 );
 
