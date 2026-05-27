@@ -30,7 +30,7 @@ export interface paths {
     /** Получить сети, в которых состоит пользователь */
     get: operations["NetworksController_getMyNetworks"];
     put?: never;
-    /** Создать новую123 сеть */
+    /** Создать новую сеть */
     post: operations["NetworksController_create"];
     delete?: never;
     options?: never;
@@ -252,8 +252,8 @@ export interface components {
       domain: string;
       /** @description A description of the network */
       description: string;
-      /** @description The IP address range of the network */
-      cidr?: string;
+      /** Format: cidrv4 */
+      cidr: string;
     };
     NetworkDto: {
       /**
@@ -305,15 +305,15 @@ export interface components {
       domain?: string;
       /** @description A description of the network */
       description?: string;
-      /** @description The IP address range of the network */
-      cidr?: string;
+      /** Format: cidrv4 */
+      cidr: string;
     };
     CreateDeviceDto: {
       /** @description The name of the device */
       name: string;
       /** @description The domain of the device in the network */
       slug: string;
-      /** @description The IP address of the device */
+      /** Format: ipv4 */
       ip: string;
       /** @description The identifier of the device owner */
       ownerId?: string;
@@ -360,8 +360,8 @@ export interface components {
       name?: string;
       /** @description The domain of the device in the network */
       slug?: string;
-      /** @description The IP address of the device */
-      ip?: string;
+      /** Format: ipv4 */
+      ip: string;
       /** @description The identifier of the device owner */
       ownerId?: string;
     };
@@ -404,7 +404,8 @@ export interface components {
     CreateRuleDto: {
       sourceId?: string | null;
       destId?: string | null;
-      description?: string | null;
+      /** @description A description of the rule */
+      description: string;
       protocol?: ("TCP" | "UDP" | "ICMP") | null;
       port?: number | null;
     };
@@ -416,7 +417,8 @@ export interface components {
       id: string;
       sourceId: string | null;
       destId: string | null;
-      description: string | null;
+      /** @description A description of the rule */
+      description: string;
       protocol: ("TCP" | "UDP" | "ICMP") | null;
       port: number | null;
       /** @description The source tag */
@@ -453,7 +455,8 @@ export interface components {
     UpdateRuleDto: {
       sourceId?: string | null;
       destId?: string | null;
-      description?: string | null;
+      /** @description A description of the rule */
+      description?: string;
       protocol?: ("TCP" | "UDP" | "ICMP") | null;
       port?: number | null;
     };
