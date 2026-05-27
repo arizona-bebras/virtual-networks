@@ -68,7 +68,8 @@ func startDNSResolver(
 
 func newDNSResolver(overlay OverlayConfig, protocols []ProtocolConfig, forwarder string) *dnsResolver {
 	records := map[string]netip.Addr{
-		"router.internal.": overlay.ServerAddr,
+		"router.internal.":               overlay.ServerAddr,
+		normalizeDNSName(overlay.Domain): overlay.ServerAddr,
 	}
 
 	for _, protocol := range protocols {
@@ -76,7 +77,7 @@ func newDNSResolver(overlay OverlayConfig, protocols []ProtocolConfig, forwarder
 			continue
 		}
 		for _, peer := range protocol.WireGuard.Peers {
-			name := normalizeDNSName(peer.ID + ".internal")
+			name := normalizeDNSName(peer.Domain + "." + overlay.Domain)
 			if existing, ok := records[name]; ok && existing != peer.Addr {
 				log.Printf("dns record %s has conflicting addresses %s and %s; keeping %s", name, existing, peer.Addr, existing)
 				continue

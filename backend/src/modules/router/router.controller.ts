@@ -58,6 +58,7 @@ const createPeerConfig = (
     id: peerId,
     networkId: networkId,
     address: address,
+    domain: peerId,
     allowedIps: [`${address}/32`],
     wireguard: {
       publicKey: publicKey(peerId),
@@ -74,6 +75,7 @@ const createStaticConfiguration = (): RouterConfiguration => {
         name: "primary",
         cidr: "10.44.0.0/24",
         serverAddress: "10.44.0.1",
+        domain: "primary.internal",
         mtu: 1420,
         statusPort: 8080,
         peers: [
@@ -85,6 +87,7 @@ const createStaticConfiguration = (): RouterConfiguration => {
         id: "secondary",
         name: "secondary",
         cidr: "10.44.0.0/24",
+        domain: "secondary.internal",
         serverAddress: "10.44.0.1",
         mtu: 1420,
         statusPort: 8080,
