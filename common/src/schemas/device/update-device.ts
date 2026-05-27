@@ -1,5 +1,5 @@
 import { createUpdateSchema } from "drizzle-orm/zod";
-import type { z } from "zod";
+import { z } from "zod";
 import { devices } from "../../db/schema.js";
 
 export const UpdateDeviceSchema = createUpdateSchema(devices, {
@@ -10,7 +10,7 @@ export const UpdateDeviceSchema = createUpdateSchema(devices, {
       .max(32)
       .regex(/^[a-z0-9-]+$/)
       .describe("The domain of the device in the network"),
-  ip: (schema) => schema.describe("The IP address of the device"),
+  ip: z.ipv4(),
   ownerId: (schema) => schema.describe("The identifier of the device owner"),
 }).omit({ id: true, networkId: true, keysId: true });
 

@@ -95,7 +95,7 @@ $effect(() => {
   <Form.Field {form} name="description">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label>Описание</Form.Label>
+        <Form.Label type="required">Описание</Form.Label>
         <Input
           {...props}
           bind:value={$formData.description}
