@@ -31,12 +31,13 @@ const deleteDeviceMutation = createMutation(() =>
 );
 
 let isQrCodeDialogOpen = $state(false);
-const config = createQuery(() =>
-  deviceConfigQuery(currentNetworkId, device.id),
-);
+const queryOptions = () => deviceConfigQuery(currentNetworkId, device.id);
+const config = createQuery(queryOptions);
 
-function downloadConfig() {
-  if (!config.data || !config.isSuccess) return;
+async function downloadConfig() {
+  await queryClient.ensureQueryData({ queryKey: queryOptions().queryKey });
+
+  if (!config.data) return;
   const blob = new Blob([config.data.config], { type: "text/plain" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -54,13 +55,21 @@ function handleDelete() {
     deviceId: device.id,
   });
 }
+$inspect(config.data?.qrCode);
 </script>
 
 <div class="text-right">
   <Button variant="ghost" size="icon" onclick={() => isEditDialogOpen = true}>
     <SquarePen class="size-4" />
   </Button>
-  <Button variant="ghost" size="icon" onclick={() => isQrCodeDialogOpen = true}>
+  <Button
+    variant="ghost"
+    size="icon"
+    onclick={() => {
+      queryClient.ensureQueryData({ queryKey: queryOptions().queryKey });
+      isQrCodeDialogOpen = true;
+    }}
+  >
     <QrCode class="size-4" />
   </Button>
   <Button variant="ghost" size="icon" onclick={downloadConfig}>

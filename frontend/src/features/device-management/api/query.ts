@@ -161,7 +161,8 @@ export const deviceOwners = (networkId: string) =>
 
 export const deviceConfigQuery = (networkId: string, deviceId: string) =>
   queryOptions({
-    queryKey: ["deviceConfig", networkId, deviceId],
+    queryKey: ["device", networkId, deviceId, "config"],
+    enabled: false,
     queryFn: async () => {
       const { data, error } = await client.GET(
         "/networks/{network_id}/devices/{device_id}/config",
