@@ -15,7 +15,7 @@ let {
 
 <Dialog.Root bind:open>
   <Dialog.Content class="sm:max-w-[425px]">
-    <Dialog.Header class="flex flex-row items items-center gap-2">
+    <Dialog.Header class="flex flex-row items items-center gap-2 mb-1">
       <div class="p-2 border border-muted-foreground bg-secondary rounded-full">
         <TagIcon class="size-6.5 stroke-secondary-foreground" />
       </div>
