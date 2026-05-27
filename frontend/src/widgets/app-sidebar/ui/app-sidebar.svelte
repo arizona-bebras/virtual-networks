@@ -11,6 +11,7 @@ import {
   Tag,
 } from "@lucide/svelte";
 import { createQuery, getQueryClientContext } from "@tanstack/svelte-query";
+import { PanelRightOpen } from "lucide-svelte";
 import { getContext, untrack } from "svelte";
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
@@ -101,9 +102,7 @@ $inspect(sidebar.state);
           <Sidebar.GroupContent>
             <Sidebar.Menu class="gap-0.5">
               {#each navItems as item (item.title)}
-                <Sidebar.MenuItem
-                  class={sidebar.state === 'collapsed' ? '' : 'pl-1'}
-                >
+                <Sidebar.MenuItem>
                   <Sidebar.MenuButton
                     class="rounded-[6px] {page.url.pathname === item.url ? 'border border-border bg-sidebar-primary font-medium':''}"
                   >
@@ -116,15 +115,6 @@ $inspect(sidebar.state);
                   </Sidebar.MenuButton>
                 </Sidebar.MenuItem>
               {/each}
-              <Sidebar.MenuItem
-                class={sidebar.state === 'collapsed' ? '' : 'pl-1'}
-                onclick={() => sidebar.toggle()}
-              >
-                <Sidebar.MenuButton class="rounded-[6px]">
-                  <PanelRightClose />
-                  <p>Свернуть</p>
-                </Sidebar.MenuButton>
-              </Sidebar.MenuItem>
             </Sidebar.Menu>
           </Sidebar.GroupContent>
         </Sidebar.Group>
@@ -132,11 +122,21 @@ $inspect(sidebar.state);
     </Sidebar.Content>
 
     <Sidebar.Footer>
-      <Sidebar.Menu>
+      <Sidebar.Menu class="gap-0.5">
         <Sidebar.MenuItem>
-          <Sidebar.MenuButton onclick={handleLogout}>
+          <Sidebar.MenuButton onclick={handleLogout} class="rounded-[6px]">
             <LogOut class="size-4" />
             <span>Выйти</span>
+          </Sidebar.MenuButton>
+        </Sidebar.MenuItem>
+        <Sidebar.MenuItem onclick={() => sidebar.toggle()}>
+          <Sidebar.MenuButton class="rounded-[6px]">
+            {#if sidebar.state === 'collapsed'}
+              <PanelRightClose />
+            {:else}
+              <PanelRightOpen />
+            {/if}
+            <p>Свернуть</p>
           </Sidebar.MenuButton>
         </Sidebar.MenuItem>
       </Sidebar.Menu>

@@ -58,7 +58,7 @@ CREATE TABLE "network_users" (
 CREATE TABLE "networks" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	"name" varchar(255) NOT NULL,
-	"domain" varchar(255) NOT NULL,
+	"domain" varchar(63) NOT NULL,
 	"description" varchar(255) NOT NULL,
 	"cidr" cidr DEFAULT '192.168.123.0/24' NOT NULL,
 	"creator_id" text,
@@ -69,7 +69,7 @@ CREATE TABLE "rules" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	"source_id" uuid,
 	"dest_id" uuid,
-	"description" varchar(255),
+	"description" varchar(255) NOT NULL,
 	"protocol" "protocol",
 	"port" integer,
 	"network_id" uuid NOT NULL
