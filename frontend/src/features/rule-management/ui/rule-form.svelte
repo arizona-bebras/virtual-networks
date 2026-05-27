@@ -91,7 +91,7 @@ $effect(() => {
 </script>
 
 <form method="POST" use:enhance class="relative">
-  <Separator class="bg-border absolute -top-2 -left-4 w-124!" />
+  <Separator class="bg-border absolute -top-2 -left-4 w-106!" />
   <Form.Field {form} name="description">
     <Form.Control>
       {#snippet children({ props })}
@@ -118,7 +118,7 @@ $effect(() => {
                   color={selectedSourceTag.color}
                 />
               {:else}
-                <span>Выберите тег</span>
+                <span>Любой</span>
               {/if}
             </Select.Trigger>
             <Select.Content>
@@ -127,6 +127,9 @@ $effect(() => {
                   <TagListItem name={tag.name} color={tag.color} />
                 </Select.Item>
               {/each}
+              <Select.Item value="" onclick={() => $formData.sourceId = null}>
+                Любой
+              </Select.Item>
             </Select.Content>
           </Select.Root>
         {/snippet}
@@ -146,7 +149,7 @@ $effect(() => {
                   color={selectedDestTag.color}
                 />
               {:else}
-                <span>Выберите тег</span>
+                <span>Любой</span>
               {/if}
             </Select.Trigger>
             <Select.Content>
@@ -155,6 +158,9 @@ $effect(() => {
                   <TagListItem name={tag.name} color={tag.color} />
                 </Select.Item>
               {/each}
+              <Select.Item value="" onclick={() => $formData.destId = null}>
+                Любой
+              </Select.Item>
             </Select.Content>
           </Select.Root>
         {/snippet}
@@ -176,12 +182,15 @@ $effect(() => {
           }}
           >
             <Select.Trigger class="w-[180px]">
-              {$formData.protocol ? $formData.protocol : 'Выберите протокол'}
+              {$formData.protocol ? $formData.protocol : 'Любой'}
             </Select.Trigger>
             <Select.Content>
               {#each protocolOptions as protocol (protocol)}
                 <Select.Item value={protocol}>{protocol}</Select.Item>
               {/each}
+              <Select.Item value="" onclick={() => $formData.protocol = null}>
+                Любой
+              </Select.Item>
             </Select.Content>
           </Select.Root>
         {/snippet}

@@ -16,18 +16,17 @@ import * as Card from "$shared/ui/card/index.js";
 
 let { id, data }: NodeProps<Node<TagNodeData>> = $props();
 
-let color = $derived(data.color);
+let colorObj = $derived(colorVariants[data.color ?? "gray"]);
 </script>
 
 <Card.Root
-  class="group relative w-36 bg-card border {color ? `${colorVariants[color].borderColor} ${colorVariants[color].backgroundColor}` : '' } shadow-sm overflow-hidden hover:brightness-75 hover:opacity-75 hover:shadow-md transition-all duration-200 rounded-[14px]"
+  class="group relative w-36 bg-card border {colorObj.borderColor} {colorObj.backgroundColor} shadow-sm overflow-hidden hover:brightness-75 hover:opacity-75 hover:shadow-md transition-all duration-200 rounded-[14px]"
 >
   <div class="flex items-center gap-2 p-1">
     <div
-      class="flex items-center justify-center size-6 rounded-md flex-shrink-0"
-      style="background-color: {data.color || '#3b82f6'}20"
+      class="flex items-center justify-center size-6 rounded-md shrink-0 {colorObj.backgroundColor}"
     >
-      <Tag size={14} style="color: {data.color || '#3b82f6'}" />
+      <Tag size={14} class={colorObj.textColor} />
     </div>
     <div class="flex flex-col min-w-0 flex-1">
       <span class="text-[10px] font-bold truncate leading-tight">

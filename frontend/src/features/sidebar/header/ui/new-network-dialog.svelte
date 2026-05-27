@@ -41,7 +41,7 @@ let {
 
 <Dialog.Root bind:open={isDialogOpen}>
   <Dialog.Content>
-    <Dialog.Header class="flex flex-row items items-center gap-2">
+    <Dialog.Header class="flex flex-row items items-center gap-2 mb-1">
       <div class="p-2 border border-muted-foreground bg-secondary rounded-full">
         <Network class="size-6.5 stroke-secondary-foreground" />
       </div>
@@ -58,7 +58,11 @@ let {
         <Form.Control>
           {#snippet children({ props })}
             <Form.Label type="required">Название</Form.Label>
-            <Input {...props} bind:value={$formData.name} />
+            <Input
+              {...props}
+              bind:value={$formData.name}
+              placeholder="Моя сеть"
+            />
           {/snippet}
         </Form.Control>
         <Form.FieldErrors />
@@ -66,8 +70,12 @@ let {
       <Form.Field {form} name="description">
         <Form.Control>
           {#snippet children({ props })}
-            <Form.Label>Описание</Form.Label>
-            <Input {...props} bind:value={$formData.description} />
+            <Form.Label type="required">Описание</Form.Label>
+            <Input
+              {...props}
+              bind:value={$formData.description}
+              placeholder="Сеть для второго офиса"
+            />
           {/snippet}
         </Form.Control>
         <Form.FieldErrors />
@@ -79,7 +87,7 @@ let {
             <Input
               {...props}
               bind:value={$formData.cidr}
-              placeholder="192.168.1.0/24"
+              placeholder="10.0.0.0/24"
             />
           {/snippet}
         </Form.Control>
@@ -93,7 +101,7 @@ let {
             <Input
               {...props}
               bind:value={$formData.domain}
-              placeholder="192.168.1.0/24"
+              placeholder="internal"
             />
           {/snippet}
         </Form.Control>

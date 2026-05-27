@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   LogOut,
   Monitor,
+  PanelRightClose,
   Plus,
   Settings,
   ShieldAlert,
@@ -16,6 +17,7 @@ import { page } from "$app/state";
 import { authClient } from "$shared/api/auth-client";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import * as Sidebar from "$shared/ui/sidebar/index.js";
+import { useSidebar } from "$shared/ui/sidebar/index.js";
 import NetworkSelector from "$widgets/app-sidebar/ui/network-select.svelte";
 import { sidebarQuerys } from "../api/index.svelte";
 
@@ -79,9 +81,11 @@ async function handleLogout() {
 
 //     })
 //   })
+const sidebar = useSidebar();
+$inspect(sidebar.state);
 </script>
 {#if userNetworks.isSuccess}
-  <Sidebar.Root>
+  <Sidebar.Root collapsible="icon">
     <Sidebar.Header>
       <Sidebar.Menu>
         <Sidebar.MenuItem>
@@ -97,7 +101,9 @@ async function handleLogout() {
           <Sidebar.GroupContent>
             <Sidebar.Menu class="gap-0.5">
               {#each navItems as item (item.title)}
-                <Sidebar.MenuItem class="pl-1">
+                <Sidebar.MenuItem
+                  class={sidebar.state === 'collapsed' ? '' : 'pl-1'}
+                >
                   <Sidebar.MenuButton
                     class="rounded-[6px] {page.url.pathname === item.url ? 'border border-border bg-sidebar-primary font-medium':''}"
                   >
@@ -110,6 +116,15 @@ async function handleLogout() {
                   </Sidebar.MenuButton>
                 </Sidebar.MenuItem>
               {/each}
+              <Sidebar.MenuItem
+                class={sidebar.state === 'collapsed' ? '' : 'pl-1'}
+                onclick={() => sidebar.toggle()}
+              >
+                <Sidebar.MenuButton class="rounded-[6px]">
+                  <PanelRightClose />
+                  <p>Свернуть</p>
+                </Sidebar.MenuButton>
+              </Sidebar.MenuItem>
             </Sidebar.Menu>
           </Sidebar.GroupContent>
         </Sidebar.Group>

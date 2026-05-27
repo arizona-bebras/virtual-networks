@@ -80,12 +80,8 @@ $effect(() => {
   <Form.Field {form} name="name">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label type="required">Название</Form.Label>
-        <Input
-          {...props}
-          bind:value={$formData.name}
-          placeholder="Например: Серверы"
-        />
+        <Form.Label>Название</Form.Label>
+        <Input {...props} bind:value={$formData.name} placeholder="Серверы" />
       {/snippet}
     </Form.Control>
     <Form.Description />

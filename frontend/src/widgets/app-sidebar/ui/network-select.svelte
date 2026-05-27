@@ -80,7 +80,7 @@ let isDialogOpen = $state(false);
           </div>
         </DropdownMenu.Item>
       {/each}
-      <DropdownMenu.Separator />
+      <DropdownMenu.Separator class="mt-1.25" />
     {/if}
     <DropdownMenu.Item
       class="mt-1 w-full bg-secondary rounded-[8px] gap-1 flex items-center justify-center hover:bg-secondary-accent! hover:text-lime-500!"

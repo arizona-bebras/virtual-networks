@@ -107,8 +107,12 @@ function handleDelete() {
           <Form.Field {form} name="name">
             <Form.Control>
               {#snippet children({ props })}
-                <Form.Label type="required">Название сети</Form.Label>
-                <Input {...props} bind:value={$formData.name} />
+                <Form.Label>Название сети</Form.Label>
+                <Input
+                  {...props}
+                  bind:value={$formData.name}
+                  placeholder="Моя сеть"
+                />
               {/snippet}
             </Form.Control>
             <Form.FieldErrors />
@@ -156,7 +160,11 @@ function handleDelete() {
             <Form.Control>
               {#snippet children({ props })}
                 <Form.Label>Описание</Form.Label>
-                <Input {...props} bind:value={$formData.description} />
+                <Input
+                  {...props}
+                  bind:value={$formData.description}
+                  placeholder="Сеть для домашних устройств"
+                />
               {/snippet}
             </Form.Control>
             <Form.FieldErrors />
@@ -165,8 +173,12 @@ function handleDelete() {
           <Form.Field {form} name="domain">
             <Form.Control>
               {#snippet children({ props })}
-                <Form.Label type="required">Домен</Form.Label>
-                <Input {...props} bind:value={$formData.domain} />
+                <Form.Label>Домен</Form.Label>
+                <Input
+                  {...props}
+                  bind:value={$formData.domain}
+                  placeholder="internal"
+                />
               {/snippet}
             </Form.Control>
             <Form.FieldErrors />
