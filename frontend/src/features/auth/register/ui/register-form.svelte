@@ -72,6 +72,7 @@ const {
               {...props}
               bind:value={$formData.mail}
               placeholder="m@example.com"
+              autocomplete="username"
             />
           {/snippet}
         </Form.Control>
