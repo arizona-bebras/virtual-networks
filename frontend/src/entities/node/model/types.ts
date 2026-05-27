@@ -13,7 +13,7 @@ export type TagNodeData = {
   label: string;
   id: string;
   name: string;
-  color: TagColor;
+  color: TagColor | "gray";
   count: number;
 };
 
