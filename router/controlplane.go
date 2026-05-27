@@ -323,7 +323,7 @@ func configFromControlPlane(snapshot *controlplanepb.RouterConfiguration) (Confi
 
 		overlays = append(overlays, OverlayConfig{
 			NetworkID:   network.GetId(),
-      Domain:      network.GetDomain(),
+			Domain:      network.GetDomain(),
 			MTU:         mtu,
 			ServerAddr:  serverAddr,
 			OverlayCIDR: overlayCIDR,
@@ -420,7 +420,7 @@ func selectWireGuardPeers(peers []*controlplanepb.PeerConfig, peerIDs []string) 
 		}
 		out = append(out, WireGuardPeerConfig{
 			ID:           peer.GetId(),
-      Domain:       peer.GetDomain(),
+			Domain:       peer.GetDomain(),
 			Addr:         addr,
 			PublicKey:    publicKey,
 			PresharedKey: presharedKey,

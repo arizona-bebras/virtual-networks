@@ -68,7 +68,7 @@ func startDNSResolver(
 
 func newDNSResolver(overlay OverlayConfig, protocols []ProtocolConfig, forwarder string) *dnsResolver {
 	records := map[string]netip.Addr{
-		"router.internal.": overlay.ServerAddr,
+		"router.internal.":               overlay.ServerAddr,
 		normalizeDNSName(overlay.Domain): overlay.ServerAddr,
 	}
 

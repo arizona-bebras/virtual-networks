@@ -18,7 +18,7 @@ type Config struct {
 
 type OverlayConfig struct {
 	NetworkID   string
-  Domain      string
+	Domain      string
 	MTU         int
 	ServerAddr  netip.Addr
 	OverlayCIDR netip.Prefix
@@ -45,7 +45,7 @@ type WireGuardProtocolConfig struct {
 type WireGuardPeerConfig struct {
 	ID           string
 	Addr         netip.Addr
-  Domain       string 
+	Domain       string
 	PublicKey    [32]byte
 	PresharedKey *[32]byte
 }
