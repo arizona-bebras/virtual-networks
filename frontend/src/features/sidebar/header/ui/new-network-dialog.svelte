@@ -86,6 +86,20 @@ let {
 
         <Form.FieldErrors />
       </Form.Field>
+      <Form.Field {form} name="domain">
+        <Form.Control>
+          {#snippet children({ props })}
+            <Form.Label type="required">Домен</Form.Label>
+            <Input
+              {...props}
+              bind:value={$formData.domain}
+              placeholder="192.168.1.0/24"
+            />
+          {/snippet}
+        </Form.Control>
+
+        <Form.FieldErrors />
+      </Form.Field>
       <div class="flex justify-end gap-2 mt-2 font-semibold">
         <button
           type="button"

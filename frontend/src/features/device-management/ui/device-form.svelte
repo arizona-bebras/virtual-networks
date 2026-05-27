@@ -61,24 +61,18 @@ const updateMutation = createMutation(() =>
 );
 
 const createTagMutation = createMutation(() => tagDeviceCreation(() => {}));
-
 const deleteTagMutation = createMutation(() => tagDeviceRemove(() => {}));
 
 let isTagSelectorOpen = $state(false);
 // svelte-ignore state_referenced_locally
 let deviceTagsArray = $state(device?.tags || []);
 
-//TODO: удалить после добавления поля в схему CreateDeviceSchema
-const CreateDeviceSchemaMock = CreateDeviceSchema.extend({
-  slug: z.string().min(1, "Поле должно быть заполнено"),
-});
-
 let {
   forms: form,
   formData,
   valid,
   enhance,
-} = useForm(CreateDeviceSchemaMock, {
+} = useForm(CreateDeviceSchema, {
   onSubmit: async () => {
     if (device) {
       updateMutation.mutate({
@@ -88,6 +82,7 @@ let {
           name: $formData.name,
           ip: $formData.ip,
           ownerId: device.ownerId,
+          slug: $formData.slug,
         },
       });
 
@@ -186,8 +181,7 @@ $effect(() => {
               <!-- <Link2Icon /> -->
             </InputGroup.Addon>
           </InputGroup.Root>
-          <!-- TODO: изменить после реализации свойства domain у сети на backend. После реализации брать домен из networkCfg -->
-          <ButtonGroup.Text>.com</ButtonGroup.Text>
+          <ButtonGroup.Text>.{networkCfg.data?.domain}</ButtonGroup.Text>
         </ButtonGroup.Root>
       {/snippet}
     </Form.Control>

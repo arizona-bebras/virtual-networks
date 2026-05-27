@@ -44,23 +44,13 @@ const deleteMutation = createMutation(() =>
   }),
 );
 
-// TODO: Убрать после добавления поля в схему UpdateNetworkSchema
-const tldRegex = /^(?=.*[a-z])[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/;
-const UpdateNetworkSchemaMock = UpdateNetworkSchema.extend({
-  domain: z
-    .string()
-    .max(16, "Домен верхнего уровня не может быть длиннее 9 символов")
-    .trim()
-    .toLowerCase()
-    .regex(tldRegex, { message: "Неверный формат домена верхнего уровня" }),
-});
-
 let {
   forms: form,
   formData,
   valid,
   enhance,
-} = useForm(UpdateNetworkSchemaMock, {
+} = useForm(UpdateNetworkSchema, {
+  resetForm: false,
   onSubmit: async () => {
     updateMutation.mutate({
       networkId,
@@ -68,17 +58,19 @@ let {
         name: $formData.name,
         cidr: $formData.cidr,
         description: $formData.description,
+        domain: $formData.domain,
       },
     });
   },
 });
 
 $effect(() => {
-  if (networkCfg.isSuccess && networkCfg.data) {
+  if (networkCfg.isSuccess) {
     untrack(() => {
       $formData.name = networkCfg?.data?.name;
       $formData.cidr = networkCfg?.data?.cidr;
       $formData.description = networkCfg?.data?.description;
+      $formData.domain = networkCfg?.data?.domain ?? "internal";
     });
   }
 });
@@ -94,7 +86,7 @@ function handleDelete() {
 }
 </script>
 
-{#if networkCfg.isSuccess && $formData.cidr}
+{#if networkCfg.isSuccess}
   <div class="mx-auto max-w-2xl p-8">
     <div class="mb-8">
       <h1 class="text-3xl font-bold tracking-tight">Конфигурация сети</h1>
@@ -135,24 +127,29 @@ function handleDelete() {
           <Form.FieldErrors />
         </Form.Field> -->
           <div class="">
-            <CidrInput bind:value={$formData.cidr} bind:info={cidrFieldInfo} />
-            {#if cidrFieldInfo}
-              {#if cidrFieldInfo?.isValid}
-                <p>
-                  Диапазон хостов: {cidrFieldInfo.firstHost} - {cidrFieldInfo.lastHost}
-                </p>
-                <p>Размер сети: {cidrFieldInfo.hostCount}</p>
-              {:else}
-                {@const error = cidrFieldInfo.error}
-                <p class="text-sm font-medium text-destructive">
-                  Ближайшие цифры {error.suggestion.lower}
-                  {error.suggestion.upper === -1 ? '' : `и ${error.suggestion.upper}`}
-                </p>
+            {#if $formData.cidr}
+              <CidrInput
+                bind:value={$formData.cidr}
+                bind:info={cidrFieldInfo}
+              />
+              {#if cidrFieldInfo}
+                {#if cidrFieldInfo?.isValid}
+                  <p>
+                    Диапазон хостов: {cidrFieldInfo.firstHost} - {cidrFieldInfo.lastHost}
+                  </p>
+                  <p>Размер сети: {cidrFieldInfo.hostCount}</p>
+                {:else}
+                  {@const error = cidrFieldInfo.error}
+                  <p class="text-sm font-medium text-destructive">
+                    Ближайшие цифры {error.suggestion.lower}
+                    {error.suggestion.upper === -1 ? '' : `и ${error.suggestion.upper}`}
+                  </p>
+                {/if}
               {/if}
+              <div class="mt-1">
+                <CidrSuggestion bind:cidr={$formData.cidr} />
+              </div>
             {/if}
-            <div class="mt-1">
-              <CidrSuggestion bind:cidr={$formData.cidr} />
-            </div>
           </div>
 
           <Form.Field {form} name="description">
@@ -185,12 +182,12 @@ function handleDelete() {
               {networkId}
             </span>
           </div>
-
-          <div class="flex justify-end gap-2 pt-4">
+          <Form.Button>Сохранить изменения</Form.Button>
+          <!-- <div class="flex justify-end gap-2 pt-4">
             <Button type="submit" disabled={!valid()}>
               Сохранить изменения
             </Button>
-          </div>
+          </div> -->
         </form>
       </Card.Content>
     </Card.Root>

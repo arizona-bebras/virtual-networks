@@ -1,5 +1,6 @@
 import {
   Activity,
+  Link,
   MapPin,
   MonitorSmartphone,
   Tag,
@@ -95,6 +96,24 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     },
     enableGlobalFilter: true,
     size: 150,
+  },
+  {
+    accessorKey: "slug",
+    header: ({ column }) => {
+      return renderComponent(DataTableSortButton, {
+        label: "Slug",
+        onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        icon: Link,
+      });
+    },
+    cell: ({ row }) => {
+      return row.original.slug;
+    },
+    enableGlobalFilter: false,
+    size: 150,
+    meta: {
+      icon: Activity,
+    },
   },
   {
     accessorKey: "owner",

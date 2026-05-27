@@ -30,7 +30,7 @@ export interface paths {
     /** Получить сети, в которых состоит пользователь */
     get: operations["NetworksController_getMyNetworks"];
     put?: never;
-    /** Создать новую сеть */
+    /** Создать новую123 сеть */
     post: operations["NetworksController_create"];
     delete?: never;
     options?: never;
@@ -245,7 +245,10 @@ export interface components {
     CreateNetworkDto: {
       /** @description The name of the network */
       name: string;
-      /** @description The domain of the network */
+      /**
+       * @description The domain of the network
+       * @default internal
+       */
       domain: string;
       /** @description A description of the network */
       description: string;

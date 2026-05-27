@@ -1,11 +1,5 @@
 <script lang="ts">
-import {
-  ChevronDown,
-  Globe,
-  LayoutDashboard,
-  Network,
-  Plus,
-} from "@lucide/svelte";
+import { ChevronDown, Globe, Network, Plus } from "@lucide/svelte";
 import type { CreateQueryResult } from "@tanstack/svelte-query";
 import { goto } from "$app/navigation";
 import AddNetworkBtn from "$features/sidebar/header/ui/new-network-dialog.svelte";
@@ -79,10 +73,9 @@ let isDialogOpen = $state(false);
             >
               {network.cidr}
             </p>
-            <!-- TODO: заменить после получения свойства domain в GET /networks -->
             <div class="flex self-end justify-end">
               <Globe />
-              <p class="">.ru</p>
+              <p class="">.{network.domain}</p>
             </div>
           </div>
         </DropdownMenu.Item>
