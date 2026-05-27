@@ -3,6 +3,8 @@ import type { Component } from "svelte";
 
 declare module "@tanstack/table-core" {
   interface ColumnMeta<TData extends RowData, TValue> {
+    cellClass?: string;
+    headerClass?: string;
     icon?: Component;
   }
 }

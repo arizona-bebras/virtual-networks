@@ -120,7 +120,8 @@ $effect(() => {
             {#each headerGroup.headers as header (header.id)}
               <Table.Head
                 colspan={header.colSpan}
-                class="border border-border p-0 bg-accent"
+                class="border border-border p-0 bg-accent {header.column.columnDef
+                  .meta?.headerClass ?? ''}"
               >
                 {#if !header.isPlaceholder}
                   <FlexRender
@@ -144,7 +145,9 @@ $effect(() => {
             {#each row.getVisibleCells() as cell (cell.id)}
               <!-- Убирем отступы у ячейки с checkbox -->
               <Table.Cell
-                class="border-y border-border/65 {cell.id.includes('select') ? 'p-0' : ''}"
+                class="border-y border-border/65 {cell.id.includes('select')
+                  ? 'p-0'
+                  : ''} {cell.column.columnDef.meta?.cellClass ?? ''}"
               >
                 <FlexRender
                   content={cell.column.columnDef.cell}

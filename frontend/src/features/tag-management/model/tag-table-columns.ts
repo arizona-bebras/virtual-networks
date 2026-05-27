@@ -84,5 +84,9 @@ export const columns: ColumnDef<Tag>[] = [
     cell: ({ row }) => {
       return renderComponent(TagActionsCell, { tag: row.original });
     },
+    meta: {
+      cellClass: "w-px",
+      headerClass: "w-px",
+    },
   },
 ];

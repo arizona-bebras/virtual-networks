@@ -1,14 +1,22 @@
 <script lang="ts">
-import { Edit, MoreHorizontal, Trash } from "@lucide/svelte";
-import { createMutation, getQueryClientContext } from "@tanstack/svelte-query";
+import { Download, Ellipsis, QrCode, SquarePen, Trash } from "@lucide/svelte";
+import {
+  createMutation,
+  createQuery,
+  getQueryClientContext,
+} from "@tanstack/svelte-query";
 import type { DeviceRelations } from "common/schemas/device/index";
-import { deviceDeletionMutation } from "$features/device-management/api/query";
+import {
+  deviceConfigQuery,
+  deviceDeletionMutation,
+} from "$features/device-management/api/query";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { Button } from "$shared/ui/button/index.js";
 import * as Dialog from "$shared/ui/dialog/index.js";
 import * as DropdownMenu from "$shared/ui/dropdown-menu/index.js";
 import DeviceDialog from "./device-dialog.svelte";
 import DeviceForm from "./device-form.svelte";
+import QrDialog from "./qr-dialog.svelte";
 
 let { device }: { device: DeviceRelations } = $props();
 
@@ -22,6 +30,24 @@ const deleteDeviceMutation = createMutation(() =>
   }),
 );
 
+let isQrCodeDialogOpen = $state(false);
+const config = createQuery(() =>
+  deviceConfigQuery(currentNetworkId, device.id),
+);
+
+function downloadConfig() {
+  if (!config.data || !config.isSuccess) return;
+  const blob = new Blob([config.data.config], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = config.data.name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function handleDelete() {
   deleteDeviceMutation.mutate({
     networkId: currentNetworkId,
@@ -31,23 +57,23 @@ function handleDelete() {
 </script>
 
 <div class="text-right">
-  <DropdownMenu.Root>
-    <DropdownMenu.Trigger>
-      <Button variant="ghost" size="icon">
-        <MoreHorizontal class="size-4" />
-      </Button>
-    </DropdownMenu.Trigger>
-    <DropdownMenu.Content align="end">
-      <DropdownMenu.Item onSelect={() => isEditDialogOpen = true}>
-        <Edit class="mr-2 size-4" />
-        Редактировать
-      </DropdownMenu.Item>
-      <DropdownMenu.Item class="text-destructive" onclick={handleDelete}>
-        <Trash class="mr-2 size-4" />
-        Удалить
-      </DropdownMenu.Item>
-    </DropdownMenu.Content>
-  </DropdownMenu.Root>
+  <Button variant="ghost" size="icon" onclick={() => isEditDialogOpen = true}>
+    <SquarePen class="size-4" />
+  </Button>
+  <Button variant="ghost" size="icon" onclick={() => isQrCodeDialogOpen = true}>
+    <QrCode class="size-4" />
+  </Button>
+  <Button variant="ghost" size="icon" onclick={downloadConfig}>
+    <Download class="size-4" />
+  </Button>
+  <Button
+    variant="destructive"
+    size="icon"
+    class="rounded-[6px]"
+    onclick={handleDelete}
+  >
+    <Trash class="size-4" />
+  </Button>
 </div>
 
 <DeviceDialog
@@ -56,6 +82,8 @@ function handleDelete() {
   {device}
   description="Измените параметры своего устройства"
 />
+
+<QrDialog bind:open={isQrCodeDialogOpen} qr={config.data?.qrCode} />
 
 <!-- <Dialog.Root bind:open={isEditDialogOpen}>
   <Dialog.Content>

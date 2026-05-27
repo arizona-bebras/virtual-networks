@@ -158,3 +158,23 @@ export const deviceOwners = (networkId: string) =>
       return data;
     },
   });
+
+export const deviceConfigQuery = (networkId: string, deviceId: string) =>
+  queryOptions({
+    queryKey: ["deviceConfig", networkId, deviceId],
+    queryFn: async () => {
+      const { data, error } = await client.GET(
+        "/networks/{network_id}/devices/{device_id}/config",
+        {
+          params: {
+            path: {
+              network_id: networkId,
+              device_id: deviceId,
+            },
+          },
+        },
+      );
+      if (error) throw error;
+      return data;
+    },
+  });

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Edit, MoreHorizontal, Trash } from "@lucide/svelte";
+import { SquarePen, Trash } from "@lucide/svelte";
 import { createMutation, getQueryClientContext } from "@tanstack/svelte-query";
 import type { Tag } from "common/schemas/tag/index";
 import { page } from "$app/state";
@@ -32,23 +32,17 @@ function handleDelete() {
 </script>
 
 <div class="text-right">
-  <DropdownMenu.Root>
-    <DropdownMenu.Trigger>
-      <Button variant="ghost" size="icon">
-        <MoreHorizontal class="size-4" />
-      </Button>
-    </DropdownMenu.Trigger>
-    <DropdownMenu.Content align="end">
-      <DropdownMenu.Item onSelect={() => isEditDialogOpen = true}>
-        <Edit class="mr-2 size-4" />
-        Редактировать
-      </DropdownMenu.Item>
-      <DropdownMenu.Item class="text-destructive" onclick={handleDelete}>
-        <Trash class="mr-2 size-4" />
-        Удалить
-      </DropdownMenu.Item>
-    </DropdownMenu.Content>
-  </DropdownMenu.Root>
+  <Button variant="ghost" size="icon" onclick={() => isEditDialogOpen = true}>
+    <SquarePen class="size-4" />
+  </Button>
+  <Button
+    variant="destructive"
+    size="icon"
+    class="rounded-[6px]"
+    onclick={handleDelete}
+  >
+    <Trash class="size-4" />
+  </Button>
 </div>
 
 <TagDialog
