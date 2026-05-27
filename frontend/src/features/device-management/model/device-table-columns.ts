@@ -11,6 +11,7 @@ import {
 import type { ColumnDef } from "@tanstack/table-core";
 import type { DeviceRelations } from "common/schemas/device/index";
 import type { Tag as TagType } from "common/schemas/tag/index";
+import DeviceDomainCell from "$entities/device/ui/device-domain-cell.svelte";
 import DeviceNameCell from "$entities/device/ui/device-name-cell.svelte";
 import DeviceStatusCell from "$entities/device/ui/device-status-cell.svelte";
 import DeviceTagsCell from "$entities/device/ui/device-tags-cell.svelte";
@@ -107,7 +108,9 @@ export const columns: ColumnDef<DeviceRelations>[] = [
       });
     },
     cell: ({ row }) => {
-      return row.original.slug;
+      return renderComponent(DeviceDomainCell, {
+        slug: row.getValue("slug"),
+      });
     },
     enableGlobalFilter: false,
     size: 150,

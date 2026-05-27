@@ -42,8 +42,12 @@ export class WireguardCfgService {
       margin: 2,
     });
 
+    const filename = device?.slug
+      .replaceAll(/[^a-zA-Z0-9_.-]/g, "")
+      .substring(10);
+
     return {
-      name: `${device?.name}.conf`,
+      name: `${filename ?? "config"}.conf`,
       config: configData,
       clientPublicKey: device?.keys?.publicKey?.toString("base64") ?? "",
       qrCode: qrCodeDataUrl,

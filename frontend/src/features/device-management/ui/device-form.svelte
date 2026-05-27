@@ -168,7 +168,7 @@ $effect(() => {
   <Form.Field {form} name="slug">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label type="required">Slug устройства</Form.Label>
+        <Form.Label type="required">Внутренний адрес</Form.Label>
         <ButtonGroup.Root>
           <InputGroup.Root class="rounded-[6px]">
             <InputGroup.Input
