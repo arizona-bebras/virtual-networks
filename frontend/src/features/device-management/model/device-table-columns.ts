@@ -174,6 +174,9 @@ export const columns: ColumnDef<DeviceRelations>[] = [
       return renderComponent(DeviceActionsCell, { device: row.original });
     },
     enableGlobalFilter: false,
-    size: 50,
+    meta: {
+      cellClass: "w-px",
+      headerClass: "w-px",
+    },
   },
 ];

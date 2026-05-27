@@ -3,6 +3,7 @@ import { Network, Plus } from "@lucide/svelte";
 import { createMutation, getQueryClientContext } from "@tanstack/svelte-query";
 import { CreateNetworkSchema } from "common/schemas/network/create-network";
 import { goto } from "$app/navigation";
+import { queryKeys } from "$shared/api/query-keys";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import * as Dialog from "$shared/ui/dialog/index.js";
 import * as Form from "$shared/ui/form/index.js";
@@ -14,7 +15,10 @@ const queryClient = getQueryClientContext();
 
 const query = createMutation(() =>
   headerQueries.createNetworkMutation(async (data) => {
-    await queryClient.invalidateQueries({ queryKey: ["userNetworks"] });
+    await queryClient.invalidateQueries({
+      queryKey: queryKeys.networks(),
+      exact: true,
+    });
     goto(`/app/network/${data.id}/dashboard`);
   }),
 );

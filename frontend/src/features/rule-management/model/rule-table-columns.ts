@@ -160,6 +160,9 @@ export const columns: ColumnDef<RuleRelation>[] = [
       return renderComponent(RuleActionsCell, { rule: row.original });
     },
     enableGlobalFilter: false,
-    size: 50,
+    meta: {
+      cellClass: "w-px",
+      headerClass: "w-px",
+    },
   },
 ];

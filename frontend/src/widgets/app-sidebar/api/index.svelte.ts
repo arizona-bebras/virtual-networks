@@ -1,10 +1,11 @@
 import { queryOptions } from "@tanstack/svelte-query";
 import { client } from "$shared/api/openapi-client";
+import { queryKeys } from "$shared/api/query-keys";
 
 export const sidebarQuerys = {
   networkDetails: (networkId: string) =>
     queryOptions({
-      queryKey: ["networkDetails", networkId],
+      queryKey: queryKeys.network(networkId),
       queryFn: async () => {
         const { data, error } = await client.GET("/networks/{network_id}", {
           params: {
@@ -19,7 +20,7 @@ export const sidebarQuerys = {
     }),
   userNetworks: () =>
     queryOptions({
-      queryKey: ["userNetworks"],
+      queryKey: queryKeys.networks(),
       queryFn: async () => {
         const { data, error } = await client.GET("/networks");
         if (error) throw error;

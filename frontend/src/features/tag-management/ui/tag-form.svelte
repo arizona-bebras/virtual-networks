@@ -3,6 +3,7 @@ import { createMutation, getQueryClientContext } from "@tanstack/svelte-query";
 import { CreateTagSchema } from "common/schemas/tag/create-tag";
 import type { Tag } from "common/schemas/tag/index";
 import FooterButtons from "$entities/table-page/ui/FooterButtons.svelte";
+import { queryKeys } from "$shared/api/query-keys";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import * as Form from "$shared/ui/form/index.js";
@@ -27,14 +28,18 @@ const colors = [
 
 const creationMutation = createMutation(() =>
   tagCreationMutation(() => {
-    queryClient.invalidateQueries({ queryKey: ["userTags"] });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkTags(currentNetworkId),
+    });
     dialogState = false;
   }),
 );
 
 const updateMutation = createMutation(() =>
   tagUpdateMutation(() => {
-    queryClient.invalidateQueries({ queryKey: ["userTags"] });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.network(currentNetworkId),
+    });
     dialogState = false;
   }),
 );

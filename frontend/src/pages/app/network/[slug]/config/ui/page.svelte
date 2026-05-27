@@ -11,6 +11,7 @@ import { goto } from "$app/navigation";
 import type { ValidationResult } from "$features/config/model/types";
 import CidrInput from "$features/config/ui/CidrInput.svelte";
 import CidrSuggestion from "$features/config/ui/CidrSuggestion.svelte";
+import { queryKeys } from "$shared/api/query-keys";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { Button } from "$shared/ui/button/index.js";
@@ -31,15 +32,21 @@ let cidrFieldInfo: ValidationResult | null = $state(null);
 
 const updateMutation = createMutation(() =>
   networkUpdateMutation(() => {
-    queryClient.invalidateQueries({ queryKey: ["networkConfig", networkId] });
-    queryClient.invalidateQueries({ queryKey: ["userNetworks"] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.network(networkId) });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networks(),
+      exact: true,
+    });
   }),
 );
 
 const deleteMutation = createMutation(() =>
   networkDeletionMutation(() => {
-    queryClient.invalidateQueries({ queryKey: ["networkConfig", networkId] });
-    queryClient.invalidateQueries({ queryKey: ["userNetworks"] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.network(networkId) });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networks(),
+      exact: true,
+    });
     goto("/app");
   }),
 );

@@ -1,11 +1,12 @@
 import { queryOptions } from "@tanstack/svelte-query";
 
 import { client } from "$shared/api/openapi-client";
+import { queryKeys } from "$shared/api/query-keys";
 
 export const deviceQuery = {
   userDevices: (networkId: string) =>
     queryOptions({
-      queryKey: ["userDevices", networkId],
+      queryKey: queryKeys.networkDevicesList(networkId),
       queryFn: async () => {
         const { data, error } = await client.GET(
           "/networks/{network_id}/devices",
@@ -35,7 +36,11 @@ export const userRules = (
   destTags?: string[],
 ) =>
   queryOptions({
-    queryKey: ["userRules", networkId, q, sourceTags, destTags],
+    queryKey: queryKeys.networkRulesList(networkId, {
+      q,
+      sourceTags,
+      destTags,
+    }),
     queryFn: async () => {
       const { data, error } = await client.GET("/networks/{network_id}/rules", {
         params: {

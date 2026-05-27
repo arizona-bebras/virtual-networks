@@ -1,7 +1,8 @@
 <script lang="ts">
-import { Edit, MoreHorizontal, Trash } from "@lucide/svelte";
+import { SquarePen, Trash } from "@lucide/svelte";
 import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 import type { RuleRelation } from "common/schemas/rule/index";
+import { queryKeys } from "$shared/api/query-keys";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { Button } from "$shared/ui/button/index.js";
 import * as Dialog from "$shared/ui/dialog/index.js";
@@ -16,7 +17,9 @@ const networkId = $derived(getNetworkId().id);
 const queryClient = useQueryClient();
 const deleteMutation = createMutation(() =>
   ruleDeletionMutation(() => {
-    queryClient.invalidateQueries({ queryKey: ["userRules"] });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkRules(networkId),
+    });
   }),
 );
 
@@ -28,23 +31,17 @@ function handleDelete() {
 </script>
 
 <div class="text-right">
-  <DropdownMenu.Root>
-    <DropdownMenu.Trigger>
-      <Button variant="ghost" size="icon">
-        <MoreHorizontal class="size-4" />
-      </Button>
-    </DropdownMenu.Trigger>
-    <DropdownMenu.Content align="end">
-      <DropdownMenu.Item onSelect={() => (isEditDialogOpen = true)}>
-        <Edit class="mr-2 size-4" />
-        Редактировать
-      </DropdownMenu.Item>
-      <DropdownMenu.Item class="text-destructive" onclick={handleDelete}>
-        <Trash class="mr-2 size-4" />
-        Удалить
-      </DropdownMenu.Item>
-    </DropdownMenu.Content>
-  </DropdownMenu.Root>
+  <Button variant="ghost" size="icon" onclick={() => isEditDialogOpen = true}>
+    <SquarePen class="size-4" />
+  </Button>
+  <Button
+    variant="destructive"
+    size="icon"
+    class="rounded-[6px]"
+    onclick={handleDelete}
+  >
+    <Trash class="size-4" />
+  </Button>
 </div>
 
 <RuleDialog
