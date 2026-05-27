@@ -68,7 +68,7 @@ $effect(() => {
   if (networkCfg.isSuccess) {
     untrack(() => {
       $formData.name = networkCfg?.data?.name;
-      $formData.cidr = networkCfg?.data?.cidr;
+      $formData.cidr = networkCfg?.data?.cidr ?? "";
       $formData.description = networkCfg?.data?.description;
       $formData.domain = networkCfg?.data?.domain ?? "internal";
     });
@@ -108,7 +108,11 @@ function handleDelete() {
             <Form.Control>
               {#snippet children({ props })}
                 <Form.Label>Название сети</Form.Label>
-                <Input {...props} bind:value={$formData.name} />
+                <Input
+                  {...props}
+                  bind:value={$formData.name}
+                  placeholder="Моя сеть"
+                />
               {/snippet}
             </Form.Control>
             <Form.FieldErrors />
@@ -156,7 +160,11 @@ function handleDelete() {
             <Form.Control>
               {#snippet children({ props })}
                 <Form.Label>Описание</Form.Label>
-                <Input {...props} bind:value={$formData.description} />
+                <Input
+                  {...props}
+                  bind:value={$formData.description}
+                  placeholder="Сеть для домашних устройств"
+                />
               {/snippet}
             </Form.Control>
             <Form.FieldErrors />
@@ -166,7 +174,11 @@ function handleDelete() {
             <Form.Control>
               {#snippet children({ props })}
                 <Form.Label>Домен</Form.Label>
-                <Input {...props} bind:value={$formData.domain} />
+                <Input
+                  {...props}
+                  bind:value={$formData.domain}
+                  placeholder="internal"
+                />
               {/snippet}
             </Form.Control>
             <Form.FieldErrors />

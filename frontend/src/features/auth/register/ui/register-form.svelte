@@ -58,7 +58,7 @@ const {
             <Input
               {...props}
               bind:value={$formData.username}
-              placeholder="Иван Иванов"
+              placeholder="Иван"
             />
           {/snippet}
         </Form.Control>
@@ -71,7 +71,7 @@ const {
             <Input
               {...props}
               bind:value={$formData.mail}
-              placeholder="m@example.com"
+              placeholder="qnlink@example.com"
             />
           {/snippet}
         </Form.Control>

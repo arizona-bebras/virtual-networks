@@ -58,7 +58,7 @@ const {
             <Input
               {...props}
               bind:value={$formData.mail}
-              placeholder="m@example.com"
+              placeholder="qnlink@example.com"
             />
           {/snippet}
         </Form.Control>
@@ -68,7 +68,12 @@ const {
         <Form.Control>
           {#snippet children({ props })}
             <Form.Label>Пароль</Form.Label>
-            <Input {...props} type="password" bind:value={$formData.password} />
+            <Input
+              {...props}
+              type="password"
+              bind:value={$formData.password}
+              placeholder="********"
+            />
           {/snippet}
         </Form.Control>
         <Form.FieldErrors />

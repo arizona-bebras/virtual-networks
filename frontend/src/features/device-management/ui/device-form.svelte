@@ -147,6 +147,7 @@ $effect(() => {
         <Input
           {...props}
           bind:value={$formData.name}
+          placeholder="Мой ноутбук"
           oninput={() => {
             $formData.slug = slugify($formData.name, {
               lower: true,
@@ -164,7 +165,7 @@ $effect(() => {
     <Form.Control>
       {#snippet children({ props })}
         <Form.Label type="required">IP-адрес</Form.Label>
-        <Input {...props} bind:value={$formData.ip} />
+        <Input {...props} bind:value={$formData.ip} placeholder="10.0.0.5" />
       {/snippet}
     </Form.Control>
     <Form.Description />
@@ -176,7 +177,11 @@ $effect(() => {
         <Form.Label>Slug устройства</Form.Label>
         <ButtonGroup.Root>
           <InputGroup.Root class="rounded-[6px]">
-            <InputGroup.Input id="url" bind:value={$formData.slug} />
+            <InputGroup.Input
+              id="url"
+              bind:value={$formData.slug}
+              placeholder="my-laptop"
+            />
             <InputGroup.Addon align="inline-end">
               <!-- <Link2Icon /> -->
             </InputGroup.Addon>
