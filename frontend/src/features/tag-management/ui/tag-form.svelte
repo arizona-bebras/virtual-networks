@@ -80,7 +80,7 @@ $effect(() => {
   <Form.Field {form} name="name">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label>Название</Form.Label>
+        <Form.Label type="required">Название</Form.Label>
         <Input
           {...props}
           bind:value={$formData.name}

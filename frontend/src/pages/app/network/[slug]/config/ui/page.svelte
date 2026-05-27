@@ -68,7 +68,7 @@ $effect(() => {
   if (networkCfg.isSuccess) {
     untrack(() => {
       $formData.name = networkCfg?.data?.name;
-      $formData.cidr = networkCfg?.data?.cidr;
+      $formData.cidr = networkCfg?.data?.cidr ?? "";
       $formData.description = networkCfg?.data?.description;
       $formData.domain = networkCfg?.data?.domain ?? "internal";
     });
@@ -107,7 +107,7 @@ function handleDelete() {
           <Form.Field {form} name="name">
             <Form.Control>
               {#snippet children({ props })}
-                <Form.Label>Название сети</Form.Label>
+                <Form.Label type="required">Название сети</Form.Label>
                 <Input {...props} bind:value={$formData.name} />
               {/snippet}
             </Form.Control>
@@ -165,7 +165,7 @@ function handleDelete() {
           <Form.Field {form} name="domain">
             <Form.Control>
               {#snippet children({ props })}
-                <Form.Label>Домен</Form.Label>
+                <Form.Label type="required">Домен</Form.Label>
                 <Input {...props} bind:value={$formData.domain} />
               {/snippet}
             </Form.Control>
@@ -182,12 +182,11 @@ function handleDelete() {
               {networkId}
             </span>
           </div>
-          <Form.Button>Сохранить изменения</Form.Button>
-          <!-- <div class="flex justify-end gap-2 pt-4">
+          <div class="flex justify-end gap-2 pt-4">
             <Button type="submit" disabled={!valid()}>
               Сохранить изменения
             </Button>
-          </div> -->
+          </div>
         </form>
       </Card.Content>
     </Card.Root>
