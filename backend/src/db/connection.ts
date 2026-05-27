@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-export const postgresConfig = {
+const postgresConfig = {
   host: process.env.POSTGRES_HOST ?? "localhost",
   port: Number(process.env.POSTGRES_PORT ?? 5432),
   user: process.env.POSTGRES_USER ?? "postgres",
@@ -8,4 +8,6 @@ export const postgresConfig = {
   database: process.env.POSTGRES_DB ?? "postgres",
 };
 
-export const postgresUrl = `postgresql://${postgresConfig.user}:${postgresConfig.password}@${postgresConfig.host}:${postgresConfig.port}/${postgresConfig.database}`;
+export const postgresUrl =
+  process.env.POSTGRES_URL ??
+  `postgresql://${postgresConfig.user}:${postgresConfig.password}@${postgresConfig.host}:${postgresConfig.port}/${postgresConfig.database}`;

@@ -226,7 +226,7 @@ export class NetworksService {
 
       const ipSet = new Set(devices.map((device) => device.ip));
 
-      for (let i = 0; i < 2 ** (32 - cidr.subnetMask) - 1; i++) {
+      for (let i = 1; i < 2 ** (32 - cidr.subnetMask) - 1; i++) {
         const next_ip_num =
           cidr.startAddressExclusive().bigInt() + 1n * BigInt(i);
         const next_ip = Address4.fromBigInt(next_ip_num).correctForm();

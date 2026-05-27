@@ -42,6 +42,7 @@ message NetworkConfig {
   uint32 mtu = 5;
   uint32 status_port = 6;
   repeated PeerConfig peers = 7;
+  string domain = 8;
 }
 
 message PeerConfig {
@@ -49,6 +50,7 @@ message PeerConfig {
   string network_id = 2;
   string address = 4;
   repeated string allowed_ips = 5;
+  string domain = 6;
 
   oneof protocol {
     WireGuardPeerConfig wireguard = 10;

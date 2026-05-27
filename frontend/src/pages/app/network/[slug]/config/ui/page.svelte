@@ -194,12 +194,11 @@ function handleDelete() {
               {networkId}
             </span>
           </div>
-          <Form.Button>Сохранить изменения</Form.Button>
-          <!-- <div class="flex justify-end gap-2 pt-4">
+          <div class="flex justify-end gap-2 pt-4">
             <Button type="submit" disabled={!valid()}>
               Сохранить изменения
             </Button>
-          </div> -->
+          </div>
         </form>
       </Card.Content>
     </Card.Root>

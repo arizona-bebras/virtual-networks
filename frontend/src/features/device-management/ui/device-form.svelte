@@ -143,7 +143,7 @@ $effect(() => {
   <Form.Field {form} name="name">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label>Название</Form.Label>
+        <Form.Label type="required">Название</Form.Label>
         <Input
           {...props}
           bind:value={$formData.name}
@@ -174,7 +174,7 @@ $effect(() => {
   <Form.Field {form} name="slug">
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label>Slug устройства</Form.Label>
+        <Form.Label type="required">Slug устройства</Form.Label>
         <ButtonGroup.Root>
           <InputGroup.Root class="rounded-[6px]">
             <InputGroup.Input
