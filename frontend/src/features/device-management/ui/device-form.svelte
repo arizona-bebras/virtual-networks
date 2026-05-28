@@ -8,7 +8,7 @@ import {
 import { CreateDeviceSchema } from "common/schemas/device/create-device";
 import type { DeviceRelations } from "common/schemas/device/index";
 import slugify from "slugify";
-import { untrack } from "svelte";
+import { onMount, untrack } from "svelte";
 import { z } from "zod";
 import Tags from "$entities/device/ui/device-tags-cell.svelte";
 import FooterButtons from "$entities/table-page/ui/FooterButtons.svelte";
@@ -125,6 +125,11 @@ let {
   },
 });
 
+onMount(() => {
+  if (!device) {
+    deviceIp.refetch();
+  }
+});
 $effect(() => {
   if (device) {
     $formData.name = device.name;
@@ -133,12 +138,10 @@ $effect(() => {
   }
 });
 $effect(() => {
-  if (deviceIp.isSuccess && !deviceIp.isRefetching) {
-    console.log(deviceIp.data.ip);
+  if (deviceIp.isSuccess && deviceIp.isRefetching) {
     $formData.ip = deviceIp.data.ip;
   }
 });
-$inspect(deviceIp.isRefetching);
 </script>
 
 <form method="POST" use:enhance class="relative">
