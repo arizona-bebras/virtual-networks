@@ -159,17 +159,26 @@ export class NetworksController {
 
   @Get(":network_id/get_free_ip")
   @Roles(Role.Admin)
-  @ApiOperation({ summary: "Добавить тег на устройство" })
+  @ApiOperation({ summary: "Получить ip устройства" })
   @ApiResponse({
     status: 200,
     description: "IP адрес получен",
+    schema: {
+      type: "object",
+      properties: {
+        ip: { type: "string" },
+      },
+      required: ["ip"],
+    },
   })
   @ApiResponse({ status: 400, description: "Сеть переполнена" })
   @ApiResponse({
     status: 404,
     description: "Сети с таким network_id не существует",
   })
-  async getFreeIp(@Param("network_id") networkId: string) {
+  async getFreeIp(
+    @Param("network_id") networkId: string,
+  ): Promise<{ ip: string }> {
     const ip = await this.networksService.getFreeIp(networkId);
     return { ip: ip };
   }

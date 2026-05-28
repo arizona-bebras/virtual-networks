@@ -181,3 +181,23 @@ export const deviceConfigQuery = (networkId: string, deviceId: string) =>
       return data;
     },
   });
+export const deviceIpQuery = (networkId: string) =>
+  queryOptions({
+    queryKey: queryKeys.networkDeviceIp(networkId),
+    enabled: true,
+    queryFn: async () => {
+      const { data, error } = await client.GET(
+        "/networks/{network_id}/get_free_ip",
+        {
+          params: {
+            path: {
+              network_id: networkId,
+            },
+          },
+        },
+      );
+      if (error) throw error;
+      if (!data) throw new Error("Device ip response is empty");
+      return data;
+    },
+  });

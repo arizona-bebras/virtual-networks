@@ -1,5 +1,5 @@
 <script lang="ts">
-import Link2Icon from "@lucide/svelte/icons/link-2";
+import { RotateCcw } from "@lucide/svelte";
 import {
   createMutation,
   createQuery,
@@ -26,6 +26,7 @@ import * as Label from "$shared/ui/label/index.js";
 import * as Popover from "$shared/ui/popover/index";
 import { Separator } from "$shared/ui/separator/index";
 import {
+  deviceIpQuery,
   deviceUpdateMutation,
   deviceСreationQuery,
   tagDeviceCreation,
@@ -42,6 +43,7 @@ let currentNetworkId = $derived(getNetworkId().id);
 
 const networkCfg = createQuery(() => networkConfig(currentNetworkId));
 const userTagsQuery = createQuery(() => deviceTags.userTags(currentNetworkId));
+const deviceIp = createQuery(() => deviceIpQuery(currentNetworkId));
 
 const creationMutation = createMutation(() =>
   deviceСreationQuery(() => {
@@ -130,6 +132,13 @@ $effect(() => {
     untrack(() => ($formData.slug = slugify($formData.name)));
   }
 });
+$effect(() => {
+  if (deviceIp.isSuccess && !deviceIp.isRefetching) {
+    console.log(deviceIp.data.ip);
+    $formData.ip = deviceIp.data.ip;
+  }
+});
+$inspect(deviceIp.isRefetching);
 </script>
 
 <form method="POST" use:enhance class="relative">
@@ -159,12 +168,28 @@ $effect(() => {
     <Form.Control>
       {#snippet children({ props })}
         <Form.Label type="required">IP-адрес</Form.Label>
-        <Input {...props} bind:value={$formData.ip} placeholder="10.0.0.5" />
+        <div class="relative">
+          <Input {...props} bind:value={$formData.ip} placeholder="10.0.0.5" />
+          <button
+            type="button"
+            onclick={() => {
+              if (deviceIp.data?.ip !== $formData.ip){
+                deviceIp.refetch()
+              }
+            }}
+            class="absolute top-1/2 -translate-y-[65%] right-2"
+          >
+            <RotateCcw class="size-4 stroke-muted-foreground" />
+          </button>
+        </div>
       {/snippet}
     </Form.Control>
     <Form.Description />
     <Form.FieldErrors />
   </Form.Field>
+  <button type="button" onclick={() => deviceIp.refetch()}>
+    return request field
+  </button>
   <Form.Field {form} name="slug">
     <Form.Control>
       {#snippet children({ props })}
