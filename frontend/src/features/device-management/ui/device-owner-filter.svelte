@@ -1,7 +1,5 @@
 <script lang="ts">
 import {
-  ArrowDown,
-  ArrowUp,
   ArrowUpDown,
   Check,
   Funnel,
@@ -10,12 +8,11 @@ import {
   X,
 } from "@lucide/svelte";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-import type { Column, SortDirection } from "@tanstack/table-core";
+import type { Column } from "@tanstack/table-core";
 import type { DeviceRelations } from "common/schemas/device/index";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { cn } from "$shared/lib/utils";
 import { Button } from "$shared/ui/button/index.js";
-import DataTableSortButton from "$shared/ui/data-table/data-table-sort-button.svelte";
 import { Input } from "$shared/ui/input/index.js";
 import * as Popover from "$shared/ui/popover/index.js";
 import { Separator } from "$shared/ui/separator/index.js";
@@ -25,12 +22,10 @@ import type { FilterValueWithId } from "../model/types";
 let {
   column,
   label,
-  sort,
   icon,
 }: {
   column: Column<DeviceRelations, unknown>;
   label: string;
-  sort: false | SortDirection;
   icon?: LucideIcon;
 } = $props();
 
@@ -55,29 +50,22 @@ let filteredUsers = $derived(
 </script>
 
 <div class="flex items-center justify-between gap-1 px-2">
-  <button
-    type="button"
-    class="h-8 gap-2 flex grow items-center justify-between"
-    onclick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  >
-    <div class="flex">
-      {#if Icon}
-        <Icon class="mb-1 size-4" />
-      {/if}
-      <p>{label}</p>
-    </div>
-    {#if sort === "asc"}
-      <ArrowUp class="ml-2 size-3" />
-    {:else if sort === "desc"}
-      <ArrowDown class="ml-2 size-3" />
-    {:else}
-      <ArrowUpDown class="ml-2 size-3" />
+  <div class="h-8 gap-2 flex items-center">
+    {#if Icon}
+      <Icon class="mb-1 size-4" />
     {/if}
-  </button>
-  <div class="flex items-center">
+    <p>{label}</p>
+  </div>
+  <div>
+    <button
+      type="button"
+      onclick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    >
+      <ArrowUpDown class="size-3" />
+    </button>
     <Popover.Root bind:open={filterOpenState}>
       <Popover.Trigger><Funnel class="size-3" /></Popover.Trigger>
-      <Popover.Content class="w-64 p-4">
+      <Popover.Content class="w-64 p-4" align="start">
         <div class="space-y-2">
           <h4 class="font-medium leading-none">Фильтр по: {label}</h4>
           <p class="text-sm text-muted-foreground">

@@ -84,7 +84,8 @@ let isDialogOpen = $state(false);
     {/if}
     <DropdownMenu.Item
       class="mt-1 w-full bg-secondary rounded-[8px] gap-1 flex items-center justify-center hover:bg-secondary-accent! hover:text-lime-500!"
-      onSelect={() => {
+      onSelect={(e) => {
+                e.preventDefault();
                 isDialogOpen = true;
               }}
     >

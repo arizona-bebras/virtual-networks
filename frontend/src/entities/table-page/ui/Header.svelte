@@ -66,26 +66,24 @@ function bulkRemoveSelected() {
       <Search class="absolute top-1/2 ml-2 -translate-y-1/2 size-4 stroke-3" />
     </div>
 
-    <div class="flex items-center gap-1">
-      {#if selectedIds.length > 0}
-        <div in:fade={{ duration: 150 }}>
-          <Button
-            variant="destructive"
-            size="sm"
-            class="gap-1 py-3.5 rounded-[6px]"
-            onclick={bulkRemoveSelected}
-          >
-            <Trash class="size-4" />
-            Удалить ({selectedIds.length}
-            )
-          </Button>
-        </div>
-      {/if}
-      <Button onclick={() => (isAddDialogOpen = true)} class="rounded-[6px]">
-        {(currentPage && addLabels[currentPage]) || "Добавить"}
-        <Plus class="mr-1 size-3" />
-      </Button>
-    </div>
+    {#if selectedIds.length > 0}
+      <div in:fade={{ duration: 150 }}>
+        <Button
+          variant="destructive"
+          size="sm"
+          class="gap-1 py-3.5 rounded-[6px]"
+          onclick={bulkRemoveSelected}
+        >
+          <Trash class="size-4" />
+          Удалить ({selectedIds.length}
+          )
+        </Button>
+      </div>
+    {/if}
+    <Button onclick={() => (isAddDialogOpen = true)} class="rounded-[6px]">
+      {(currentPage && addLabels[currentPage]) || "Добавить"}
+      <Plus class="mr-1 size-3" />
+    </Button>
   </div>
   <div class=""><DataTableFilters {table} /></div>
 </div>
