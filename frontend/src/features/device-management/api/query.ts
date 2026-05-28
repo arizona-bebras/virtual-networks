@@ -184,7 +184,8 @@ export const deviceConfigQuery = (networkId: string, deviceId: string) =>
 export const deviceIpQuery = (networkId: string) =>
   queryOptions({
     queryKey: queryKeys.networkDeviceIp(networkId),
-    enabled: true,
+    enabled: false,
+    staleTime: 0,
     queryFn: async () => {
       const { data, error } = await client.GET(
         "/networks/{network_id}/get_free_ip",
