@@ -38,6 +38,7 @@ export const columns: ColumnDef<RuleRelation>[] = [
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
         label: "Описание",
+        sort: column.getIsSorted(),
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
         icon: FileText,
       });
@@ -55,6 +56,7 @@ export const columns: ColumnDef<RuleRelation>[] = [
     header: ({ column }) => {
       return renderComponent(RuleTagFilter, {
         label: "Тег источника",
+        sort: column.getIsSorted(),
         column,
         icon: Tags,
       });
@@ -91,6 +93,7 @@ export const columns: ColumnDef<RuleRelation>[] = [
       return renderComponent(RuleTagFilter, {
         label: "Тег назначения",
         column,
+        sort: column.getIsSorted(),
         icon: Tags,
       });
     },
@@ -125,6 +128,7 @@ export const columns: ColumnDef<RuleRelation>[] = [
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
         label: "Протокол",
+        sort: column.getIsSorted(),
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
         icon: Shield,
       });
@@ -142,6 +146,7 @@ export const columns: ColumnDef<RuleRelation>[] = [
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
         label: "Порт",
+        sort: column.getIsSorted(),
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
         icon: Unplug,
       });
