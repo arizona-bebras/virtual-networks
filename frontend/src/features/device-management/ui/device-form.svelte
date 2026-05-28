@@ -125,9 +125,10 @@ let {
   },
 });
 
-onMount(() => {
+onMount(async () => {
   if (!device) {
-    deviceIp.refetch();
+    const query = await deviceIp.refetch();
+    $formData.ip = query.data?.ip ?? "";
   }
 });
 $effect(() => {
@@ -137,11 +138,12 @@ $effect(() => {
     untrack(() => ($formData.slug = slugify($formData.name)));
   }
 });
-$effect(() => {
-  if (deviceIp.isSuccess && deviceIp.isRefetching) {
-    $formData.ip = deviceIp.data.ip;
-  }
-});
+// $effect(() => {
+//   if (deviceIp.isSuccess && !deviceIp.isRefetching) {
+//     $formData.ip = deviceIp.data.ip;
+//   }
+// });
+// $inspect(deviceIp.isFetching);
 </script>
 
 <form method="POST" use:enhance class="relative">
@@ -175,10 +177,14 @@ $effect(() => {
           <Input {...props} bind:value={$formData.ip} placeholder="10.0.0.5" />
           <button
             type="button"
-            onclick={() => {
-              if (deviceIp.data?.ip !== $formData.ip){
-                deviceIp.refetch()
+            onclick={async () => {
+              if (device && $formData.ip !== device.ip){
+                $formData.ip =  device.ip
               }
+              else if (!device && $formData.ip !== deviceIp.data?.ip){
+                    const query = await deviceIp.refetch();
+    $formData.ip = query.data?.ip ?? "";
+              } 
             }}
             class="absolute top-1/2 -translate-y-[65%] right-2"
           >
@@ -190,9 +196,6 @@ $effect(() => {
     <Form.Description />
     <Form.FieldErrors />
   </Form.Field>
-  <button type="button" onclick={() => deviceIp.refetch()}>
-    return request field
-  </button>
   <Form.Field {form} name="slug">
     <Form.Control>
       {#snippet children({ props })}
