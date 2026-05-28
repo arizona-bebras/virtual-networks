@@ -11,9 +11,9 @@ let {
   onMaskChange,
 }: { selectedMask: string; onMaskChange: (mask: string) => void } = $props();
 
-let maskRange = $derived(Array.from({ length: 32 }, (_, i) => i + 1));
+let maskRange = Array.from({ length: 32 }, (_, i) => i + 1);
 
-let displayingValue = $derived(
+let displayingValue = $state(
   maskRange.find((f) => f === parseInt(selectedMask, 10)),
 );
 
@@ -39,7 +39,7 @@ function closeAndFocusTrigger() {
   </Popover.Trigger>
   <Popover.Content class="w-[200px] p-0">
     <Command.Root>
-      <Command.Input placeholder="Выберите маску" class="mb-0"/>
+      <Command.Input placeholder="Выберите маску" class="mb-0" />
       <Command.List>
         <Command.Empty>No framework found.</Command.Empty>
         <Command.Group>
