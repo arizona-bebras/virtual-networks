@@ -52,7 +52,10 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
         label: "Устройство",
-        onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        sort: column.getIsSorted(),
+        onclick: () => {
+          column.toggleSorting(column.getIsSorted() === "asc");
+        },
         icon: MonitorSmartphone,
       });
     },
@@ -68,6 +71,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
         label: "Статус",
+        sort: column.getIsSorted(),
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
         icon: WifiSync,
       });
@@ -88,6 +92,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
         label: "IP-адрес",
+        sort: column.getIsSorted(),
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
         icon: MapPin,
       });
@@ -103,6 +108,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
         label: "Slug",
+        sort: column.getIsSorted(),
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
         icon: Link,
       });
@@ -124,6 +130,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
       return renderComponent(DeviceOwnerFilter, {
         label: "Владелец",
         column,
+        sort: column.getIsSorted(),
         icon: User,
       });
     },
@@ -142,6 +149,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
       return renderComponent(DeviceTagsFilter, {
         label: "Теги",
         column,
+        sort: column.getIsSorted(),
         icon: Tags,
       });
     },
