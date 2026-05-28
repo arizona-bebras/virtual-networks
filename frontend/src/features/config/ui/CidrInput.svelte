@@ -113,8 +113,9 @@ function inputHandler(e: Event, i: number) {
     }
     inputs[i + 1]?.focus();
     inputs[i + 1]?.select();
+  } else if (inputValue === 0) {
+    inputs[i - 1]?.focus();
   }
-
   value = changeCidrValue(value, {
     changeArea: "ip",
     octetNumbers: [i + 1],

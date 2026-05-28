@@ -1,6 +1,6 @@
 <script lang="ts">
-import { Command as CommandPrimitive } from "bits-ui";
 import { Search } from "@lucide/svelte";
+import { Command as CommandPrimitive } from "bits-ui";
 import { cn } from "$shared/lib/utils.js";
 import * as InputGroup from "$shared/ui/input-group/index.js";
 
