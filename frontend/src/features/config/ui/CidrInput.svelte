@@ -3,6 +3,7 @@ import { onMount } from "svelte";
 import { changeCidrValue } from "$shared/lib/cidr-operation";
 import * as Select from "$shared/ui/select/index";
 import type { ValidationResult } from "../model/types";
+import MaskSelector from "./MaskSelector.svelte";
 
 let {
   value = $bindable(),
@@ -174,7 +175,7 @@ function blockOctetInput(mask: string) {
     {/each}
   </div>
   <div class="flex gap-1 border-l">
-    <Select.Root
+    <!-- <Select.Root
       type="single"
       bind:value={selectedMask}
       onValueChange={(value: string) => blockOctetInput(value)}
@@ -187,6 +188,7 @@ function blockOctetInput(mask: string) {
           <Select.Item value={mask.toString()}>{mask}</Select.Item>
         {/each}
       </Select.Content>
-    </Select.Root>
+    </Select.Root> -->
+    <MaskSelector bind:selectedMask onMaskChange={blockOctetInput} />
   </div>
 </div>
