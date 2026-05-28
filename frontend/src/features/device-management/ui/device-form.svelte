@@ -50,11 +50,18 @@ const creationMutation = createMutation(() =>
     queryClient.invalidateQueries({
       queryKey: queryKeys.networkDevices(currentNetworkId),
     });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkDeviceIp(currentNetworkId),
+    });
     dialogState = false;
   }),
 );
 
-const updateMutation = createMutation(() => deviceUpdateMutation(() => {}));
+const updateMutation = createMutation(() => deviceUpdateMutation(() => {
+  queryClient.invalidateQueries({
+    queryKey: queryKeys.networkDeviceIp(currentNetworkId),
+  });
+}));
 
 const createTagMutation = createMutation(() => tagDeviceCreation(() => {}));
 const deleteTagMutation = createMutation(() => tagDeviceRemove(() => {}));
@@ -125,12 +132,14 @@ let {
   },
 });
 
-onMount(async () => {
-  if (!device) {
-    const query = await deviceIp.refetch();
-    $formData.ip = query.data?.ip ?? "";
-  }
-});
+async function replaceAutoIp(force: boolean = false) {
+  if (!force && device) return;
+  const query = await deviceIp.refetch();
+  $formData.ip = query.data?.ip ?? "";
+}
+
+onMount(replaceAutoIp);
+
 $effect(() => {
   if (device) {
     $formData.name = device.name;
@@ -177,15 +186,7 @@ $effect(() => {
           <Input {...props} bind:value={$formData.ip} placeholder="10.0.0.5" />
           <button
             type="button"
-            onclick={async () => {
-              if (device && $formData.ip !== device.ip){
-                $formData.ip =  device.ip
-              }
-              else if (!device && $formData.ip !== deviceIp.data?.ip){
-                    const query = await deviceIp.refetch();
-    $formData.ip = query.data?.ip ?? "";
-              } 
-            }}
+            onclick={() => replaceAutoIp(true)}
             class="absolute top-1/2 -translate-y-[65%] right-2"
           >
             <RotateCcw class="size-4 stroke-muted-foreground" />
