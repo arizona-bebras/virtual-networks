@@ -81,7 +81,7 @@ export class NetworksService {
         throw new BadRequestException("bad creator id: user doesn't exists");
       }
 
-      await this.routerService.emitEvent(
+      this.routerService.emitEvent(
         ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_NETWORK_CHANGED,
         [
           {
@@ -212,7 +212,7 @@ export class NetworksService {
   }
 
   async update(id: string, network: UpdateNetworkDto) {
-    await this.routerService.emitEvent(
+    this.routerService.emitEvent(
       ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_NETWORK_CHANGED,
       [
         {
@@ -230,7 +230,7 @@ export class NetworksService {
   }
 
   async delete(id: string) {
-    await this.routerService.emitEvent(
+    this.routerService.emitEvent(
       ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_NETWORK_CHANGED,
       [
         {

@@ -11,6 +11,7 @@ import * as schema from "../src/db/schema.js";
 import { DevicesController } from "../src/modules/devices/devices.controller.js";
 import { DevicesService } from "../src/modules/devices/devices.service.js";
 import { WireguardCfgService } from "../src/modules/devices/wireguardcfg.service.js";
+import { RouterService } from "../src/modules/router/router.service.js";
 import {
   closeTestDatabase,
   createTestDatabase,
@@ -77,6 +78,7 @@ describe("DevicesController (e2e)", () => {
         DevicesService,
         RolesGuard,
         WireguardCfgService,
+        RouterService,
         {
           provide: DRIZZLE,
           useValue: db,

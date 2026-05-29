@@ -92,7 +92,6 @@ export class RouterService {
     reason: ConfigurationUpdateReason,
     changes: ChangedResource[],
   ) {
-    console.log(`GOT NEW EVENT ${String(Date.now())}`);
     this.events.next({
       revision: String(Date.now()),
       reason: reason,

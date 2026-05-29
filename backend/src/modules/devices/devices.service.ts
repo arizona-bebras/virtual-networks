@@ -97,7 +97,7 @@ export class DevicesService {
       return createdDevice;
     });
 
-    await this.routerService.emitEvent(
+    this.routerService.emitEvent(
       ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_PEER_CHANGED,
       [
         {
@@ -205,7 +205,7 @@ export class DevicesService {
       .where(
         and(eq(schema.devices.id, id), eq(schema.devices.networkId, networkId)),
       );
-    await this.routerService.emitEvent(
+    this.routerService.emitEvent(
       ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_PEER_CHANGED,
       [
         {
@@ -220,7 +220,7 @@ export class DevicesService {
 
   async delete(id: string, networkId: string) {
     await this.db.delete(schema.devices).where(eq(schema.devices.id, id));
-    await this.routerService.emitEvent(
+    this.routerService.emitEvent(
       ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_PEER_CHANGED,
       [
         {
