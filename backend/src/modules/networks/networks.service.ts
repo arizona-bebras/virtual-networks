@@ -14,12 +14,21 @@ import type { UpdateNetworkDto } from "common/dto/network/update-network";
 import { sql } from "drizzle-orm";
 import { and, eq } from "drizzle-orm/sql/expressions/conditions";
 import { Address4 } from "ip-address";
+import {
+  ChangedResourceType,
+  ChangeOperation,
+  ConfigurationUpdateReason,
+} from "proto";
 import { type Database, DRIZZLE } from "../../db/database.module.js";
 import * as schema from "../../db/schema.js";
+import { RouterService } from "../router/router.service.js";
 
 @Injectable()
 export class NetworksService {
-  constructor(@Inject(DRIZZLE) private readonly db: Database) {}
+  constructor(
+    @Inject(DRIZZLE) private readonly db: Database,
+    private readonly routerService: RouterService,
+  ) {}
 
   async create(
     networkData: CreateNetworkDto,
@@ -71,6 +80,18 @@ export class NetworksService {
       if (!creator) {
         throw new BadRequestException("bad creator id: user doesn't exists");
       }
+
+      await this.routerService.emitEvent(
+        ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_NETWORK_CHANGED,
+        [
+          {
+            type: ChangedResourceType.CHANGED_RESOURCE_TYPE_NETWORK,
+            id: crypto.randomUUID(),
+            networkId: network.id,
+            operation: ChangeOperation.CHANGE_OPERATION_CREATED,
+          },
+        ],
+      );
 
       return { ...network, creator };
     });
@@ -191,6 +212,17 @@ export class NetworksService {
   }
 
   async update(id: string, network: UpdateNetworkDto) {
+    await this.routerService.emitEvent(
+      ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_NETWORK_CHANGED,
+      [
+        {
+          type: ChangedResourceType.CHANGED_RESOURCE_TYPE_NETWORK,
+          id: crypto.randomUUID(),
+          networkId: id,
+          operation: ChangeOperation.CHANGE_OPERATION_UPDATED,
+        },
+      ],
+    );
     await this.db
       .update(schema.networks)
       .set(network)
@@ -198,6 +230,17 @@ export class NetworksService {
   }
 
   async delete(id: string) {
+    await this.routerService.emitEvent(
+      ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_NETWORK_CHANGED,
+      [
+        {
+          type: ChangedResourceType.CHANGED_RESOURCE_TYPE_NETWORK,
+          id: crypto.randomUUID(),
+          networkId: id,
+          operation: ChangeOperation.CHANGE_OPERATION_DELETED,
+        },
+      ],
+    );
     await this.db.delete(schema.networks).where(eq(schema.networks.id, id));
   }
 

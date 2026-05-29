@@ -27,6 +27,7 @@ import { UpdateNetworkDto } from "common/dto/network/update-network";
 import { Role } from "../../authorization/role.enum.js";
 import { Roles } from "../../authorization/roles.decorator.js";
 import { RolesGuard } from "../../authorization/roles.guard.js";
+import { RouterService } from "../router/router.service.js";
 import { NetworksService } from "./networks.service.js";
 
 @ApiTags("Networks")
@@ -159,7 +160,7 @@ export class NetworksController {
 
   @Get(":network_id/get_free_ip")
   @Roles(Role.Admin)
-  @ApiOperation({ summary: "Добавить тег на устройство" })
+  @ApiOperation({ summary: "Получить свободный ip адрес сети" })
   @ApiResponse({
     status: 200,
     description: "IP адрес получен",

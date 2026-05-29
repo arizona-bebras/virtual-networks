@@ -5,5 +5,6 @@ import { RouterService } from "./router.service.js";
 @Module({
   controllers: [RouterController],
   providers: [RouterService],
+  exports: [RouterService],
 })
 export class RouterModule {}
