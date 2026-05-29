@@ -1,5 +1,6 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { DeviceCfgDto } from "common/dto/device/device-cfg";
+import { Address4 } from "ip-address";
 import * as QRCode from "qrcode";
 import { type Database, DRIZZLE } from "../../db/database.module.js";
 
@@ -30,6 +31,9 @@ export class WireguardCfgService {
       `[Interface]`,
       `PrivateKey = ${device?.keys?.privateKey?.toString("base64")}`,
       `Address = ${device?.ip}`,
+      `DNS = ${new Address4(device?.network?.cidr ?? "")
+        .startAddressExclusive()
+        .correctForm()}`,
       ``,
       `[Peer]`,
       `PublicKey = ${device?.network?.keys?.publicKey?.toString("base64")}`,
@@ -44,7 +48,7 @@ export class WireguardCfgService {
 
     const filename = device?.slug
       .replaceAll(/[^a-zA-Z0-9_.-]/g, "")
-      .substring(10);
+      .substring(0, 10);
 
     return {
       name: `${filename ?? "config"}.conf`,
