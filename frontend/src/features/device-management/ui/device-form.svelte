@@ -12,10 +12,14 @@ import { onMount, untrack } from "svelte";
 import { z } from "zod";
 import Tags from "$entities/device/ui/device-tags-cell.svelte";
 import FooterButtons from "$entities/table-page/ui/FooterButtons.svelte";
+import type { ValidationResult } from "$features/config/model/types";
+import DeviceIpSuggestion from "$features/config/ui/DeviceIpSuggestion.svelte";
+import IpInput from "$features/config/ui/IpInput.svelte";
 import TagSelector from "$features/tag-management/ui/tag-selector.svelte";
 import { networkConfig } from "$pages/app/network/[slug]/config/api/query";
 import { deviceTags } from "$pages/app/network/[slug]/tags/api/query";
 import { queryKeys } from "$shared/api/query-keys";
+import { splitCidr, validateHostIP } from "$shared/lib/cidr-operation";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import * as ButtonGroup from "$shared/ui/button-group/index.js";
@@ -40,6 +44,7 @@ let {
 
 const queryClient = getQueryClientContext();
 let currentNetworkId = $derived(getNetworkId().id);
+let ipFieldInfo: ValidationResult | null = $state(null);
 
 const networkCfg = createQuery(() => networkConfig(currentNetworkId));
 const userTagsQuery = createQuery(() => deviceTags.userTags(currentNetworkId));
@@ -77,6 +82,7 @@ let {
   formData,
   valid,
   enhance,
+  errors,
 } = useForm(CreateDeviceSchema, {
   onSubmit: async () => {
     if (device) {
@@ -146,15 +152,15 @@ $effect(() => {
   if (device) {
     $formData.name = device.name;
     $formData.ip = device.ip;
-    untrack(() => ($formData.slug = slugify($formData.name)));
+    untrack(
+      () =>
+        ($formData.slug = slugify($formData.name, {
+          lower: true,
+          strict: true,
+        })),
+    );
   }
 });
-// $effect(() => {
-//   if (deviceIp.isSuccess && !deviceIp.isRefetching) {
-//     $formData.ip = deviceIp.data.ip;
-//   }
-// });
-// $inspect(deviceIp.isFetching);
 </script>
 
 <form method="POST" use:enhance class="relative">
@@ -180,25 +186,30 @@ $effect(() => {
     <Form.Description />
     <Form.FieldErrors />
   </Form.Field>
-  <Form.Field {form} name="ip">
-    <Form.Control>
-      {#snippet children({ props })}
-        <Form.Label type="required">IP-адрес</Form.Label>
-        <div class="relative">
-          <Input {...props} bind:value={$formData.ip} placeholder="10.0.0.5" />
-          <button
-            type="button"
-            onclick={() => replaceAutoIp(true)}
-            class="absolute top-1/2 -translate-y-[65%] right-2"
-          >
-            <RotateCcw class="size-4 stroke-muted-foreground" />
-          </button>
-        </div>
-      {/snippet}
-    </Form.Control>
-    <Form.Description />
-    <Form.FieldErrors />
-  </Form.Field>
+  <div class="flex font-medium text-[12px] mb-1 gap-0.5">
+    <p>IP-адрес</p>
+    <p class="text-destructive">*</p>
+  </div>
+  <div class="relative">
+    <div
+      class="flex bg-input/50 border gap-2 justify-between transition-colors focus-within:ring-2 focus-within:ring-offset-2  mb-2 rounded-[6px] "
+    >
+      <IpInput
+        bind:ip={$formData.ip}
+        bind:info={ipFieldInfo}
+        validate={() => validateHostIP($formData.ip, networkCfg.data!.cidr)}
+      />
+    </div>
+    <button
+      type="button"
+      onclick={() => replaceAutoIp(true)}
+      class="absolute top-1/2 -translate-y-1/2 right-2"
+    >
+      <RotateCcw class="size-4 stroke-muted-foreground" />
+    </button>
+  </div>
+  <DeviceIpSuggestion info={ipFieldInfo} />
+
   <Form.Field {form} name="slug">
     <Form.Control>
       {#snippet children({ props })}
@@ -250,5 +261,9 @@ $effect(() => {
       </Popover.Root>
     </div>
   {/if}
-  <FooterButtons {valid} bind:dialogState isEditing={device !== undefined} />
+  <FooterButtons
+    valid={() => valid() && (ipFieldInfo?.isValid ?? true)}
+    bind:dialogState
+    isEditing={device !== undefined}
+  />
 </form>

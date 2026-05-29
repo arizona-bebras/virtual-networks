@@ -3,7 +3,6 @@ import { Plus, Search, Trash } from "@lucide/svelte";
 import type { Table } from "@tanstack/table-core";
 import { fade } from "svelte/transition";
 import { page } from "$app/state";
-import type { Device } from "$entities/device/model/types";
 import BreadCrumb from "$features/device-management/ui/BreadCrumb.svelte";
 import DeviceDialog from "$features/device-management/ui/device-dialog.svelte";
 import RuleDialog from "$features/rule-management/ui/rule-dialog.svelte";
