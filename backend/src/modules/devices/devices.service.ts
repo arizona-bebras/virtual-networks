@@ -78,7 +78,7 @@ export class DevicesService {
   }
 
   async create(device: Required<CreateDeviceDto>, networkId: string) {
-    const createdDevice = this.db.transaction(async (tx) => {
+    const createdDevice = await this.db.transaction(async (tx) => {
       const { publicKey, privateKey } = generateKeyPairSync("x25519");
       const [keys] = await tx
         .insert(schema.keys)
