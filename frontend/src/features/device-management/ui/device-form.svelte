@@ -136,11 +136,11 @@ let {
           deviceId: data.id ?? "",
         });
       }
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.network(currentNetworkId),
-      });
-      dialogState = false;
     }
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkDevices(currentNetworkId),
+    });
+    dialogState = false;
   },
 });
 

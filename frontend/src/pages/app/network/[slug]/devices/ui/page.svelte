@@ -72,7 +72,7 @@ function bulkRemoveSelected() {
 <div class="p-2.5">
   <Header
     title="Устройства"
-    description="Управляйте своими устройства в сети."
+    description="Управляйте своими устройствами в сети"
     bind:globalFilter
     {selectedIds}
     {table}

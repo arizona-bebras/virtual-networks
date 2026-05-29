@@ -18,7 +18,7 @@ let { open = $bindable() }: { open: boolean } = $props();
     <Dialog.Header>
       <Dialog.Title>Добавить правило</Dialog.Title>
       <Dialog.Description>
-        Создайте новое правило контроля доступа к сети.
+        Создайте новое правило контроля доступа к сети
       </Dialog.Description>
     </Dialog.Header>
     <RuleForm bind:dialogState={open} />

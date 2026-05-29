@@ -25,9 +25,19 @@ $effect(() => {
 
 let inputs: HTMLInputElement[] = $state([]);
 
+function backspaceHandler(e: KeyboardEvent, i: number) {
+  if (e.key !== "Backspace") return;
+  const target = e.target as HTMLInputElement;
+  if (target.value === "") {
+    inputs[i - 1]?.focus();
+    e.preventDefault();
+  }
+}
+
 function inputHandler(e: Event, i: number) {
   const target = e.target as HTMLInputElement;
   let inputValue = target.value ? parseInt(target.value, 10) : 0;
+  const octetsArr = ip.split(".");
 
   if (inputValue.toString().length >= 3) {
     if (inputValue > 255) {
@@ -36,11 +46,11 @@ function inputHandler(e: Event, i: number) {
     }
     inputs[i + 1]?.focus();
     inputs[i + 1]?.select();
-  } else if (inputValue === 0) {
+  } else if (octetsArr[i] === "0" && target.value === "") {
     inputs[i - 1]?.focus();
+    inputs[i - 1]?.select();
   }
 
-  const octetsArr = ip.split(".");
   octetsArr[i] = inputValue.toString();
   ip = octetsArr.join(".");
 }
@@ -60,6 +70,7 @@ let disabledStates = $derived.by(() => {
       value={octet}
       placeholder={([192, 168, 1, 0][i] ?? 0).toString()}
       oninput={(e) => inputHandler(e, i)}
+      onkeydown={(e) => backspaceHandler(e, i)}
       min="0"
       max="255"
       maxLength={3}

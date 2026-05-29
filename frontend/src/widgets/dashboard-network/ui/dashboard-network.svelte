@@ -126,7 +126,7 @@ function handleNodeDragStop(event: { targetNode: Node | null }) {
           Детали подключения
         </Dialog.Title>
         <Dialog.Description>
-          Информация о связи между этими узлами.
+          Информация о связи между этими узлами
         </Dialog.Description>
       </Dialog.Header>
 

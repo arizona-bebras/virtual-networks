@@ -11,7 +11,7 @@ let {
   onMaskChange,
 }: { selectedMask: string; onMaskChange: (mask: string) => void } = $props();
 
-let maskRange = Array.from({ length: 32 }, (_, i) => i + 1);
+let maskRange = Array.from({ length: 30 }, (_, i) => i + 1);
 
 let displayingValue = $state(
   maskRange.find((f) => f === parseInt(selectedMask, 10)),
@@ -41,7 +41,7 @@ function closeAndFocusTrigger() {
     <Command.Root>
       <Command.Input placeholder="Выберите маску" class="mb-0" />
       <Command.List>
-        <Command.Empty>No framework found.</Command.Empty>
+        <Command.Empty>Маска не найдена.</Command.Empty>
         <Command.Group>
           {#each maskRange as mask}
             <Command.Item

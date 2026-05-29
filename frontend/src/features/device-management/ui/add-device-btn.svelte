@@ -18,7 +18,7 @@ let { open = $bindable() }: { open: boolean } = $props();
     <Dialog.Header>
       <Dialog.Title>Добавить устройство</Dialog.Title>
       <Dialog.Description>
-        Зарегистрируйте новое устройство в вашей виртуальной сети.
+        Зарегистрируйте новое устройство в вашей виртуальной сети
       </Dialog.Description>
     </Dialog.Header>
     <DeviceForm bind:dialogState={open} />

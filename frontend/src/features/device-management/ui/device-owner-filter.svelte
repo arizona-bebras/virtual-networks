@@ -81,7 +81,7 @@ let filteredUsers = $derived(
         <div class="space-y-2">
           <h4 class="font-medium leading-none">Фильтр по: {label}</h4>
           <p class="text-sm text-muted-foreground">
-            Введите имя для фильтрации устройств.
+            Введите имя для фильтрации устройств
           </p>
           <div class="relative">
             <Input

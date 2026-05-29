@@ -18,7 +18,7 @@ let { open = $bindable() }: { open: boolean } = $props();
     <Dialog.Header>
       <Dialog.Title>Добавить тег</Dialog.Title>
       <Dialog.Description>
-        Создайте новый тег для группировки ваших устройств.
+        Создайте новый тег для группировки ваших устройств
       </Dialog.Description>
     </Dialog.Header>
     <TagForm bind:dialogState={open} />

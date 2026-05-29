@@ -60,7 +60,7 @@ let filterValue = $derived(
         <div class="space-y-2 mb-4">
           <h4 class="font-medium leading-none">Фильтр по: {label}</h4>
           <p class="text-sm text-muted-foreground">
-            Выберите теги для фильтрации устройств.
+            Выберите теги для фильтрации устройств
           </p>
         </div>
 

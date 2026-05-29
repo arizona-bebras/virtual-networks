@@ -46,7 +46,7 @@ const {
   <Card.Header>
     <Card.Title class="text-2xl">Регистрация</Card.Title>
     <Card.Description>
-      Создайте аккаунт для управления вашими виртуальными сетями.
+      Создайте аккаунт для управления вашими виртуальными сетями
     </Card.Description>
   </Card.Header>
   <Card.Content>

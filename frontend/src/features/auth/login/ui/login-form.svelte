@@ -46,7 +46,7 @@ const {
   <Card.Header>
     <Card.Title class="text-2xl">Вход</Card.Title>
     <Card.Description>
-      Введите вашу почту и пароль для доступа к аккаунту.
+      Введите вашу почту и пароль для доступа к аккаунту
     </Card.Description>
   </Card.Header>
   <Card.Content>

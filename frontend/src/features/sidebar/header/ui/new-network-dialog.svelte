@@ -52,7 +52,7 @@ let {
       <div>
         <Dialog.Title class="font-semibold">Создание сети</Dialog.Title>
         <Dialog.Description class="text-[12px]" style="line-height:normal">
-          Заполните все необходимые поля, чтобы создать новую виртуальную сеть.
+          Заполните все необходимые поля, чтобы создать новую виртуальную сеть
         </Dialog.Description>
       </div>
     </Dialog.Header>
