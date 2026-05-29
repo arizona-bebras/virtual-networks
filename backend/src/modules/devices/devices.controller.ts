@@ -155,8 +155,11 @@ export class DevicesController {
   })
   @ApiResponse({ status: 200, description: "Устройство успешно удалено" })
   @ApiResponse({ status: 404, description: "Устройство не найдено" })
-  async deleteDevice(@Param("device_id") id: string) {
-    await this.devicesService.delete(id);
+  async deleteDevice(
+    @Param("network_id") networkId: string,
+    @Param("device_id") id: string,
+  ) {
+    await this.devicesService.delete(id, networkId);
   }
 
   @Post(":device_id/add_tag/:tag_id")

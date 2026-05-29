@@ -11,12 +11,21 @@ import type { DeviceRelations } from "common/schemas/device/index";
 import type { SQL } from "drizzle-orm";
 import { and, eq, inArray } from "drizzle-orm";
 import { ilike, sql } from "drizzle-orm/sql";
+import {
+  ChangedResourceType,
+  ChangeOperation,
+  ConfigurationUpdateReason,
+} from "proto";
 import { type Database, DRIZZLE } from "../../db/database.module.js";
 import * as schema from "../../db/schema.js";
+import { RouterService } from "../router/router.service.js";
 
 @Injectable()
 export class DevicesService {
-  constructor(@Inject(DRIZZLE) private readonly db: Database) {}
+  constructor(
+    @Inject(DRIZZLE) private readonly db: Database,
+    private readonly routerService: RouterService,
+  ) {}
 
   private buildTagFilter(
     deviceId: typeof schema.devices.id,
@@ -69,7 +78,7 @@ export class DevicesService {
   }
 
   async create(device: Required<CreateDeviceDto>, networkId: string) {
-    return this.db.transaction(async (tx) => {
+    const createdDevice = this.db.transaction(async (tx) => {
       const { publicKey, privateKey } = generateKeyPairSync("x25519");
       const [keys] = await tx
         .insert(schema.keys)
@@ -82,10 +91,24 @@ export class DevicesService {
             .slice(16),
         })
         .returning();
-      await tx
+      const createdDevice = await tx
         .insert(schema.devices)
         .values({ ...device, keysId: keys.id, networkId });
+      return createdDevice;
     });
+
+    this.routerService.emitEvent(
+      ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_PEER_CHANGED,
+      [
+        {
+          type: ChangedResourceType.CHANGED_RESOURCE_TYPE_PEER,
+          id: crypto.randomUUID(),
+          networkId: networkId,
+          operation: ChangeOperation.CHANGE_OPERATION_CREATED,
+        },
+      ],
+    );
+    return createdDevice;
   }
 
   async read(
@@ -182,10 +205,32 @@ export class DevicesService {
       .where(
         and(eq(schema.devices.id, id), eq(schema.devices.networkId, networkId)),
       );
+    this.routerService.emitEvent(
+      ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_PEER_CHANGED,
+      [
+        {
+          type: ChangedResourceType.CHANGED_RESOURCE_TYPE_PEER,
+          id: crypto.randomUUID(),
+          networkId: networkId,
+          operation: ChangeOperation.CHANGE_OPERATION_UPDATED,
+        },
+      ],
+    );
   }
 
-  async delete(id: string) {
+  async delete(id: string, networkId: string) {
     await this.db.delete(schema.devices).where(eq(schema.devices.id, id));
+    this.routerService.emitEvent(
+      ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_PEER_CHANGED,
+      [
+        {
+          type: ChangedResourceType.CHANGED_RESOURCE_TYPE_PEER,
+          id: crypto.randomUUID(),
+          networkId: networkId,
+          operation: ChangeOperation.CHANGE_OPERATION_DELETED,
+        },
+      ],
+    );
   }
 
   async addTag(deviceId: string, tagId: string) {
