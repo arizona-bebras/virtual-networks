@@ -61,7 +61,6 @@ function fillToFour(arr: string[], symbol = "x") {
 }
 
 let recommendedRange = $derived(getRecommendedRange(cidr));
-$inspect(cidr);
 </script>
 
 {#if recommendedRange}

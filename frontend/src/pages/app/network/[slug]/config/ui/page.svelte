@@ -98,7 +98,7 @@ function handleDelete() {
     <div class="mb-8">
       <h1 class="text-3xl font-bold tracking-tight">Конфигурация сети</h1>
       <p class="text-muted-foreground">
-        Настройте параметры вашей виртуальной сети.
+        Настройте параметры вашей виртуальной сети
       </p>
     </div>
 
@@ -106,7 +106,7 @@ function handleDelete() {
       <Card.Header>
         <Card.Title>Общие настройки</Card.Title>
         <Card.Description>
-          Обновите название вашей сети и адресное пространство.
+          Обновите название вашей сети и адресное пространство
         </Card.Description>
       </Card.Header>
       <Card.Content>
@@ -215,7 +215,7 @@ function handleDelete() {
         <Card.Header>
           <Card.Title class="text-destructive">Опасная зона</Card.Title>
           <Card.Description>
-            Навсегда удалить эту сеть и все связанные данные.
+            Навсегда удалить эту сеть и все связанные данные
           </Card.Description>
         </Card.Header>
         <Card.Footer>

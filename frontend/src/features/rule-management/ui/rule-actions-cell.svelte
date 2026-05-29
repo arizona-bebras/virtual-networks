@@ -48,5 +48,5 @@ function handleDelete() {
   bind:open={isEditDialogOpen}
   title="Редактировать правило"
   {rule}
-  description="Обновите данные вашего правила."
+  description="Обновите данные вашего правила"
 />

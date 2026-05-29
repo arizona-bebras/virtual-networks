@@ -103,7 +103,8 @@ describe("DevicesController (e2e)", () => {
     await request(app.getHttpServer())
       .post(`/networks/${networkId}/devices`)
       .send({ id: deviceId, ip: "10.0.0.2", name: "Laptop", slug: "laptop" })
-      .expect(201);
+      .expect(201)
+      .expect({ id: deviceId });
 
     await request(app.getHttpServer())
       .get(`/networks/${networkId}/devices`)

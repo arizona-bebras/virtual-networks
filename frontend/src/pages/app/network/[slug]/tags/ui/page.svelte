@@ -55,7 +55,7 @@ function bulkRemoveSelected() {
 <div class="p-2.5">
   <Header
     title="Теги"
-    description="Организуйте ваши устройства с помощью тегов."
+    description="Организуйте ваши устройства с помощью тегов"
     bind:globalFilter
     {selectedIds}
     {table}
@@ -65,7 +65,7 @@ function bulkRemoveSelected() {
     bind:open={isEditingDialogOpen}
     title="Редактировать тег"
     tag={editingTag}
-    description="Обновите данные вашего тега."
+    description="Обновите данные вашего тега"
   />
 
   <DataTable

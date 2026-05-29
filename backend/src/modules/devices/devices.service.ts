@@ -78,7 +78,7 @@ export class DevicesService {
   }
 
   async create(device: Required<CreateDeviceDto>, networkId: string) {
-    const createdDevice = this.db.transaction(async (tx) => {
+    const createdDevice = await this.db.transaction(async (tx) => {
       const { publicKey, privateKey } = generateKeyPairSync("x25519");
       const [keys] = await tx
         .insert(schema.keys)
@@ -91,10 +91,12 @@ export class DevicesService {
             .slice(16),
         })
         .returning();
-      const createdDevice = await tx
+      const [newDevice] = await tx
         .insert(schema.devices)
-        .values({ ...device, keysId: keys.id, networkId });
-      return createdDevice;
+        .values({ ...device, keysId: keys.id, networkId })
+        .returning({ id: schema.devices.id });
+
+      return newDevice.id;
     });
 
     this.routerService.emitEvent(

@@ -88,7 +88,7 @@ function bulkRemoveSelected(_ids: string[]) {
     bind:open={isEditingDialogOpen}
     title="Редактировать правило"
     rule={editingRule}
-    description="Обновите данные вашего правила."
+    description="Обновите данные вашего правила"
   />
 
   <DataTable

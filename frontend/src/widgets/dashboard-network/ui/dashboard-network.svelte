@@ -77,7 +77,6 @@ $effect(() => {
         true,
         destTagNodes,
       );
-
       nodes = [
         ...sourceTagNodes,
         ...ruleNodes,
@@ -86,9 +85,10 @@ $effect(() => {
         ...destTagNodes,
       ];
       edges = [
-        ...ruleEdges(networkRulesQuery.data),
+        ...ruleEdges(networkRulesQuery.data, networkTagsQuery.data),
         ...deviceFolderToTagEdges(sourceDeviceNodes.concat(destDeviceNodes)),
       ];
+      console.log(nodes);
     });
   }
 });
@@ -126,7 +126,7 @@ function handleNodeDragStop(event: { targetNode: Node | null }) {
           Детали подключения
         </Dialog.Title>
         <Dialog.Description>
-          Информация о связи между этими узлами.
+          Информация о связи между этими узлами
         </Dialog.Description>
       </Dialog.Header>
 

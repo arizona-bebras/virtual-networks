@@ -8,10 +8,22 @@ import type {
   TagNodeData,
 } from "$entities/node/model/types";
 
-const RULE_Y_STEP = 180;
+const RULE_Y_STEP = 135;
+const TAG_Y_STEP = RULE_Y_STEP;
+const DEVICE_Y_WITHOUT_TAGS = 150;
+const DEVICE_DEFAULT_Y = 100;
 
 export function ruleDataToNode(rules: RuleRelation[]): Node<RuleNodeData>[] {
-  return rules.map((rule, index) => ({
+  const sortedRules = [...rules].sort((a, b) => {
+    const aIsGlobal = !a.sourceId && !a.destId;
+    const bIsGlobal = !b.sourceId && !b.destId;
+
+    if (aIsGlobal && !bIsGlobal) return 1;
+    if (!aIsGlobal && bIsGlobal) return -1;
+    return 0;
+  });
+
+  return sortedRules.map((rule, index) => ({
     id: rule.id,
     type: "rule",
     data: {
@@ -20,7 +32,7 @@ export function ruleDataToNode(rules: RuleRelation[]): Node<RuleNodeData>[] {
       port: rule.port?.toString() || "*",
       action: "allow",
     },
-    position: { x: 350, y: index * RULE_Y_STEP },
+    position: { x: 350, y: (index + 1) * RULE_Y_STEP },
   }));
 }
 
@@ -34,26 +46,58 @@ export function tagDataToNode(
 
   for (let i = 0; i < rules.length; i++) {
     const rule = rules[i]!;
-    const targetTagId = isDestNodes ? rule.destId : rule.sourceId;
 
-    if (targetTagId) {
-      const stats = tagRuleStats.get(targetTagId) || { sum: 0, count: 0 };
-      stats.sum += i;
-      stats.count += 1;
-      tagRuleStats.set(targetTagId, stats);
-    }
+    const addStat = (tagId: string | null) => {
+      if (tagId) {
+        const stats = tagRuleStats.get(tagId) || { sum: 0, count: 0 };
+        stats.sum += i;
+        stats.count += 1;
+        tagRuleStats.set(tagId, stats);
+      }
+    };
+
+    addStat(rule.sourceId);
+    addStat(rule.destId);
   }
 
-  return userTags.map((tag, tagIndex) => {
+  const sortedTags = [...userTags].sort((a, b) => {
+    const statsA = tagRuleStats.get(a.id);
+    const statsB = tagRuleStats.get(b.id);
+
+    const idealYA = statsA
+      ? Math.round(statsA.sum / statsA.count) * TAG_Y_STEP
+      : Infinity;
+    const idealYB = statsB
+      ? Math.round(statsB.sum / statsB.count) * TAG_Y_STEP
+      : Infinity;
+
+    if (idealYA !== idealYB) {
+      return idealYA - idealYB;
+    }
+    return (a.name || "").localeCompare(b.name || "");
+  });
+
+  const MIN_NODE_GAP = TAG_Y_STEP;
+  const usedYPositions: number[] = [];
+
+  return sortedTags.map((tag) => {
     const stats = tagRuleStats.get(tag.id);
-    let y: number;
+    let idealY: number;
 
     if (stats) {
-      const avgRuleIndex = stats.sum / stats.count;
-      y = avgRuleIndex * RULE_Y_STEP;
+      idealY = Math.round(stats.sum / stats.count) * TAG_Y_STEP;
     } else {
-      y = rules.length * RULE_Y_STEP + tagIndex * 100;
+      idealY = rules.length * TAG_Y_STEP;
     }
+
+    let actualY = idealY;
+    while (
+      usedYPositions.some((usedY) => Math.abs(usedY - actualY) < MIN_NODE_GAP)
+    ) {
+      actualY += MIN_NODE_GAP;
+    }
+
+    usedYPositions.push(actualY);
 
     return {
       id: isDestNodes ? `dest-${tag.id}` : `source-${tag.id}`,
@@ -65,7 +109,7 @@ export function tagDataToNode(
         color: tag.color,
         count: tag.devicesCount,
       },
-      position: { x: positionX, y },
+      position: { x: positionX, y: actualY },
     };
   });
 }
@@ -113,6 +157,37 @@ export function tagDataToNode(
 //   console.log("Итоговые папки:", nodes);
 //   return nodes;
 // }
+function upsertFolderNode(
+  nodesMap: Map<string, Node<FolderNodeData>>,
+  device: DeviceRelations,
+  config: {
+    id: string;
+    label: string;
+    tagId: string;
+    x: number;
+    y: number;
+    type: "dest" | "source";
+  },
+) {
+  const existingNode = nodesMap.get(config.id);
+  if (existingNode) {
+    existingNode.data.devices.push(device);
+    existingNode.data.count += 1;
+  } else {
+    nodesMap.set(config.id, {
+      id: config.id,
+      type: "folder",
+      data: {
+        label: config.label,
+        devices: [device],
+        connectingTagId: config.tagId,
+        folderType: config.type,
+        count: 1,
+      },
+      position: { x: config.x, y: config.y },
+    });
+  }
+}
 
 export function deviceDataToNode(
   devices: DeviceRelations[],
@@ -122,34 +197,32 @@ export function deviceDataToNode(
   const nodesMap = new Map<string, Node<FolderNodeData>>();
   const tagPosMap = new Map(tagNodes.map((n) => [n.data.id, n.position.y]));
 
+  const POSITION_X = isDestFolders ? 850 : -150;
+  const FOLDER_TYPE = isDestFolders ? "dest" : "source";
+  const UNTAGGED_Y =
+    Math.max(...Array.from(tagPosMap.values()), 0) + DEVICE_Y_WITHOUT_TAGS;
+
   for (const device of devices) {
-    for (const tag of device.tags) {
-      const deviceTagId = tag.id;
-      const nodeId = isDestFolders
-        ? `dest-folder-${deviceTagId}`
-        : `source-folder-${deviceTagId}`;
+    const effectiveTags =
+      device.tags && device.tags.length > 0
+        ? device.tags
+        : [{ id: "untagged", name: "Без тегов", isMock: true }];
 
-      const existingNode = nodesMap.get(nodeId);
-      if (existingNode) {
-        existingNode.data.devices.push(device);
-        existingNode.data.count += 1;
-      } else {
-        const positionY = tagPosMap.get(deviceTagId) ?? 100;
-        const positionX = isDestFolders ? 850 : -150;
+    for (const tag of effectiveTags) {
+      const nodeId = `${FOLDER_TYPE}-folder-${tag.id}`;
+      // @ts-expect-error tag could be mock
+      const positionY = tag.isMock
+        ? UNTAGGED_Y
+        : (tagPosMap.get(tag.id) ?? DEVICE_DEFAULT_Y);
 
-        nodesMap.set(nodeId, {
-          id: nodeId,
-          type: "folder",
-          data: {
-            label: tag.name || "Unknown",
-            devices: [device],
-            connectingTagId: deviceTagId,
-            folderType: isDestFolders ? "dest" : "source",
-            count: 1,
-          },
-          position: { x: positionX, y: positionY },
-        });
-      }
+      upsertFolderNode(nodesMap, device, {
+        id: nodeId,
+        label: tag.name || "Unknown",
+        tagId: tag.id,
+        x: POSITION_X,
+        y: positionY,
+        type: FOLDER_TYPE,
+      });
     }
   }
 

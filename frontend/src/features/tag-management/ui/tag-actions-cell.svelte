@@ -52,5 +52,5 @@ function handleDelete() {
   bind:open={isEditDialogOpen}
   title="Редактирование тега"
   {tag}
-  description="Обновите данные вашего тега."
+  description="Обновите данные вашего тега"
 />
