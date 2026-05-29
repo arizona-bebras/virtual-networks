@@ -57,11 +57,13 @@ const creationMutation = createMutation(() =>
   }),
 );
 
-const updateMutation = createMutation(() => deviceUpdateMutation(() => {
-  queryClient.invalidateQueries({
-    queryKey: queryKeys.networkDeviceIp(currentNetworkId),
-  });
-}));
+const updateMutation = createMutation(() =>
+  deviceUpdateMutation(() => {
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkDeviceIp(currentNetworkId),
+    });
+  }),
+);
 
 const createTagMutation = createMutation(() => tagDeviceCreation(() => {}));
 const deleteTagMutation = createMutation(() => tagDeviceRemove(() => {}));
