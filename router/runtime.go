@@ -163,6 +163,14 @@ func buildProtocols(cfg Config, overlays map[string]*overlayRuntime) ([]Protocol
 						Packets:           obs.Packets,
 					})
 				}
+				if dropped := endpoint.DroppedInboundPackets(backend); dropped > 0 {
+					out = append(out, PeerObservation{
+						Endpoint:       "shared-bind-queue",
+						LastBackend:    backend,
+						LastPacketType: "dropped-inbound",
+						DroppedPackets: dropped,
+					})
+				}
 				return out
 			}
 		}

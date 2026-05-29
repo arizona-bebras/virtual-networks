@@ -83,7 +83,7 @@ func (Protocol) Build(build router.ProtocolBuild) (router.ProtocolInstance, erro
 		return nil, fmt.Errorf("select peers: %w", err)
 	}
 
-	logger := device.NewLogger(device.LogLevelVerbose, fmt.Sprintf("userspace-wg[%s]: ", build.Config.ID))
+	logger := device.NewLogger(device.LogLevelError, fmt.Sprintf("userspace-wg[%s]: ", build.Config.ID))
 	wgDevice := device.NewDevice(build.AttachTUN(build.Config.ID, peerAddrs(peers)), build.WireGuardBind, logger)
 
 	if build.Config.WireGuard == nil || build.Config.WireGuard.InterfacePrivateKey == nil || build.Config.WireGuard.InterfacePublicKey == nil {
@@ -164,6 +164,16 @@ func (i *instance) StatusInfo(requesterAddr string) router.ProtocolStatusInfo {
 		lines = append(lines, line)
 	}
 	for _, obs := range i.logger(i.cfg.ID) {
+		if obs.DroppedPackets > 0 {
+			lines = append(lines, fmt.Sprintf(
+				"observed endpoint=%s dropped_packets=%d last_type=%s backend=%s",
+				obs.Endpoint,
+				obs.DroppedPackets,
+				obs.LastPacketType,
+				obs.LastBackend,
+			))
+			continue
+		}
 		lines = append(lines, fmt.Sprintf(
 			"observed endpoint=%s packets=%d last_type=%s backend=%s sender_idx=%d receiver_idx=%d",
 			obs.Endpoint,

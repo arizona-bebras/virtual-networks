@@ -165,6 +165,12 @@ $effect(() => {
     );
   }
 });
+// $effect(() => {
+//   if (deviceIp.isSuccess && !deviceIp.isRefetching) {
+//     $formData.ip = deviceIp.data.ip;
+//   }
+// });
+// $inspect(deviceIp.isFetching);
 </script>
 
 <form method="POST" use:enhance class="relative">

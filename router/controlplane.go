@@ -299,18 +299,26 @@ func configFromControlPlane(snapshot *controlplanepb.RouterConfiguration) (Confi
 
 	overlays := make([]OverlayConfig, 0, len(snapshot.GetNetworks()))
 	peersByNetworkID := make(map[string][]*controlplanepb.PeerConfig)
+	validNetworkIDs := make(map[string]struct{}, len(snapshot.GetNetworks()))
 
 	for _, network := range snapshot.GetNetworks() {
 		if network.GetId() == "" {
-			return Config{}, fmt.Errorf("control plane network is missing id")
+			log.Printf("skipping invalid control plane network: missing id")
+			continue
+		}
+		if _, exists := validNetworkIDs[network.GetId()]; exists {
+			log.Printf("skipping invalid control plane network %q: duplicate id", network.GetId())
+			continue
 		}
 		overlayCIDR, err := netip.ParsePrefix(network.GetCidr())
 		if err != nil {
-			return Config{}, fmt.Errorf("parse network %q cidr %q: %w", network.GetId(), network.GetCidr(), err)
+			log.Printf("skipping invalid control plane network %q: parse cidr %q: %v", network.GetId(), network.GetCidr(), err)
+			continue
 		}
 		serverAddr, err := netip.ParseAddr(network.GetServerAddress())
 		if err != nil {
-			return Config{}, fmt.Errorf("parse network %q server address %q: %w", network.GetId(), network.GetServerAddress(), err)
+			log.Printf("skipping invalid control plane network %q: parse server address %q: %v", network.GetId(), network.GetServerAddress(), err)
+			continue
 		}
 		mtu := int(network.GetMtu())
 		if mtu == 0 {
@@ -319,6 +327,18 @@ func configFromControlPlane(snapshot *controlplanepb.RouterConfiguration) (Confi
 		statusPortValue := int(network.GetStatusPort())
 		if statusPortValue == 0 {
 			statusPortValue = statusPort
+		}
+		if !overlayCIDR.Contains(serverAddr) {
+			log.Printf("skipping invalid control plane network %q: server address %s is outside overlay %s", network.GetId(), serverAddr, overlayCIDR)
+			continue
+		}
+		if mtu < 1280 {
+			log.Printf("skipping invalid control plane network %q: MTU %d must be >= 1280", network.GetId(), mtu)
+			continue
+		}
+		if statusPortValue < 1 || statusPortValue > 65535 {
+			log.Printf("skipping invalid control plane network %q: status port %d must be between 1 and 65535", network.GetId(), statusPortValue)
+			continue
 		}
 
 		overlays = append(overlays, OverlayConfig{
@@ -330,6 +350,7 @@ func configFromControlPlane(snapshot *controlplanepb.RouterConfiguration) (Confi
 			StatusPort:  statusPortValue,
 		})
 		peersByNetworkID[network.GetId()] = network.GetPeers()
+		validNetworkIDs[network.GetId()] = struct{}{}
 	}
 
 	protocols := make([]ProtocolConfig, 0, len(snapshot.GetProtocols()))
@@ -350,14 +371,16 @@ func configFromControlPlane(snapshot *controlplanepb.RouterConfiguration) (Confi
 		if cfg.PublicHost == "" {
 			cfg.PublicHost = defaultPublicHost()
 		}
+		overlay, networkExists := overlayForNetworkID(overlays, protocol.GetNetworkId())
+		if !networkExists {
+			log.Printf("skipping control plane protocol %q: references missing or invalid network %q", cfg.ID, protocol.GetNetworkId())
+			continue
+		}
 
 		switch normalizeProtocolName(protocol.GetName()) {
 		case "wireguard":
 			wg := protocol.GetWireguard()
-			peers, err := selectWireGuardPeers(peersByNetworkID[protocol.GetNetworkId()], protocol.GetPeerIds())
-			if err != nil {
-				return Config{}, fmt.Errorf("protocol %q peers: %w", cfg.ID, err)
-			}
+			peers := selectWireGuardPeers(peersByNetworkID[protocol.GetNetworkId()], protocol.GetPeerIds(), cfg.ID, protocol.GetNetworkId(), overlay.ServerAddr)
 			cfg.WireGuard = &WireGuardProtocolConfig{
 				KeepaliveSec: int(wg.GetPersistentKeepaliveSeconds()),
 				Peers:        peers,
@@ -375,6 +398,13 @@ func configFromControlPlane(snapshot *controlplanepb.RouterConfiguration) (Confi
 			} else {
 				cfg.WireGuard.InterfacePublicKey = &publicKey
 			}
+			if len(peers) == 0 {
+				log.Printf("skipping control plane protocol %q: no valid wireguard peers", cfg.ID)
+				continue
+			}
+			if len(protocol.GetPeerIds()) > 0 {
+				cfg.PeerIDs = wireGuardPeerIDs(peers)
+			}
 		default:
 			return Config{}, fmt.Errorf("unsupported control plane protocol %q", protocol.GetName())
 		}
@@ -389,34 +419,57 @@ func configFromControlPlane(snapshot *controlplanepb.RouterConfiguration) (Confi
 	return cfg, nil
 }
 
-func selectWireGuardPeers(peers []*controlplanepb.PeerConfig, peerIDs []string) ([]WireGuardPeerConfig, error) {
+func selectWireGuardPeers(
+	peers []*controlplanepb.PeerConfig,
+	peerIDs []string,
+	protocolID string,
+	networkID string,
+	serverAddr netip.Addr,
+) []WireGuardPeerConfig {
 	allowed := map[string]struct{}{}
 	for _, id := range peerIDs {
 		allowed[id] = struct{}{}
 	}
 
 	out := make([]WireGuardPeerConfig, 0, len(peers))
+	seenPeerIDs := make(map[string]struct{}, len(peers))
 	for _, peer := range peers {
+		if peer.GetId() == "" {
+			log.Printf("skipping invalid control plane peer for protocol %q network %q: missing id", protocolID, networkID)
+			continue
+		}
+		if _, exists := seenPeerIDs[peer.GetId()]; exists {
+			log.Printf("skipping invalid control plane peer %q for protocol %q network %q: duplicate id", peer.GetId(), protocolID, networkID)
+			continue
+		}
 		if len(allowed) > 0 {
 			if _, ok := allowed[peer.GetId()]; !ok {
 				continue
 			}
 		}
+		seenPeerIDs[peer.GetId()] = struct{}{}
 		wg := peer.GetWireguard()
 		if wg == nil {
 			continue
 		}
 		addr, err := netip.ParseAddr(peer.GetAddress())
 		if err != nil {
-			return nil, fmt.Errorf("parse peer %q address %q: %w", peer.GetId(), peer.GetAddress(), err)
+			log.Printf("skipping invalid control plane peer %q for protocol %q network %q: parse address %q: %v", peer.GetId(), protocolID, networkID, peer.GetAddress(), err)
+			continue
+		}
+		if addr == serverAddr {
+			log.Printf("skipping invalid control plane peer %q for protocol %q network %q: address %s is the server address", peer.GetId(), protocolID, networkID, addr)
+			continue
 		}
 		publicKey, err := requiredWireGuardKey(wg.GetPublicKey())
 		if err != nil {
-			return nil, fmt.Errorf("peer %q public key: %w", peer.GetId(), err)
+			log.Printf("skipping invalid control plane peer %q for protocol %q network %q: public key: %v", peer.GetId(), protocolID, networkID, err)
+			continue
 		}
 		presharedKey, err := optionalWireGuardKey(wg.GetPresharedKey())
 		if err != nil {
-			return nil, fmt.Errorf("peer %q preshared key: %w", peer.GetId(), err)
+			log.Printf("skipping invalid control plane peer %q for protocol %q network %q: preshared key: %v", peer.GetId(), protocolID, networkID, err)
+			continue
 		}
 		out = append(out, WireGuardPeerConfig{
 			ID:           peer.GetId(),
@@ -426,7 +479,15 @@ func selectWireGuardPeers(peers []*controlplanepb.PeerConfig, peerIDs []string) 
 			PresharedKey: presharedKey,
 		})
 	}
-	return out, nil
+	return out
+}
+
+func wireGuardPeerIDs(peers []WireGuardPeerConfig) []string {
+	ids := make([]string, 0, len(peers))
+	for _, peer := range peers {
+		ids = append(ids, peer.ID)
+	}
+	return ids
 }
 
 func requiredWireGuardKey(raw []byte) ([32]byte, error) {

@@ -137,4 +137,5 @@ type PeerObservation struct {
 	LastSenderIndex   uint32
 	LastReceiverIndex uint32
 	Packets           uint64
+	DroppedPackets    uint64
 }

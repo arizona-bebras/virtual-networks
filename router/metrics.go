@@ -6,16 +6,22 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"sort"
 	"strings"
 	"time"
 
+	"router/internal/netstack"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-const prometheusAddrEnv = "ROUTER_PROMETHEUS_ADDR"
+const (
+	prometheusAddrEnv = "ROUTER_PROMETHEUS_ADDR"
+	pprofEnabledEnv   = "ROUTER_PPROF"
+)
 
 type prometheusSnapshot struct {
 	Revision           string
@@ -24,6 +30,7 @@ type prometheusSnapshot struct {
 	ProtocolCount      int
 	WireGuardPeerCount int
 	Reports            []PeerConnectionReport
+	NetstackStats      map[string]netstack.Stats
 	CollectError       error
 }
 
@@ -55,6 +62,8 @@ type routerCollector struct {
 	wireGuardPeerRxBytes         *prometheus.Desc
 	wireGuardPeerTxBytes         *prometheus.Desc
 	wireGuardPeerEndpointInfo    *prometheus.Desc
+	netstackDroppedPackets       *prometheus.Desc
+	netstackQueuePackets         *prometheus.Desc
 }
 
 func newRouterCollector(runtime *Runtime) *routerCollector {
@@ -169,6 +178,18 @@ func newRouterCollector(runtime *Runtime) *routerCollector {
 			[]string{"network_id", "protocol_instance_id", "peer_id", "endpoint"},
 			nil,
 		),
+		netstackDroppedPackets: prometheus.NewDesc(
+			"router_netstack_dropped_packets_total",
+			"Packets dropped by the userspace netstack packet queues.",
+			[]string{"network_id", "reason"},
+			nil,
+		),
+		netstackQueuePackets: prometheus.NewDesc(
+			"router_netstack_queue_packets",
+			"Packets currently queued in the userspace netstack packet queues.",
+			[]string{"network_id", "queue"},
+			nil,
+		),
 	}
 }
 
@@ -191,6 +212,14 @@ func startPrometheusExporter(ctx context.Context, runtime *Runtime) (func() erro
 
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
+	pprofOn := pprofEnabled()
+	if pprofOn {
+		mux.HandleFunc("/debug/pprof/", pprof.Index)
+		mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+		mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+		mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	}
 	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		_, _ = w.Write([]byte("router Prometheus exporter\nmetrics_path=/metrics\n"))
@@ -210,11 +239,23 @@ func startPrometheusExporter(ctx context.Context, runtime *Runtime) (func() erro
 	}()
 
 	log.Printf("Prometheus exporter listening on %s", listener.Addr())
+	if pprofOn {
+		log.Printf("router pprof endpoints enabled at http://%s/debug/pprof/", listener.Addr())
+	}
 	return func() error {
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		return server.Shutdown(shutdownCtx)
 	}, nil
+}
+
+func pprofEnabled() bool {
+	switch strings.ToLower(strings.TrimSpace(os.Getenv(pprofEnabledEnv))) {
+	case "1", "true", "yes", "on":
+		return true
+	default:
+		return false
+	}
 }
 
 func prometheusExporterAddr() string {
@@ -248,6 +289,8 @@ func (c *routerCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.wireGuardPeerRxBytes
 	ch <- c.wireGuardPeerTxBytes
 	ch <- c.wireGuardPeerEndpointInfo
+	ch <- c.netstackDroppedPackets
+	ch <- c.netstackQueuePackets
 }
 
 func (c *routerCollector) Collect(ch chan<- prometheus.Metric) {
@@ -288,6 +331,15 @@ func (c *routerCollector) Collect(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(c.wireGuardPeerTxBytes, prometheus.CounterValue, float64(report.TxBytes), report.NetworkID, report.ProtocolInstanceID, report.PeerID)
 		ch <- prometheus.MustNewConstMetric(c.wireGuardPeerEndpointInfo, prometheus.GaugeValue, 1, report.NetworkID, report.ProtocolInstanceID, report.PeerID, report.Endpoint)
 	}
+
+	for _, networkID := range snapshot.NetworkIDs {
+		stats := snapshot.NetstackStats[networkID]
+		ch <- prometheus.MustNewConstMetric(c.netstackDroppedPackets, prometheus.CounterValue, float64(stats.DroppedNoRoute), networkID, "no_route")
+		ch <- prometheus.MustNewConstMetric(c.netstackDroppedPackets, prometheus.CounterValue, float64(stats.DroppedTUNQueueFull), networkID, "tun_queue_full")
+		ch <- prometheus.MustNewConstMetric(c.netstackDroppedPackets, prometheus.CounterValue, float64(stats.DroppedInvalidPacket), networkID, "invalid_packet")
+		ch <- prometheus.MustNewConstMetric(c.netstackQueuePackets, prometheus.GaugeValue, float64(stats.GVisorOutboundQueued), networkID, "gvisor_outbound")
+		ch <- prometheus.MustNewConstMetric(c.netstackQueuePackets, prometheus.GaugeValue, float64(stats.TUNQueued), networkID, "tun_outbound")
+	}
 }
 
 func (r *Runtime) prometheusSnapshot() prometheusSnapshot {
@@ -298,11 +350,18 @@ func (r *Runtime) prometheusSnapshot() prometheusSnapshot {
 		Revision:      r.revision,
 		NetworkCount:  len(r.cfg.Overlays),
 		ProtocolCount: len(r.protocols),
+		NetstackStats: make(map[string]netstack.Stats, len(r.overlays)),
 	}
 	for _, overlay := range r.cfg.Overlays {
 		snapshot.NetworkIDs = append(snapshot.NetworkIDs, overlay.NetworkID)
 	}
 	sort.Strings(snapshot.NetworkIDs)
+
+	for networkID, overlay := range r.overlays {
+		if overlay != nil && overlay.tun != nil {
+			snapshot.NetstackStats[networkID] = overlay.tun.Stats()
+		}
+	}
 
 	for _, protocol := range r.protocols {
 		if normalizeProtocolName(protocol.Name()) != "wireguard" {
