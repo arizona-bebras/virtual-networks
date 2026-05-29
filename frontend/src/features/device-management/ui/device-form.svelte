@@ -1,5 +1,5 @@
 <script lang="ts">
-import Link2Icon from "@lucide/svelte/icons/link-2";
+import { RotateCcw } from "@lucide/svelte";
 import {
   createMutation,
   createQuery,
@@ -8,7 +8,7 @@ import {
 import { CreateDeviceSchema } from "common/schemas/device/create-device";
 import type { DeviceRelations } from "common/schemas/device/index";
 import slugify from "slugify";
-import { untrack } from "svelte";
+import { onMount, untrack } from "svelte";
 import { z } from "zod";
 import Tags from "$entities/device/ui/device-tags-cell.svelte";
 import FooterButtons from "$entities/table-page/ui/FooterButtons.svelte";
@@ -26,6 +26,7 @@ import * as Label from "$shared/ui/label/index.js";
 import * as Popover from "$shared/ui/popover/index";
 import { Separator } from "$shared/ui/separator/index";
 import {
+  deviceIpQuery,
   deviceUpdateMutation,
   deviceСreationQuery,
   tagDeviceCreation,
@@ -42,17 +43,27 @@ let currentNetworkId = $derived(getNetworkId().id);
 
 const networkCfg = createQuery(() => networkConfig(currentNetworkId));
 const userTagsQuery = createQuery(() => deviceTags.userTags(currentNetworkId));
+const deviceIp = createQuery(() => deviceIpQuery(currentNetworkId));
 
 const creationMutation = createMutation(() =>
   deviceСreationQuery(() => {
     queryClient.invalidateQueries({
       queryKey: queryKeys.networkDevices(currentNetworkId),
     });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkDeviceIp(currentNetworkId),
+    });
     dialogState = false;
   }),
 );
 
-const updateMutation = createMutation(() => deviceUpdateMutation(() => {}));
+const updateMutation = createMutation(() =>
+  deviceUpdateMutation(() => {
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkDeviceIp(currentNetworkId),
+    });
+  }),
+);
 
 const createTagMutation = createMutation(() => tagDeviceCreation(() => {}));
 const deleteTagMutation = createMutation(() => tagDeviceRemove(() => {}));
@@ -123,6 +134,14 @@ let {
   },
 });
 
+async function replaceAutoIp(force: boolean = false) {
+  if (!force && device) return;
+  const query = await deviceIp.refetch();
+  $formData.ip = query.data?.ip ?? "";
+}
+
+onMount(replaceAutoIp);
+
 $effect(() => {
   if (device) {
     $formData.name = device.name;
@@ -130,6 +149,12 @@ $effect(() => {
     untrack(() => ($formData.slug = slugify($formData.name)));
   }
 });
+// $effect(() => {
+//   if (deviceIp.isSuccess && !deviceIp.isRefetching) {
+//     $formData.ip = deviceIp.data.ip;
+//   }
+// });
+// $inspect(deviceIp.isFetching);
 </script>
 
 <form method="POST" use:enhance class="relative">
@@ -159,7 +184,16 @@ $effect(() => {
     <Form.Control>
       {#snippet children({ props })}
         <Form.Label type="required">IP-адрес</Form.Label>
-        <Input {...props} bind:value={$formData.ip} placeholder="10.0.0.5" />
+        <div class="relative">
+          <Input {...props} bind:value={$formData.ip} placeholder="10.0.0.5" />
+          <button
+            type="button"
+            onclick={() => replaceAutoIp(true)}
+            class="absolute top-1/2 -translate-y-[65%] right-2"
+          >
+            <RotateCcw class="size-4 stroke-muted-foreground" />
+          </button>
+        </div>
       {/snippet}
     </Form.Control>
     <Form.Description />
