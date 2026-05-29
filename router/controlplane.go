@@ -398,6 +398,10 @@ func configFromControlPlane(snapshot *controlplanepb.RouterConfiguration) (Confi
 			} else {
 				cfg.WireGuard.InterfacePublicKey = &publicKey
 			}
+			if len(peers) == 0 {
+				log.Printf("skipping control plane protocol %q: no valid wireguard peers", cfg.ID)
+				continue
+			}
 			if len(protocol.GetPeerIds()) > 0 {
 				cfg.PeerIDs = wireGuardPeerIDs(peers)
 			}
