@@ -224,13 +224,10 @@ func (r *dnsResolver) privateQuestionAnswers(question dnsmessage.Question) (bool
 	}
 	name := normalizeDNSName(question.Name.String())
 
-	if strings.HasSuffix(name, ".internal.") {
-		addr, ok := r.records[name]
-		if !ok {
-			return true, false, nil
-		}
-		return true, true, addressAnswers(question, addr)
-	}
+  addr, ok := r.records[name]
+  if ok {
+    return true, true, addressAnswers(question, addr)
+  }
 
 	if !isReverseDNSName(name) {
 		return false, true, nil
