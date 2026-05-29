@@ -25,9 +25,6 @@ func validateConfig(cfg Config) error {
 		if !overlay.OverlayCIDR.Contains(overlay.ServerAddr) {
 			return fmt.Errorf("server address %s is outside network %q overlay %s", overlay.ServerAddr, overlay.NetworkID, overlay.OverlayCIDR)
 		}
-		if overlay.OverlayCIDR.Bits() != 24 {
-			return fmt.Errorf("network %q overlay %s currently supports /24 only", overlay.NetworkID, overlay.OverlayCIDR)
-		}
 		if overlay.MTU < 1280 {
 			return fmt.Errorf("network %q MTU must be >= 1280", overlay.NetworkID)
 		}
@@ -78,9 +75,9 @@ func validateConfig(cfg Config) error {
 				return fmt.Errorf("protocol %q must include at least one wireguard peer", protocol.ID)
 			}
 			for _, peer := range protocol.WireGuard.Peers {
-				if !overlay.OverlayCIDR.Contains(peer.Addr) {
-					return fmt.Errorf("wireguard peer %q address %s is outside network %q overlay %s", peer.ID, peer.Addr, protocol.NetworkID, overlay.OverlayCIDR)
-				}
+				// if !overlay.OverlayCIDR.Contains(peer.Addr) {
+				// 	return fmt.Errorf("wireguard peer %q address %s is outside network %q overlay %s", peer.ID, peer.Addr, protocol.NetworkID, overlay.OverlayCIDR)
+				// }
 				if peer.Addr == overlay.ServerAddr {
 					return fmt.Errorf("wireguard peer %q cannot use network %q server address %s", peer.ID, protocol.NetworkID, peer.Addr)
 				}

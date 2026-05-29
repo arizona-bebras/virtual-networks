@@ -1,4 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { Address4 } from "ip-address";
 import {
   ChangedResource,
   ConfigurationUpdateReason,
@@ -6,8 +7,7 @@ import {
   type RouterConfiguration,
   type RouterConfigurationUpdate,
 } from "proto";
-import { Observable, Subject } from "rxjs";
-
+import { concatWith, defer, from, map, Observable, Subject } from "rxjs";
 import { type Database, DRIZZLE } from "../../db/database.module.js";
 
 @Injectable()
@@ -31,6 +31,13 @@ export class RouterService {
             ip: true,
             slug: true,
           },
+          with: {
+            keys: {
+              columns: {
+                publicKey: true,
+              },
+            },
+          },
         },
         keys: {
           columns: {
@@ -47,7 +54,9 @@ export class RouterService {
         name: network.name,
         domain: network.domain,
         cidr: network.cidr,
-        serverAddress: process.env.ROUTER_ADDRESS ?? "",
+        serverAddress: new Address4(network.cidr)
+          .startAddressExclusive()
+          .correctForm(),
         mtu: 1280,
         statusPort: 8080,
         peers: network.devices.map((device) => {
@@ -57,6 +66,9 @@ export class RouterService {
             address: device.ip,
             allowedIps: ["0.0.0.0/0"],
             domain: device.slug,
+            wireguard: {
+              publicKey: device.keys?.publicKey ?? new Uint8Array([]),
+            },
           };
         }),
       };
@@ -66,10 +78,10 @@ export class RouterService {
 
     for (let i = 0; i < networks.length; i++) {
       protocols.push({
-        id: "wg",
+        id: `wg-${networks[i].id}`,
         name: "wireguard",
         networkId: networks[i].id,
-        listenPort: 443,
+        listenPort: 51820,
         publicHost: process.env.ROUTER_ADDRESS ?? "",
         peerIds: [],
         wireguard: {
@@ -101,6 +113,17 @@ export class RouterService {
   }
 
   getEventsObservableStream(): Observable<RouterConfigurationUpdate> {
-    return this.events.asObservable();
+    return defer(() => from(this.buildRouterConfiguration())).pipe(
+      map((configuration) => {
+        return {
+          revision: String(Date.now()),
+          reason:
+            ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_INITIAL_SNAPSHOT,
+          configuration: configuration,
+          changedResources: [],
+        };
+      }),
+      concatWith(this.events.asObservable()),
+    );
   }
 }
