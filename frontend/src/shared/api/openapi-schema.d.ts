@@ -82,7 +82,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Добавить тег на устройство */
+    /** Получить ip устройства */
     get: operations["NetworksController_getFreeIp"];
     put?: never;
     post?: never;
@@ -698,7 +698,11 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          "application/json": {
+            ip: string;
+          };
+        };
       };
       /** @description Сеть переполнена */
       400: {
