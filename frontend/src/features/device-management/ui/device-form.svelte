@@ -186,29 +186,31 @@ $effect(() => {
     <Form.Description />
     <Form.FieldErrors />
   </Form.Field>
-  <div class="flex font-medium text-[12px] mb-1 gap-0.5">
-    <p>IP-адрес</p>
-    <p class="text-destructive">*</p>
-  </div>
-  <div class="relative">
-    <div
-      class="flex bg-input/50 border gap-2 justify-between transition-colors focus-within:ring-2 focus-within:ring-offset-2  mb-2 rounded-[6px] "
-    >
-      <IpInput
-        bind:ip={$formData.ip}
-        bind:info={ipFieldInfo}
-        validate={() => validateHostIP($formData.ip, networkCfg.data!.cidr)}
-      />
+  {#if networkCfg.data?.cidr}
+    <div class="flex font-medium text-[12px] mb-1 gap-0.5">
+      <p>IP-адрес</p>
+      <p class="text-destructive">*</p>
     </div>
-    <button
-      type="button"
-      onclick={() => replaceAutoIp(true)}
-      class="absolute top-1/2 -translate-y-1/2 right-2"
-    >
-      <RotateCcw class="size-4 stroke-muted-foreground" />
-    </button>
-  </div>
-  <DeviceIpSuggestion info={ipFieldInfo} />
+    <div class="relative">
+      <div
+        class="flex bg-input/50 border gap-2 justify-between transition-colors focus-within:ring-2 focus-within:ring-offset-2  mb-2 rounded-[6px] "
+      >
+        <IpInput
+          bind:ip={$formData.ip}
+          bind:info={ipFieldInfo}
+          validate={() => validateHostIP($formData.ip, networkCfg.data!.cidr)}
+        />
+      </div>
+      <button
+        type="button"
+        onclick={() => replaceAutoIp(true)}
+        class="absolute top-1/2 -translate-y-1/2 right-2"
+      >
+        <RotateCcw class="size-4 stroke-muted-foreground" />
+      </button>
+    </div>
+    <DeviceIpSuggestion info={ipFieldInfo} />
+  {/if}
 
   <Form.Field {form} name="slug">
     <Form.Control>
