@@ -1,24 +1,41 @@
 import type { Edge, Node } from "@xyflow/svelte";
 import type { RuleRelation } from "common/schemas/rule/index";
+import type { Tag } from "common/schemas/tag/index";
 import type { FolderNodeData } from "$entities/node/model/types";
 
-export function ruleEdges(rules: RuleRelation[]): Edge[] {
-  const edges: Edge[] = [];
-  for (const [index, rule] of rules.entries()) {
-    if (rule.destId && rule.sourceId) {
-      edges.push({
-        id: `source-rule-${index + 1}`,
-        source: `source-${rule.sourceId}`,
-        target: rule.id,
-      });
-      edges.push({
-        id: `rule-dest-${index + 1}`,
-        source: rule.id,
-        target: `dest-${rule.destId}`,
-      });
-    }
-  }
-  return edges;
+function createEndpointEdges(
+  ruleId: string,
+  endpointId: string | null,
+  tags: Tag[],
+  isSource: boolean,
+  ruleIndex: number,
+): Edge[] {
+  const endpoints = endpointId ? [{ id: endpointId }] : tags;
+
+  return endpoints.map((endpoint) => {
+    const idSuffix = endpointId
+      ? `${ruleIndex + 1}`
+      : `${ruleIndex + 1}-${endpoint.id}`;
+
+    return isSource
+      ? {
+          id: `source-rule-${idSuffix}`,
+          source: `source-${endpoint.id}`,
+          target: ruleId,
+        }
+      : {
+          id: `rule-dest-${idSuffix}`,
+          source: ruleId,
+          target: `dest-${endpoint.id}`,
+        };
+  });
+}
+
+export function ruleEdges(rules: RuleRelation[], tags: Tag[]): Edge[] {
+  return rules.flatMap((rule, index) => [
+    ...createEndpointEdges(rule.id, rule.sourceId, tags, true, index),
+    ...createEndpointEdges(rule.id, rule.destId, tags, false, index),
+  ]);
 }
 
 export function deviceFolderToTagEdges(

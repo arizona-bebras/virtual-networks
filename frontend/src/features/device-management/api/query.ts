@@ -1,6 +1,5 @@
 import { mutationOptions, queryOptions } from "@tanstack/svelte-query";
 import type { CreateDevice } from "common/schemas/device/create-device";
-import type { DeviceRelations } from "common/schemas/device/index";
 import type { UpdateDevice } from "common/schemas/device/update-device";
 import { client } from "$shared/api/openapi-client";
 import { queryKeys } from "$shared/api/query-keys";
@@ -90,12 +89,10 @@ export const tagDeviceCreation = (onSuccess: () => void) =>
       networkId,
       tagId,
       deviceId,
-      deviceInfo,
     }: {
       networkId: string;
       tagId: string;
       deviceId: string;
-      deviceInfo: DeviceRelations;
     }) => {
       const { error } = await client.POST(
         "/networks/{network_id}/devices/{device_id}/add_tag/{tag_id}",
@@ -107,7 +104,6 @@ export const tagDeviceCreation = (onSuccess: () => void) =>
               device_id: deviceId,
             },
           },
-          body: deviceInfo,
         },
       );
       if (error) throw error;
@@ -120,12 +116,10 @@ export const tagDeviceRemove = (onSuccess: () => void) =>
       networkId,
       tagId,
       deviceId,
-      deviceInfo,
     }: {
       networkId: string;
       tagId: string;
       deviceId: string;
-      deviceInfo: DeviceRelations;
     }) => {
       const { error } = await client.DELETE(
         "/networks/{network_id}/devices/{device_id}/add_tag/{tag_id}",
@@ -137,7 +131,6 @@ export const tagDeviceRemove = (onSuccess: () => void) =>
               device_id: deviceId,
             },
           },
-          body: deviceInfo,
         },
       );
       if (error) throw error;

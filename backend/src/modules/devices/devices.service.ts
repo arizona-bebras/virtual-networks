@@ -82,9 +82,12 @@ export class DevicesService {
             .slice(16),
         })
         .returning();
-      await tx
+      const [newDevice] = await tx
         .insert(schema.devices)
-        .values({ ...device, keysId: keys.id, networkId });
+        .values({ ...device, keysId: keys.id, networkId })
+        .returning({ id: schema.devices.id });
+
+      return newDevice.id;
     });
   }
 

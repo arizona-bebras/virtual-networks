@@ -110,7 +110,6 @@ let {
             networkId: currentNetworkId,
             tagId: tag.id,
             deviceId: device.id,
-            deviceInfo: device,
           }),
         ),
         ...tagsToAdd.map((tag) =>
@@ -118,17 +117,11 @@ let {
             networkId: currentNetworkId,
             tagId: tag.id,
             deviceId: device.id,
-            deviceInfo: device,
           }),
         ),
       ]);
-
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.network(currentNetworkId),
-      });
-      dialogState = false;
     } else {
-      creationMutation.mutate({
+      const data = await creationMutation.mutateAsync({
         networkId: currentNetworkId,
         deviceInfo: {
           name: $formData.name,
@@ -136,6 +129,17 @@ let {
           slug: $formData.slug,
         },
       });
+      for (let tag of deviceTagsArray) {
+        await createTagMutation.mutateAsync({
+          networkId: currentNetworkId,
+          tagId: tag.id,
+          deviceId: data.id ?? "",
+        });
+      }
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.network(currentNetworkId),
+      });
+      dialogState = false;
     }
   },
 });
@@ -237,32 +241,30 @@ $effect(() => {
 
   <div class="grid w-full max-w-sm gap-6"></div>
 
-  {#if device}
-    <div class="flex gap-1 items-center">
-      <Tags
-        tags={deviceTagsArray}
-        onclick={(name) => {
+  <div class="flex gap-1 items-center">
+    <Tags
+      tags={deviceTagsArray}
+      onclick={(name) => {
           deviceTagsArray = deviceTagsArray.filter((tag) => tag.name !== name);
         }}
-      />
-      <Popover.Root bind:open={isTagSelectorOpen}>
-        <Popover.Trigger class="border-2 border-dashed px-4 rounded-[4px]">
-          +
-        </Popover.Trigger>
-        <Popover.Content>
-          <TagSelector
-            onclick={(name) => {
+    />
+    <Popover.Root bind:open={isTagSelectorOpen}>
+      <Popover.Trigger class="border-2 border-dashed px-4 rounded-[4px]">
+        +
+      </Popover.Trigger>
+      <Popover.Content>
+        <TagSelector
+          onclick={(name) => {
             const tag = userTagsQuery.data?.find((t) => t.name === name);
             if (tag){
               deviceTagsArray.push(tag);
             }
           }}
-            excludedTags={deviceTagsArray}
-          />
-        </Popover.Content>
-      </Popover.Root>
-    </div>
-  {/if}
+          excludedTags={deviceTagsArray}
+        />
+      </Popover.Content>
+    </Popover.Root>
+  </div>
   <FooterButtons
     valid={() => valid() && (ipFieldInfo?.isValid ?? true)}
     bind:dialogState

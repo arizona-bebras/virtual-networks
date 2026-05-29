@@ -48,16 +48,22 @@ export class DevicesController {
   @Roles(Role.Admin)
   @ApiOperation({ summary: "Создать новое устройство" })
   @ApiBody({ type: CreateDeviceDto })
-  @ApiResponse({ status: 201, description: "Устройство успешно создано" })
+  @ApiResponse({
+    status: 201,
+    description: "Устройство успешно создано",
+    schema: { properties: { id: { type: "string" } } },
+  })
   async createDevice(
     @Param("network_id") network_id: string,
     @Body() device: CreateDeviceDto,
     @Session() session: UserSession,
-  ) {
-    await this.devicesService.create(
+  ): Promise<{ id: string }> {
+    const id = await this.devicesService.create(
       { ...device, ownerId: session.user.id },
       network_id,
     );
+
+    return { id };
   }
 
   @Get()
@@ -162,7 +168,6 @@ export class DevicesController {
   @Post(":device_id/add_tag/:tag_id")
   @Roles(Role.Admin)
   @ApiOperation({ summary: "Добавить тег на устройство" })
-  @ApiBody({ type: DeviceRelationsDto })
   @ApiResponse({
     status: 201,
     description: "Тег успешно добавлен к устройству",
@@ -177,8 +182,7 @@ export class DevicesController {
 
   @Delete(":device_id/add_tag/:tag_id")
   @Roles(Role.Admin)
-  @ApiOperation({ summary: "Добавить тег на устройство" })
-  @ApiBody({ type: DeviceRelationsDto })
+  @ApiOperation({ summary: "Удалить тег с устройства" })
   @ApiResponse({
     status: 204,
     description: "Тег успешно удален с устройства",

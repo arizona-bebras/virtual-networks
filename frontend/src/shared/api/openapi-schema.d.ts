@@ -140,7 +140,7 @@ export interface paths {
     put?: never;
     /** Добавить тег на устройство */
     post: operations["DevicesController_addTagOnDevice"];
-    /** Добавить тег на устройство */
+    /** Удалить тег с устройства */
     delete: operations["DevicesController_deleteTagFromDevice"];
     options?: never;
     head?: never;
@@ -778,7 +778,11 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          "application/json": {
+            id?: string;
+          };
+        };
       };
     };
   };
@@ -890,11 +894,7 @@ export interface operations {
       };
       cookie?: never;
     };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["DeviceRelationsDto"];
-      };
-    };
+    requestBody?: never;
     responses: {
       /** @description Тег успешно добавлен к устройству */
       201: {
@@ -924,11 +924,7 @@ export interface operations {
       };
       cookie?: never;
     };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["DeviceRelationsDto"];
-      };
-    };
+    requestBody?: never;
     responses: {
       /** @description Тег успешно удален с устройства */
       204: {

@@ -77,7 +77,6 @@ $effect(() => {
         true,
         destTagNodes,
       );
-
       nodes = [
         ...sourceTagNodes,
         ...ruleNodes,
@@ -86,9 +85,10 @@ $effect(() => {
         ...destTagNodes,
       ];
       edges = [
-        ...ruleEdges(networkRulesQuery.data),
+        ...ruleEdges(networkRulesQuery.data, networkTagsQuery.data),
         ...deviceFolderToTagEdges(sourceDeviceNodes.concat(destDeviceNodes)),
       ];
+      console.log(nodes);
     });
   }
 });
