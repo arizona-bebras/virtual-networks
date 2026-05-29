@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -11,6 +12,8 @@ import (
 	"golang.zx2c4.com/wireguard/conn"
 	"golang.zx2c4.com/wireguard/device"
 )
+
+const packetLogsEnv = "ROUTER_WIREGUARD_PACKET_LOGS"
 
 type Observation struct {
 	Endpoint          string
@@ -34,6 +37,7 @@ type observerLog struct {
 	byEndpoint   map[string]*endpointObservation
 	bySenderIdx  map[uint32]string
 	byReceiverIx map[uint32]string
+	logPackets   bool
 }
 
 type endpointObservation struct {
@@ -52,6 +56,7 @@ func newObserverLog() *observerLog {
 		byEndpoint:   make(map[string]*endpointObservation),
 		bySenderIdx:  make(map[uint32]string),
 		byReceiverIx: make(map[uint32]string),
+		logPackets:   packetLoggingEnabled(),
 	}
 }
 
@@ -82,10 +87,12 @@ func (l *observerLog) record(ep conn.Endpoint, backend string, meta packetMetada
 		l.byReceiverIx[meta.ReceiverIndex] = key
 	}
 
-	log.Printf(
-		"frontend: endpoint=%s backend=%s packet_type=%s size=%d sender_idx=%d receiver_idx=%d",
-		key, backend, meta.TypeName, meta.Size, meta.SenderIndex, meta.ReceiverIndex,
-	)
+	if l.logPackets {
+		log.Printf(
+			"frontend: endpoint=%s backend=%s packet_type=%s size=%d sender_idx=%d receiver_idx=%d",
+			key, backend, meta.TypeName, meta.Size, meta.SenderIndex, meta.ReceiverIndex,
+		)
+	}
 }
 
 func (l *observerLog) SnapshotForBackend(backend string) []Observation {
@@ -143,4 +150,13 @@ func parsePacketMetadata(packet []byte) packetMetadata {
 	}
 
 	return meta
+}
+
+func packetLoggingEnabled() bool {
+	switch strings.ToLower(strings.TrimSpace(os.Getenv(packetLogsEnv))) {
+	case "1", "true", "yes", "on":
+		return true
+	default:
+		return false
+	}
 }

@@ -6,7 +6,9 @@ import (
 	"net"
 	"net/netip"
 	"os"
+	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
 
 	"golang.zx2c4.com/wireguard/tun"
@@ -24,6 +26,11 @@ import (
 	"gvisor.dev/gvisor/pkg/tcpip/transport/udp"
 )
 
+const (
+	packetQueueCapacity  = 8192
+	rxChecksumOffloadEnv = "ROUTER_NETSTACK_RX_CHECKSUM_OFFLOAD"
+)
+
 type Hub struct {
 	ep           *channel.Endpoint
 	stack        *stack.Stack
@@ -37,6 +44,10 @@ type Hub struct {
 	attachments map[*deviceTun]struct{}
 	routes      map[netip.Addr]*deviceTun
 	closed      bool
+
+	droppedNoRoute       atomic.Uint64
+	droppedTUNQueueFull  atomic.Uint64
+	droppedInvalidPacket atomic.Uint64
 }
 
 type deviceTun struct {
@@ -44,7 +55,18 @@ type deviceTun struct {
 	name           string
 	routes         []netip.Addr
 	events         chan tun.Event
-	incomingPacket chan []byte
+	incomingPacket chan queuedPacket
+}
+
+type queuedPacket struct {
+	bytes   []byte
+	release func()
+}
+
+func (packet queuedPacket) Release() {
+	if packet.release != nil {
+		packet.release()
+	}
 }
 
 type Network struct {
@@ -52,6 +74,14 @@ type Network struct {
 	dnsServers []netip.Addr
 	hasV4      bool
 	hasV6      bool
+}
+
+type Stats struct {
+	DroppedNoRoute       uint64
+	DroppedTUNQueueFull  uint64
+	DroppedInvalidPacket uint64
+	GVisorOutboundQueued int
+	TUNQueued            int
 }
 
 func Create(localAddresses, dnsServers []netip.Addr, mtu int) (*Hub, *Network, error) {
@@ -62,12 +92,15 @@ func Create(localAddresses, dnsServers []netip.Addr, mtu int) (*Hub, *Network, e
 	}
 
 	dev := &Hub{
-		ep:          channel.New(1024, uint32(mtu), ""),
+		ep:          channel.New(packetQueueCapacity, uint32(mtu), ""),
 		stack:       stack.New(opts),
 		dnsServers:  append([]netip.Addr(nil), dnsServers...),
 		mtu:         mtu,
 		attachments: make(map[*deviceTun]struct{}),
 		routes:      make(map[netip.Addr]*deviceTun),
+	}
+	if rxChecksumOffloadEnabled() {
+		dev.ep.LinkEPCapabilities |= stack.CapabilityRXChecksumOffload
 	}
 
 	sackEnabledOpt := tcpip.TCPSACKEnabled(true)
@@ -129,7 +162,7 @@ func (hub *Hub) Attach(name string, routes []netip.Addr) tun.Device {
 		name:           name,
 		routes:         append([]netip.Addr(nil), routes...),
 		events:         make(chan tun.Event, 10),
-		incomingPacket: make(chan []byte, 128),
+		incomingPacket: make(chan queuedPacket, packetQueueCapacity),
 	}
 
 	hub.mu.Lock()
@@ -178,12 +211,16 @@ func (hub *Hub) WriteNotify() {
 		}
 
 		view := pkt.ToView()
-		bytes := append([]byte(nil), view.AsSlice()...)
-		view.Release()
+		packet := queuedPacket{
+			bytes:   view.AsSlice(),
+			release: view.Release,
+		}
 		pkt.DecRef()
 
-		dst, ok := packetDestination(bytes)
+		dst, ok := packetDestination(packet.bytes)
 		if !ok {
+			packet.Release()
+			hub.droppedInvalidPacket.Add(1)
 			continue
 		}
 
@@ -191,13 +228,34 @@ func (hub *Hub) WriteNotify() {
 		attached := hub.routes[dst]
 		hub.mu.RUnlock()
 		if attached == nil {
+			packet.Release()
+			hub.droppedNoRoute.Add(1)
 			continue
 		}
 
 		select {
-		case attached.incomingPacket <- bytes:
+		case attached.incomingPacket <- packet:
 		default:
+			packet.Release()
+			hub.droppedTUNQueueFull.Add(1)
 		}
+	}
+}
+
+func (hub *Hub) Stats() Stats {
+	hub.mu.RLock()
+	tunQueued := 0
+	for attached := range hub.attachments {
+		tunQueued += len(attached.incomingPacket)
+	}
+	hub.mu.RUnlock()
+
+	return Stats{
+		DroppedNoRoute:       hub.droppedNoRoute.Load(),
+		DroppedTUNQueueFull:  hub.droppedTUNQueueFull.Load(),
+		DroppedInvalidPacket: hub.droppedInvalidPacket.Load(),
+		GVisorOutboundQueued: hub.ep.NumQueued(),
+		TUNQueued:            tunQueued,
 	}
 }
 
@@ -237,7 +295,8 @@ func (tunDev *deviceTun) Read(buf [][]byte, sizes []int, offset int) (int, error
 	if !ok {
 		return 0, os.ErrClosed
 	}
-	n := copy(buf[0][offset:], packet)
+	n := copy(buf[0][offset:], packet.bytes)
+	packet.Release()
 	sizes[0] = n
 	return 1, nil
 }
@@ -260,7 +319,9 @@ func (tunDev *deviceTun) ReadPacket(ctx context.Context) ([]byte, error) {
 		if !ok {
 			return nil, os.ErrClosed
 		}
-		return append([]byte(nil), packet...), nil
+		bytes := append([]byte(nil), packet.bytes...)
+		packet.Release()
+		return bytes, nil
 	}
 }
 
@@ -283,7 +344,11 @@ func (tunDev *deviceTun) closeChannels() {
 		tunDev.events = nil
 	}
 	if tunDev.incomingPacket != nil {
-		close(tunDev.incomingPacket)
+		incomingPacket := tunDev.incomingPacket
+		close(incomingPacket)
+		for packet := range incomingPacket {
+			packet.Release()
+		}
 		tunDev.incomingPacket = nil
 	}
 }
@@ -345,5 +410,14 @@ func packetDestination(packet []byte) (netip.Addr, bool) {
 		return netip.AddrFrom16(dst), true
 	default:
 		return netip.Addr{}, false
+	}
+}
+
+func rxChecksumOffloadEnabled() bool {
+	switch strings.ToLower(strings.TrimSpace(os.Getenv(rxChecksumOffloadEnv))) {
+	case "", "1", "true", "yes", "on":
+		return true
+	default:
+		return false
 	}
 }

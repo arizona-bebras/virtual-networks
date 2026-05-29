@@ -11,7 +11,7 @@ multiple configurable ingress servers. WireGuard is the implemented ingress prot
 - Serves private DNS inside each overlay on `router.internal` and `<device_id>.internal`
 - Exposes an in-tunnel HTTP status page on `http://<server-tunnel-ip>:8080/`
 - Exposes a Prometheus metrics endpoint for WireGuard peer, network, and global stats
-- Wraps each WireGuard bind with a frontend that logs packet metadata and endpoint observations
+- Wraps each WireGuard bind with a frontend that records packet metadata and endpoint observations
 
 ## Architecture
 
@@ -30,7 +30,7 @@ The current implementation has three main layers:
 3. WireGuard frontend/backend
    - Wraps the UDP bind used by each `wireguard-go` device
    - Observes inbound WireGuard packet metadata
-   - Logs endpoint, packet type, sender index, and receiver index
+   - Records endpoint, packet type, sender index, and receiver index
 
 ## File layout
 
@@ -73,7 +73,10 @@ Optional environment variables:
 - `ROUTER_CONTROL_PLANE_TIMEOUT`: startup fetch timeout as a Go duration or seconds
 - `ROUTER_CONNECTION_REPORT_INTERVAL`: peer connection report interval as a Go duration or seconds, defaults to `10s`
 - `ROUTER_PROMETHEUS_ADDR`: Prometheus exporter listen address, defaults to `:9090`; set to `off`, `false`, `disabled`, or `none` to disable
+- `ROUTER_PPROF`: set to `true` to expose Go pprof endpoints under the Prometheus exporter at `/debug/pprof/`
+- `ROUTER_NETSTACK_RX_CHECKSUM_OFFLOAD`: set to `false` to force gVisor to verify transport checksums on packets received from WireGuard; defaults to enabled
 - `ROUTER_DNS_FORWARDER`: upstream DNS resolver for non-private queries, defaults to `1.1.1.1:53`
+- `ROUTER_WIREGUARD_PACKET_LOGS`: set to `true` to log every observed WireGuard packet; disabled by default because packet-level logging is expensive
 
 ## Prometheus metrics
 

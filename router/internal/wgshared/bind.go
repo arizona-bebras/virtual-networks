@@ -7,10 +7,13 @@ import (
 	"net"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"golang.zx2c4.com/wireguard/conn"
 	"golang.zx2c4.com/wireguard/device"
 )
+
+const minInboundQueueCapacity = 8192
 
 type Endpoint struct {
 	mu                  sync.Mutex
@@ -31,6 +34,8 @@ type sharedBind struct {
 	queues    []chan inboundPacket
 	opened    bool
 	batchSize int
+
+	droppedInbound atomic.Uint64
 }
 
 type inboundPacket struct {
@@ -45,7 +50,7 @@ func Key(protocolName string, port uint16) string {
 func NewEndpoint(port uint16) *Endpoint {
 	return &Endpoint{
 		port:            port,
-		inner:           conn.NewStdNetBind(),
+		inner:           conn.NewDefaultBind(),
 		logger:          newObserverLog(),
 		receivers:       make(map[*sharedBind]struct{}),
 		receiverByIndex: make(map[uint32]*sharedBind),
@@ -58,6 +63,20 @@ func (e *Endpoint) NewBind(backendName string) conn.Bind {
 
 func (e *Endpoint) SnapshotForBackend(backend string) []Observation {
 	return e.logger.SnapshotForBackend(backend)
+}
+
+func (e *Endpoint) DroppedInboundPackets(backend string) uint64 {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	var dropped uint64
+	for receiver := range e.receivers {
+		if backend != "" && receiver.backendName != backend {
+			continue
+		}
+		dropped += receiver.DroppedInboundPackets()
+	}
+	return dropped
 }
 
 func (e *Endpoint) ensureListeningLocked(port uint16) (uint16, error) {
@@ -188,7 +207,7 @@ func (b *sharedBind) Open(port uint16) ([]conn.ReceiveFunc, uint16, error) {
 
 	b.queues = make([]chan inboundPacket, queueCount)
 	for i := range b.queues {
-		b.queues[i] = make(chan inboundPacket, b.batchSize*2)
+		b.queues[i] = make(chan inboundPacket, inboundQueueCapacity(b.batchSize))
 	}
 	b.opened = true
 
@@ -297,10 +316,23 @@ func (b *sharedBind) enqueue(queueIdx int, packet inboundPacket) {
 	select {
 	case b.queues[queueIdx] <- packet:
 	default:
+		b.droppedInbound.Add(1)
 	}
 }
 func (b *sharedBind) isOpen() bool {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 	return b.opened
+}
+
+func (b *sharedBind) DroppedInboundPackets() uint64 {
+	return b.droppedInbound.Load()
+}
+
+func inboundQueueCapacity(batchSize int) int {
+	capacity := batchSize * 64
+	if capacity < minInboundQueueCapacity {
+		return minInboundQueueCapacity
+	}
+	return capacity
 }

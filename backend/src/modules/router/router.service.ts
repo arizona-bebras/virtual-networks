@@ -57,7 +57,7 @@ export class RouterService {
         serverAddress: new Address4(network.cidr)
           .startAddressExclusive()
           .correctForm(),
-        mtu: 1280,
+        mtu: 1420,
         statusPort: 8080,
         peers: network.devices.map((device) => {
           return {
