@@ -12,3 +12,5 @@ export const NetworkUsersSchema = z.object({
     )
     .describe("The users of the network"),
 });
+
+export type NetworkUser = z.infer<typeof NetworkUsersSchema>["users"][number];

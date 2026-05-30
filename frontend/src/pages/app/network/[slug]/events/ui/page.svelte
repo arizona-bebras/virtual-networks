@@ -1,48 +1,48 @@
 <script lang="ts">
 import { createQuery } from "@tanstack/svelte-query";
 import type { ColumnFiltersState, Table } from "@tanstack/table-core";
-import type { Tag } from "common/schemas/tag/index";
+import type { DeviceRelations } from "common/schemas/device/index";
 import { Debounced } from "runed";
+import { goto } from "$app/navigation";
+import { page } from "$app/state";
 import Header from "$entities/table-page/ui/Header.svelte";
-import { columns } from "$features/tag-management/model/tag-table-columns.js";
-import SearchParamsHandler from "$features/tag-management/ui/tag-param-handler.svelte";
+import DeviceDialog from "$features/device-management/ui/device-dialog.svelte";
+import type { Event } from "$features/event-managment/model/event-table-columns";
+import { columns } from "$features/event-managment/model/event-table-columns";
+import { mockEvents } from "$features/event-managment/model/mock";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import DataTable from "$shared/ui/data-table/data-table.svelte";
-import { deviceTags } from "../api/query";
+
+let isAddDeviceDialogOpen = $state(false);
+let isEditingDialogOpen = $state(false);
 
 let currentNetworkId = $derived(getNetworkId().id);
 let globalFilter = $state("");
 const debounced = new Debounced(() => globalFilter, 500);
 let columnFilters = $state<ColumnFiltersState>([]);
 let selectedIds = $state<string[]>([]);
-let table = $state<Table<Tag>>();
-
-const userTags = createQuery(() =>
-  deviceTags.userTags(currentNetworkId, debounced.current),
-);
+let table = $state<Table<Event>>();
 
 // TODO: в ожидании реализации bulk delete на бэке
 // biome-ignore lint/correctness/noUnusedVariables: <waiting for implementation>
 function bulkRemoveSelected() {
-  console.log("Delete tags:", selectedIds);
+  console.log("Delete devices:", selectedIds);
   selectedIds = [];
 }
 </script>
 
 <div class="p-2.5">
   <Header
-    title="Теги"
-    description="Организуйте ваши устройства с помощью тегов"
+    title="События"
+    description="Отслеживайте все изменения, произошедшие в сети"
     bind:globalFilter
     {selectedIds}
     {table}
   />
 
-  <SearchParamsHandler tags={userTags.data} bind:globalFilter />
-
   <DataTable
     {columns}
-    data={userTags.data || []}
+    data={mockEvents || []}
     bind:selectedIds
     bind:table
     onColumnFiltersChange={(filters) => (columnFilters = filters)}
