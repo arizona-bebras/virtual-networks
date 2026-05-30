@@ -2,21 +2,17 @@
 import { createQuery } from "@tanstack/svelte-query";
 import type { ColumnFiltersState, Table } from "@tanstack/table-core";
 import type { DeviceRelations } from "common/schemas/device/index";
+import type { Event } from "common/schemas/event/index";
 import { Debounced } from "runed";
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
 import Header from "$entities/table-page/ui/Header.svelte";
 import DeviceDialog from "$features/device-management/ui/device-dialog.svelte";
-import type { Event } from "$features/event-managment/model/event-table-columns";
 import { columns } from "$features/event-managment/model/event-table-columns";
 import { mockEvents } from "$features/event-managment/model/mock";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import DataTable from "$shared/ui/data-table/data-table.svelte";
 
-let isAddDeviceDialogOpen = $state(false);
-let isEditingDialogOpen = $state(false);
-
-let currentNetworkId = $derived(getNetworkId().id);
 let globalFilter = $state("");
 const debounced = new Debounced(() => globalFilter, 500);
 let columnFilters = $state<ColumnFiltersState>([]);

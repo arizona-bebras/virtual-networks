@@ -1,23 +1,14 @@
-import { Activity, Box, Clock, User } from "@lucide/svelte";
+import { Activity, Box, Clock, SlidersHorizontal, User } from "@lucide/svelte";
 import type { ColumnDef } from "@tanstack/table-core";
-import type { Device } from "common/schemas/device/index";
-import type { NetworkUser } from "common/schemas/network/network-users";
-import type { Rule } from "common/schemas/rule/index";
-import type { Tag as TagType } from "common/schemas/tag/index";
+
+import type { Event } from "common/schemas/event/index";
+
+import EventCell from "$features/event-managment/ui/event-action-cell.svelte";
 import EntityCell from "$features/event-managment/ui/event-entity-cell.svelte";
 import TimeCell from "$features/event-managment/ui/event-time-cell.svelte";
 import DataTableCheckbox from "$shared/ui/data-table/data-table-checkbox.svelte";
 import DataTableSortButton from "$shared/ui/data-table/data-table-sort-button.svelte";
 import { renderComponent } from "$shared/ui/data-table/index.js";
-
-// TODO: убрать, после реализации типа на backend
-export type Event = {
-  id: string;
-  user: NetworkUser;
-  event: string;
-  entities: Device | Rule | TagType;
-  time: string;
-};
 
 export const columns: ColumnDef<Event>[] = [
   {
@@ -82,10 +73,31 @@ export const columns: ColumnDef<Event>[] = [
     enableGlobalFilter: true,
   },
   {
-    accessorKey: "event",
+    accessorKey: "action",
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
         label: "Действие",
+        sort: column.getIsSorted(),
+        onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        icon: SlidersHorizontal,
+      });
+    },
+    cell: ({ row }) => {
+      return renderComponent(EventCell, {
+        action: row.original.action,
+      });
+    },
+    enableGlobalFilter: false,
+    size: 150,
+    meta: {
+      icon: Activity,
+    },
+  },
+  {
+    accessorKey: "event",
+    header: ({ column }) => {
+      return renderComponent(DataTableSortButton, {
+        label: "Описание",
         sort: column.getIsSorted(),
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
         icon: Activity,

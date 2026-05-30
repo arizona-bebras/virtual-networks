@@ -5,7 +5,8 @@ import type { Rule } from "common/schemas/rule/index";
 import type { Tag as TagType } from "common/schemas/tag/index";
 import { getNetworkId } from "$shared/lib/network-id-context";
 
-let { entity }: { entity: Device | Rule | TagType } = $props();
+let { entity }: { entity: Device | Rule | Omit<TagType, "devicesCount"> } =
+  $props();
 
 let currentNetwork = $derived(getNetworkId().id);
 

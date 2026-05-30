@@ -1,5 +1,5 @@
-import type { Event } from "./event-table-columns";
-
+// import type { Event } from "./event-table-columns";
+import type { Event } from "common/schemas/event/index";
 export const mockEvents: Event[] = [
   {
     id: "test-id-1",
@@ -11,6 +11,7 @@ export const mockEvents: Event[] = [
     },
     event: "Device Added",
     time: "2026-05-30T10:00:00Z",
+    action: "create",
     entities: {
       id: "d1",
       name: "Alice's Phone",
@@ -28,6 +29,7 @@ export const mockEvents: Event[] = [
       role: "user",
     },
     event: "Rule Updated",
+    action: "update",
     time: "2026-05-30T11:15:00Z",
     entities: {
       id: "r1",
@@ -47,12 +49,12 @@ export const mockEvents: Event[] = [
       role: "admin",
     },
     event: "Tag Created",
+    action: "create",
     time: "2026-05-30T12:30:00Z",
     entities: {
       id: "t1",
       name: "Web Servers",
       color: "blue",
-      devicesCount: 5,
     },
   },
   {
@@ -64,6 +66,7 @@ export const mockEvents: Event[] = [
       role: "admin",
     },
     event: "Device Removed",
+    action: "create",
     time: "2026-05-30T13:45:00Z",
     entities: {
       id: "d2",
@@ -82,6 +85,7 @@ export const mockEvents: Event[] = [
       role: "user",
     },
     event: "Rule Deleted",
+    action: "delete",
     time: "2026-05-30T14:20:00Z",
     entities: {
       id: "r2",
