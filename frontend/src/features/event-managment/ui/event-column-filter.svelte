@@ -8,6 +8,7 @@ import {
 } from "@lucide/svelte";
 import type { Column, SortDirection } from "@tanstack/table-core";
 import type { Event } from "common/schemas/event/index";
+import ActionFilter from "$features/event-managment/ui/filters/action-filter.svelte";
 import RangeCalendar from "$features/event-managment/ui/filters/date-filter.svelte";
 import TimePicker from "$features/event-managment/ui/filters/time-filter.svelte";
 import * as Popover from "$shared/ui/popover/index.js";
@@ -52,12 +53,14 @@ let open = $state(false);
   </button>
   <div class="flex items-center">
     <Popover.Root bind:open>
-      <Popover.Trigger><Funnel class="size-3" /></Popover.Trigger>
+      <Popover.Trigger><Funnel class="size-3 p-0" /></Popover.Trigger>
       <Popover.Content class="w-80">
         {#if type === "date"}
           <RangeCalendar {column} />
         {:else if type === "time"}
           <TimePicker {column} bind:open />
+        {:else if type === "action"}
+          <ActionFilter {column} />
         {/if}
         <!-- <p class="text-sm text-muted-foreground">Базовый фильтр</p> -->
       </Popover.Content>

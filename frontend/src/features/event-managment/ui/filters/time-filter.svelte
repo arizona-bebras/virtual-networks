@@ -11,24 +11,22 @@ let {
   open: boolean;
 } = $props();
 
-const filterValue = column.getFilterValue() as
-  | { start: Date; end: Date }
-  | undefined;
-console.log(filterValue);
+const filterValue = $derived(
+  column.getFilterValue() as { start: Date; end: Date } | undefined,
+);
 let startDemo = new Date();
 startDemo.setHours(10, 50, 0, 0);
 
 let endDemo = new Date();
 endDemo.setHours(12, 30, 0, 0);
 
-let range = $state({
+let range = $derived({
   start: filterValue?.start ?? startDemo,
   end: filterValue?.end ?? endDemo,
 });
 
 function handleSave(newRange: { start: Date; end: Date }) {
   column.setFilterValue(newRange);
-  console.log(2131232131)
   open = false;
 }
 </script>

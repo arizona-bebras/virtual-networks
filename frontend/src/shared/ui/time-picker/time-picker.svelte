@@ -18,7 +18,7 @@ let {
   value?: Date;
   range?: RangeValue;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onSave?: (val: any) => void;
+  onSave?: (val: { start: Date; end: Date }) => void;
   onCancel?: () => void;
 } = $props();
 
@@ -48,6 +48,7 @@ $effect(() => {
 });
 
 let activeTarget = $state<"single" | "start" | "end">(
+  // svelte-ignore state_referenced_locally
   isRange ? "start" : "single",
 );
 let mode = $state<"dial" | "input">("dial");
@@ -65,12 +66,13 @@ function handleSave() {
     newEnd.setHours(times.end.h, times.end.m, 0, 0);
     range = { start: newStart, end: newEnd };
     if (onSave) onSave(range);
-  } else {
-    const newDate = new Date(value);
-    newDate.setHours(times.single.h, times.single.m, 0, 0);
-    value = newDate;
-    if (onSave) onSave(newDate);
   }
+  // else {
+  //   const newDate = new Date(value);
+  //   newDate.setHours(times.single.h, times.single.m, 0, 0);
+  //   value = newDate;
+  //   if (onSave) onSave(newDate);
+  // }
 }
 </script>
 

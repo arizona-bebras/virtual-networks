@@ -10,7 +10,7 @@ import type { ColumnDef } from "@tanstack/table-core";
 
 import type { Event } from "common/schemas/event/index";
 
-import EventCell from "$features/event-managment/ui/event-action-cell.svelte";
+import EventCell from "$entities/event/ui/action-cell.svelte";
 import EventColumnFilter from "$features/event-managment/ui/event-column-filter.svelte";
 import DateCell from "$features/event-managment/ui/event-date-cell.svelte";
 import DescriptionCell from "$features/event-managment/ui/event-description-cell.svelte";
@@ -115,11 +115,22 @@ export const columns: ColumnDef<Event>[] = [
         label: "Действие",
         sort: column.getIsSorted(),
         icon: SlidersHorizontal,
+        type: "action",
       });
     },
-    cell: ({ row }) => {
+    cell: ({ row, column }) => {
       return renderComponent(EventCell, {
         action: row.original.action.type,
+        onclick: () => {
+          const currentValue = (column.getFilterValue() as string[]) ?? [];
+          const actionType = row.original.action.type;
+          if (currentValue.includes(actionType)) {
+            const nextValue = currentValue.filter((a) => a !== actionType);
+            column.setFilterValue(nextValue.length > 0 ? nextValue : undefined);
+          } else {
+            column.setFilterValue([...currentValue, actionType]);
+          }
+        },
       });
     },
     enableGlobalFilter: false,
@@ -136,6 +147,7 @@ export const columns: ColumnDef<Event>[] = [
         sort: column.getIsSorted(),
         onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
         icon: Activity,
+        type: "event",
       });
     },
     cell: ({ row }) => {
