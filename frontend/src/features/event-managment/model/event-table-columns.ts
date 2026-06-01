@@ -11,6 +11,7 @@ import type { ColumnDef } from "@tanstack/table-core";
 import type { Event } from "common/schemas/event/index";
 
 import EventCell from "$features/event-managment/ui/event-action-cell.svelte";
+import EventColumnFilter from "$features/event-managment/ui/event-column-filter.svelte";
 import DateCell from "$features/event-managment/ui/event-date-cell.svelte";
 import DescriptionCell from "$features/event-managment/ui/event-description-cell.svelte";
 import EntityCell from "$features/event-managment/ui/event-entity-cell.svelte";
@@ -47,10 +48,10 @@ export const columns: ColumnDef<Event>[] = [
     accessorKey: "date",
     id: "date",
     header: ({ column }) => {
-      return renderComponent(DataTableSortButton, {
+      return renderComponent(EventColumnFilter, {
+        column,
         label: "Дата",
         sort: column.getIsSorted(),
-        onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
         icon: Calendar,
       });
     },
@@ -70,10 +71,10 @@ export const columns: ColumnDef<Event>[] = [
     accessorKey: "time",
     id: "time",
     header: ({ column }) => {
-      return renderComponent(DataTableSortButton, {
+      return renderComponent(EventColumnFilter, {
+        column,
         label: "Время",
         sort: column.getIsSorted(),
-        onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
         icon: Clock,
       });
     },
@@ -92,12 +93,10 @@ export const columns: ColumnDef<Event>[] = [
   {
     accessorKey: "user",
     header: ({ column }) => {
-      return renderComponent(DataTableSortButton, {
+      return renderComponent(EventColumnFilter, {
+        column,
         label: "Пользователь",
         sort: column.getIsSorted(),
-        onclick: () => {
-          column.toggleSorting(column.getIsSorted() === "asc");
-        },
         icon: User,
       });
     },
@@ -109,10 +108,10 @@ export const columns: ColumnDef<Event>[] = [
   {
     accessorKey: "action",
     header: ({ column }) => {
-      return renderComponent(DataTableSortButton, {
+      return renderComponent(EventColumnFilter, {
+        column,
         label: "Действие",
         sort: column.getIsSorted(),
-        onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
         icon: SlidersHorizontal,
       });
     },
@@ -151,10 +150,10 @@ export const columns: ColumnDef<Event>[] = [
   {
     accessorKey: "entities",
     header: ({ column }) => {
-      return renderComponent(DataTableSortButton, {
+      return renderComponent(EventColumnFilter, {
+        column,
         label: "Сущность",
         sort: column.getIsSorted(),
-        onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
         icon: Box,
       });
     },
