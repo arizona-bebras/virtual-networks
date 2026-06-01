@@ -1,11 +1,20 @@
-import { Activity, Box, Clock, SlidersHorizontal, User } from "@lucide/svelte";
+import {
+  Activity,
+  Box,
+  Calendar,
+  Clock,
+  SlidersHorizontal,
+  User,
+} from "@lucide/svelte";
 import type { ColumnDef } from "@tanstack/table-core";
 
 import type { Event } from "common/schemas/event/index";
 
 import EventCell from "$features/event-managment/ui/event-action-cell.svelte";
+import DateCell from "$features/event-managment/ui/event-date-cell.svelte";
+import DescriptionCell from "$features/event-managment/ui/event-description-cell.svelte";
 import EntityCell from "$features/event-managment/ui/event-entity-cell.svelte";
-import TimeCell from "$features/event-managment/ui/event-time-cell.svelte";
+import TimeOnlyCell from "$features/event-managment/ui/event-time-only-cell.svelte";
 import DataTableCheckbox from "$shared/ui/data-table/data-table-checkbox.svelte";
 import DataTableSortButton from "$shared/ui/data-table/data-table-sort-button.svelte";
 import { renderComponent } from "$shared/ui/data-table/index.js";
@@ -35,7 +44,31 @@ export const columns: ColumnDef<Event>[] = [
     size: 40,
   },
   {
+    accessorKey: "date",
+    id: "date",
+    header: ({ column }) => {
+      return renderComponent(DataTableSortButton, {
+        label: "Дата",
+        sort: column.getIsSorted(),
+        onclick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+        icon: Calendar,
+      });
+    },
+    cell: ({ row }) => {
+      return renderComponent(DateCell, {
+        date: row.original.time,
+      });
+    },
+    accessorFn: (row) => row.time,
+    enableGlobalFilter: false,
+    size: 110,
+    meta: {
+      icon: Calendar,
+    },
+  },
+  {
     accessorKey: "time",
+    id: "time",
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
         label: "Время",
@@ -45,12 +78,13 @@ export const columns: ColumnDef<Event>[] = [
       });
     },
     cell: ({ row }) => {
-      return renderComponent(TimeCell, {
+      return renderComponent(TimeOnlyCell, {
         date: row.original.time,
       });
     },
+    accessorFn: (row) => row.time,
     enableGlobalFilter: false,
-    size: 150,
+    size: 100,
     meta: {
       icon: Clock,
     },
@@ -84,7 +118,7 @@ export const columns: ColumnDef<Event>[] = [
     },
     cell: ({ row }) => {
       return renderComponent(EventCell, {
-        action: row.original.action,
+        action: row.original.action.type,
       });
     },
     enableGlobalFilter: false,
@@ -104,7 +138,9 @@ export const columns: ColumnDef<Event>[] = [
       });
     },
     cell: ({ row }) => {
-      return row.original.event;
+      return renderComponent(DescriptionCell, {
+        action: row.original.action,
+      });
     },
     enableGlobalFilter: false,
     size: 150,
@@ -130,16 +166,4 @@ export const columns: ColumnDef<Event>[] = [
     enableGlobalFilter: true,
     size: 150,
   },
-
-  // {
-  //   id: "actions",
-  //   cell: ({ row }) => {
-  //     return renderComponent(DeviceActionsCell, { device: row.original });
-  //   },
-  //   enableGlobalFilter: false,
-  //   meta: {
-  //     cellClass: "w-px",
-  //     headerClass: "w-px",
-  //   },
-  // },
 ];
