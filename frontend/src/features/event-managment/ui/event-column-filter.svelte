@@ -1,19 +1,28 @@
 <script lang="ts">
-import { ArrowDown, ArrowUp, ArrowUpDown, Funnel, type LucideIcon } from "@lucide/svelte";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  Funnel,
+  type LucideIcon,
+} from "@lucide/svelte";
 import type { Column, SortDirection } from "@tanstack/table-core";
-import * as Popover from "$shared/ui/popover/index.js";
 import type { Event } from "common/schemas/event/index";
+import RangeCalendar from "$features/event-managment/ui/filters/date-filter.svelte";
+import * as Popover from "$shared/ui/popover/index.js";
 
 let {
   column,
   label,
   sort,
   icon,
+  type,
 }: {
   column: Column<Event, unknown>;
   label: string;
   sort: false | SortDirection;
   icon?: LucideIcon;
+  type?: "date" | "time" | "user" | "action" | "event" | "entities";
 } = $props();
 
 let Icon = $derived(icon);
@@ -43,7 +52,10 @@ let Icon = $derived(icon);
     <Popover.Root>
       <Popover.Trigger><Funnel class="size-3" /></Popover.Trigger>
       <Popover.Content class="w-80 p-4">
-        <p class="text-sm text-muted-foreground">Базовый фильтр</p>
+        {#if type === "date"}
+          <RangeCalendar {column} />
+        {/if}
+        <!-- <p class="text-sm text-muted-foreground">Базовый фильтр</p> -->
       </Popover.Content>
     </Popover.Root>
   </div>

@@ -1,9 +1,13 @@
 <script lang="ts" generics="TData">
+import {
+  type CalendarDate,
+  DateFormatter,
+  getLocalTimeZone,
+} from "@internationalized/date";
 import { X } from "@lucide/svelte";
 import type { Table } from "@tanstack/table-core";
 import { fade } from "svelte/transition";
 import TagBadge from "$entities/tag/ui/tag-badge.svelte";
-import { colorVariants } from "$shared/lib/tag-color-mapping";
 import { Badge } from "$shared/ui/badge/index.js";
 import { Button } from "$shared/ui/button/index.js";
 
@@ -15,9 +19,37 @@ let { table }: Props<TData> = $props();
 
 const columnFilters = $derived(table?.getState().columnFilters ?? []);
 
-function getFilterLabel(value: unknown): string {
-  if (typeof value === "object" && value !== null && "name" in value) {
-    return String((value as { name: unknown }).name);
+const df = new DateFormatter("ru-RU", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
+
+function formatDate(date: CalendarDate | undefined, tz: string) {
+  if (!date) return "";
+  return df.format(date.toDate(tz)).replace(/\sг\.$/, "");
+}
+
+function getFilterLabel(columnName: string, value: unknown): string {
+  if (typeof value === "object" && value !== null) {
+    if (columnName === "date") {
+      const { start, end } = value as {
+        start: CalendarDate | undefined;
+        end: CalendarDate | undefined;
+      };
+
+      if (!start && !end) return "За всё время";
+
+      const tz = getLocalTimeZone();
+      const startStr = formatDate(start, tz);
+      const endStr = formatDate(end, tz);
+
+      if (startStr && !endStr) return startStr;
+      if (!startStr && endStr) return `До ${endStr}`;
+      if (startStr === endStr) return startStr;
+
+      return `${startStr} — ${endStr}`;
+    } else return String((value as { name: unknown }).name);
   }
   return String(value);
 }
@@ -28,7 +60,6 @@ function getFilterLabel(value: unknown): string {
     {#each columnFilters as filter (filter.id)}
       {@const column = table.getColumn(filter.id)}
       {@const Icon = column?.columnDef.meta?.icon}
-
       <!-- Обработка тегов -->
       {#if Array.isArray(filter.value)}
         {#each filter.value as value}
@@ -43,7 +74,7 @@ function getFilterLabel(value: unknown): string {
             <Icon class="mr-1 size-3 text-muted-foreground stroke-3" />
           {/if}
           <span class="capitalize font-medium">
-            {getFilterLabel(filter.value)}
+            {getFilterLabel(filter.id, filter.value)}
           </span>
           <button
             type="button"

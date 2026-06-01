@@ -53,6 +53,7 @@ export const columns: ColumnDef<Event>[] = [
         label: "Дата",
         sort: column.getIsSorted(),
         icon: Calendar,
+        type: "date",
       });
     },
     cell: ({ row }) => {
