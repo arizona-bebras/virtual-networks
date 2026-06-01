@@ -9,6 +9,7 @@ import {
 import type { Column, SortDirection } from "@tanstack/table-core";
 import type { Event } from "common/schemas/event/index";
 import RangeCalendar from "$features/event-managment/ui/filters/date-filter.svelte";
+import TimePicker from "$features/event-managment/ui/filters/time-filter.svelte";
 import * as Popover from "$shared/ui/popover/index.js";
 
 let {
@@ -51,9 +52,11 @@ let Icon = $derived(icon);
   <div class="flex items-center">
     <Popover.Root>
       <Popover.Trigger><Funnel class="size-3" /></Popover.Trigger>
-      <Popover.Content class="w-80 p-4">
+      <Popover.Content class="w-80">
         {#if type === "date"}
           <RangeCalendar {column} />
+        {:else if type === "time"}
+          <TimePicker {column} />
         {/if}
         <!-- <p class="text-sm text-muted-foreground">Базовый фильтр</p> -->
       </Popover.Content>

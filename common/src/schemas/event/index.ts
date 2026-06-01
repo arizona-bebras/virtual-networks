@@ -4,7 +4,8 @@ import { NetworkSchema } from "../network/index.js";
 import { User } from "../network/network-users.js";
 import { RuleSchema } from "../rule/index.js";
 import { TagSchema } from "../tag/index.js";
-import { UserSchema } from "../user/index.js";
+
+// import { UserSchema } from "../user/index.js";
 
 const ActionEnum = z.union([
   z.object({

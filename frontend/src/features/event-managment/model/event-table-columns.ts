@@ -77,6 +77,7 @@ export const columns: ColumnDef<Event>[] = [
         label: "Время",
         sort: column.getIsSorted(),
         icon: Clock,
+        type: "time",
       });
     },
     cell: ({ row }) => {
