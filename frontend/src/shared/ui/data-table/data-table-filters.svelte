@@ -49,6 +49,27 @@ function getFilterLabel(columnName: string, value: unknown): string {
       if (startStr === endStr) return startStr;
 
       return `${startStr} — ${endStr}`;
+    } else if (columnName === "time") {
+      const { start, end } = value as {
+        start: Date | undefined;
+        end: Date | undefined;
+      };
+
+      if (!start && !end) return "За всё время";
+
+      const timeFormatter = new Intl.DateTimeFormat("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      const startStr = start ? timeFormatter.format(start) : "";
+      const endStr = end ? timeFormatter.format(end) : "";
+
+      if (startStr && !endStr) return `С ${startStr}`;
+      if (!startStr && endStr) return `До ${endStr}`;
+      if (startStr === endStr) return startStr;
+
+      return `${startStr} — ${endStr}`;
     } else return String((value as { name: unknown }).name);
   }
   return String(value);

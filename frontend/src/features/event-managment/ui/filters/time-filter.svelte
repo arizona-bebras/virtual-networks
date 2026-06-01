@@ -5,11 +5,16 @@ import TimePicker from "$shared/ui/time-picker/time-picker.svelte";
 
 let {
   column,
+  open = $bindable(),
 }: {
   column: Column<Event, unknown>;
+  open: boolean;
 } = $props();
 
-// Инициализируем демо-диапазон: 10:50 - 12:30
+const filterValue = column.getFilterValue() as
+  | { start: Date; end: Date }
+  | undefined;
+console.log(filterValue);
 let startDemo = new Date();
 startDemo.setHours(10, 50, 0, 0);
 
@@ -17,16 +22,15 @@ let endDemo = new Date();
 endDemo.setHours(12, 30, 0, 0);
 
 let range = $state({
-  start: startDemo,
-  end: endDemo,
+  start: filterValue?.start ?? startDemo,
+  end: filterValue?.end ?? endDemo,
 });
 
 function handleSave(newRange: { start: Date; end: Date }) {
-  // Передаем выбранный диапазон в фильтр колонки таблицы
   column.setFilterValue(newRange);
+  console.log(2131232131)
+  open = false;
 }
-
-$inspect(range);
 </script>
 
 <TimePicker isRange={true} bind:range onSave={handleSave} />

@@ -27,6 +27,7 @@ let {
 } = $props();
 
 let Icon = $derived(icon);
+let open = $state(false);
 </script>
 
 <div class="flex items-center justify-between gap-1 px-2">
@@ -50,13 +51,13 @@ let Icon = $derived(icon);
     {/if}
   </button>
   <div class="flex items-center">
-    <Popover.Root>
+    <Popover.Root bind:open>
       <Popover.Trigger><Funnel class="size-3" /></Popover.Trigger>
       <Popover.Content class="w-80">
         {#if type === "date"}
           <RangeCalendar {column} />
         {:else if type === "time"}
-          <TimePicker {column} />
+          <TimePicker {column} bind:open />
         {/if}
         <!-- <p class="text-sm text-muted-foreground">Базовый фильтр</p> -->
       </Popover.Content>
