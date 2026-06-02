@@ -60,6 +60,11 @@ export class NetworksService {
           devicesCount: sql<number>`0`.as("devices_count"),
         });
 
+      await tx.insert(schema.rules).values({
+        networkId: network.id,
+        description: "Разрешить всё",
+      });
+
       await tx.insert(schema.networkUsers).values({
         networkId: network.id,
         userId,
