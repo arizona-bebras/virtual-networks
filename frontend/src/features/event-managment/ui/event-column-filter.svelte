@@ -8,6 +8,8 @@ import {
 } from "@lucide/svelte";
 import type { Column, SortDirection } from "@tanstack/table-core";
 import type { Event } from "common/schemas/event/index";
+import UserFilterPopover from "$entities/user/ui/user-filter-popover.svelte";
+import type { FilterValueWithId } from "$features/device-management/model/types";
 import ActionFilter from "$features/event-managment/ui/filters/action-filter.svelte";
 import RangeCalendar from "$features/event-managment/ui/filters/date-filter.svelte";
 import TimePicker from "$features/event-managment/ui/filters/time-filter.svelte";
@@ -29,6 +31,10 @@ let {
 
 let Icon = $derived(icon);
 let open = $state(false);
+
+let filterValue = $derived(
+  column.getFilterValue() as FilterValueWithId | undefined,
+);
 </script>
 
 <div class="flex items-center justify-between gap-1 px-2">
@@ -52,18 +58,27 @@ let open = $state(false);
     {/if}
   </button>
   <div class="flex items-center">
-    <Popover.Root bind:open>
-      <Popover.Trigger><Funnel class="size-3 p-0" /></Popover.Trigger>
-      <Popover.Content class="w-80">
-        {#if type === "date"}
-          <RangeCalendar {column} />
-        {:else if type === "time"}
-          <TimePicker {column} bind:open />
-        {:else if type === "action"}
-          <ActionFilter {column} />
-        {/if}
-        <!-- <p class="text-sm text-muted-foreground">Базовый фильтр</p> -->
-      </Popover.Content>
-    </Popover.Root>
+    {#if type === "user"}
+      <UserFilterPopover
+        value={filterValue}
+        onSelect={(val) => {
+        column.setFilterValue(val);
+      }}
+      />
+    {:else}
+      <Popover.Root bind:open>
+        <Popover.Trigger><Funnel class="size-3 p-0" /></Popover.Trigger>
+        <Popover.Content class="w-80">
+          {#if type === "date"}
+            <RangeCalendar {column} />
+          {:else if type === "time"}
+            <TimePicker {column} bind:open />
+          {:else if type === "action"}
+            <ActionFilter {column} />
+          {/if}
+          <!-- <p class="text-sm text-muted-foreground">Базовый фильтр</p> -->
+        </Popover.Content>
+      </Popover.Root>
+    {/if}
   </div>
 </div>

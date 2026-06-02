@@ -100,12 +100,16 @@ export const columns: ColumnDef<Event>[] = [
         label: "Пользователь",
         sort: column.getIsSorted(),
         icon: User,
+        type: "user",
       });
     },
     cell: ({ row }) => {
       return row.original.user.name;
     },
     enableGlobalFilter: true,
+    meta: {
+      icon: User,
+    },
   },
   {
     accessorKey: "action",
@@ -169,6 +173,7 @@ export const columns: ColumnDef<Event>[] = [
         label: "Сущность",
         sort: column.getIsSorted(),
         icon: Box,
+        type: "entities",
       });
     },
     cell: ({ row }) => {
