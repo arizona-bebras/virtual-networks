@@ -19,7 +19,6 @@ import (
 	"gvisor.dev/gvisor/pkg/tcpip/header"
 	"gvisor.dev/gvisor/pkg/tcpip/link/channel"
 	"gvisor.dev/gvisor/pkg/tcpip/network/ipv4"
-	"gvisor.dev/gvisor/pkg/tcpip/network/ipv6"
 	"gvisor.dev/gvisor/pkg/tcpip/stack"
 	"gvisor.dev/gvisor/pkg/tcpip/transport/icmp"
 	"gvisor.dev/gvisor/pkg/tcpip/transport/tcp"
@@ -36,18 +35,17 @@ type Hub struct {
 	stack        *stack.Stack
 	notifyHandle *channel.NotificationHandle
 	mtu          int
-	dnsServers   []netip.Addr
-	hasV4        bool
-	hasV6        bool
 
 	mu          sync.RWMutex
 	attachments map[*deviceTun]struct{}
 	routes      map[netip.Addr]*deviceTun
+	policy      trafficPolicy
 	closed      bool
 
 	droppedNoRoute       atomic.Uint64
 	droppedTUNQueueFull  atomic.Uint64
 	droppedInvalidPacket atomic.Uint64
+	droppedPolicy        atomic.Uint64
 }
 
 type deviceTun struct {
@@ -70,31 +68,71 @@ func (packet queuedPacket) Release() {
 }
 
 type Network struct {
-	stack      *stack.Stack
-	dnsServers []netip.Addr
-	hasV4      bool
-	hasV6      bool
+	stack *stack.Stack
 }
 
 type Stats struct {
 	DroppedNoRoute       uint64
 	DroppedTUNQueueFull  uint64
 	DroppedInvalidPacket uint64
+	DroppedPolicy        uint64
 	GVisorOutboundQueued int
 	TUNQueued            int
 }
 
-func Create(localAddresses, dnsServers []netip.Addr, mtu int) (*Hub, *Network, error) {
+type TrafficProtocol string
+
+const TrafficProtocolAny TrafficProtocol = ""
+const TrafficProtocolTCP TrafficProtocol = "tcp"
+const TrafficProtocolUDP TrafficProtocol = "udp"
+const TrafficProtocolICMP TrafficProtocol = "icmp"
+
+type TrafficRule struct {
+	Source      TrafficPeerSelector
+	Destination TrafficPeerSelector
+	Protocol    TrafficProtocol
+	Port        *uint16
+}
+
+type TrafficPeerSelector struct {
+	All   bool
+	Addrs []netip.Addr
+}
+
+type trafficPolicy struct {
+	rules []trafficRule
+}
+
+type trafficRule struct {
+	source      trafficPeerSelector
+	destination trafficPeerSelector
+	protocol    TrafficProtocol
+	port        *uint16
+}
+
+type trafficPeerSelector struct {
+	all   bool
+	addrs map[netip.Addr]struct{}
+}
+
+type packetInfo struct {
+	source   netip.Addr
+	dest     netip.Addr
+	protocol TrafficProtocol
+	srcPort  *uint16
+	destPort *uint16
+}
+
+func Create(localAddresses, _ []netip.Addr, mtu int) (*Hub, *Network, error) {
 	opts := stack.Options{
-		NetworkProtocols:   []stack.NetworkProtocolFactory{ipv4.NewProtocol, ipv6.NewProtocol},
-		TransportProtocols: []stack.TransportProtocolFactory{tcp.NewProtocol, udp.NewProtocol, icmp.NewProtocol6, icmp.NewProtocol4},
+		NetworkProtocols:   []stack.NetworkProtocolFactory{ipv4.NewProtocol},
+		TransportProtocols: []stack.TransportProtocolFactory{tcp.NewProtocol, udp.NewProtocol, icmp.NewProtocol4},
 		HandleLocal:        true,
 	}
 
 	dev := &Hub{
 		ep:          channel.New(packetQueueCapacity, uint32(mtu), ""),
 		stack:       stack.New(opts),
-		dnsServers:  append([]netip.Addr(nil), dnsServers...),
 		mtu:         mtu,
 		attachments: make(map[*deviceTun]struct{}),
 		routes:      make(map[netip.Addr]*deviceTun),
@@ -113,21 +151,15 @@ func Create(localAddresses, dnsServers []netip.Addr, mtu int) (*Hub, *Network, e
 		return nil, nil, fmt.Errorf("create NIC: %v", err)
 	}
 
+	hasV4 := false
 	for _, ip := range localAddresses {
-		var protoNumber tcpip.NetworkProtocolNumber
-		switch {
-		case ip.Is4():
-			protoNumber = ipv4.ProtocolNumber
-			dev.hasV4 = true
-		case ip.Is6():
-			protoNumber = ipv6.ProtocolNumber
-			dev.hasV6 = true
-		default:
-			return nil, nil, fmt.Errorf("unsupported local address: %s", ip)
+		if !ip.Is4() {
+			return nil, nil, fmt.Errorf("unsupported IPv6 local address: %s", ip)
 		}
+		hasV4 = true
 
 		protoAddr := tcpip.ProtocolAddress{
-			Protocol:          protoNumber,
+			Protocol:          ipv4.ProtocolNumber,
 			AddressWithPrefix: tcpip.AddrFromSlice(ip.AsSlice()).WithPrefix(),
 		}
 		if err := dev.stack.AddProtocolAddress(1, protoAddr, stack.AddressProperties{}); err != nil {
@@ -135,24 +167,15 @@ func Create(localAddresses, dnsServers []netip.Addr, mtu int) (*Hub, *Network, e
 		}
 	}
 
-	if dev.hasV4 {
+	if hasV4 {
 		if err := dev.stack.SetForwardingDefaultAndAllNICs(ipv4.ProtocolNumber, true); err != nil {
 			return nil, nil, fmt.Errorf("enable IPv4 forwarding: %v", err)
 		}
 		dev.stack.AddRoute(tcpip.Route{Destination: header.IPv4EmptySubnet, NIC: 1})
 	}
-	if dev.hasV6 {
-		if err := dev.stack.SetForwardingDefaultAndAllNICs(ipv6.ProtocolNumber, true); err != nil {
-			return nil, nil, fmt.Errorf("enable IPv6 forwarding: %v", err)
-		}
-		dev.stack.AddRoute(tcpip.Route{Destination: header.IPv6EmptySubnet, NIC: 1})
-	}
 
 	return dev, &Network{
-		stack:      dev.stack,
-		dnsServers: append([]netip.Addr(nil), dnsServers...),
-		hasV4:      dev.hasV4,
-		hasV6:      dev.hasV6,
+		stack: dev.stack,
 	}, nil
 }
 
@@ -182,25 +205,144 @@ func (hub *Hub) Attach(name string, routes []netip.Addr) tun.Device {
 	return attached
 }
 
+func (hub *Hub) SetTrafficRules(rules []TrafficRule) {
+	policy := buildTrafficPolicy(rules)
+
+	hub.mu.Lock()
+	hub.policy = policy
+	hub.mu.Unlock()
+}
+
 func (hub *Hub) WritePacket(packet []byte) error {
 	if len(packet) == 0 {
+		return nil
+	}
+	if packet[0]>>4 != 4 {
+		return syscall.EAFNOSUPPORT
+	}
+	if !hub.allowPacket(packet) {
 		return nil
 	}
 
 	pkb := stack.NewPacketBuffer(stack.PacketBufferOptions{
 		Payload: buffer.MakeWithData(packet),
 	})
-	switch packet[0] >> 4 {
-	case 4:
-		hub.ep.InjectInbound(header.IPv4ProtocolNumber, pkb)
-	case 6:
-		hub.ep.InjectInbound(header.IPv6ProtocolNumber, pkb)
-	default:
-		pkb.DecRef()
-		return syscall.EAFNOSUPPORT
-	}
+	hub.ep.InjectInbound(header.IPv4ProtocolNumber, pkb)
 
 	return nil
+}
+
+func (hub *Hub) allowPacket(packet []byte) bool {
+	info, ok := parsePacketInfo(packet)
+	if !ok {
+		hub.droppedInvalidPacket.Add(1)
+		return false
+	}
+
+	hub.mu.RLock()
+	_, sourceIsPeer := hub.routes[info.source]
+	_, destIsPeer := hub.routes[info.dest]
+	policy := hub.policy
+	hub.mu.RUnlock()
+
+	if !destIsPeer {
+		return true
+	}
+	if !sourceIsPeer {
+		hub.droppedPolicy.Add(1)
+		return false
+	}
+	if !policy.allows(info) {
+		hub.droppedPolicy.Add(1)
+		return false
+	}
+	return true
+}
+
+func buildTrafficPolicy(rules []TrafficRule) trafficPolicy {
+	policy := trafficPolicy{
+		rules: make([]trafficRule, 0, len(rules)),
+	}
+	for _, rule := range rules {
+		source := trafficPeerSelector{
+			all:   rule.Source.All,
+			addrs: make(map[netip.Addr]struct{}, len(rule.Source.Addrs)),
+		}
+		for _, addr := range rule.Source.Addrs {
+			if addr.IsValid() {
+				source.addrs[addr] = struct{}{}
+			}
+		}
+
+		destination := trafficPeerSelector{
+			all:   rule.Destination.All,
+			addrs: make(map[netip.Addr]struct{}, len(rule.Destination.Addrs)),
+		}
+		for _, addr := range rule.Destination.Addrs {
+			if addr.IsValid() {
+				destination.addrs[addr] = struct{}{}
+			}
+		}
+
+		port := rule.Port
+		if port != nil {
+			value := *port
+			port = &value
+		}
+
+		policy.rules = append(policy.rules, trafficRule{
+			source:      source,
+			destination: destination,
+			protocol:    rule.Protocol,
+			port:        port,
+		})
+	}
+	return policy
+}
+
+func (policy trafficPolicy) allows(info packetInfo) bool {
+	for _, rule := range policy.rules {
+		if rule.matches(info) {
+			return true
+		}
+	}
+	return false
+}
+
+func (rule trafficRule) matches(info packetInfo) bool {
+	if rule.protocol != TrafficProtocolAny && rule.protocol != info.protocol {
+		return false
+	}
+
+	if rule.source.matches(info.source) &&
+		rule.destination.matches(info.dest) &&
+		rule.matchesPort(info.srcPort, info.destPort) {
+		return true
+	}
+
+	return rule.source.matches(info.dest) &&
+		rule.destination.matches(info.source) &&
+		rule.matchesPort(info.destPort, info.srcPort)
+}
+
+func (rule trafficRule) matchesPort(sourcePort, destPort *uint16) bool {
+	if rule.port == nil {
+		return true
+	}
+	if destPort != nil && *rule.port == *destPort {
+		return true
+	}
+	return (rule.protocol == TrafficProtocolUDP || rule.protocol == TrafficProtocolAny) &&
+		sourcePort != nil &&
+		*rule.port == *sourcePort
+}
+
+func (selector trafficPeerSelector) matches(addr netip.Addr) bool {
+	if selector.all {
+		return true
+	}
+	_, ok := selector.addrs[addr]
+	return ok
 }
 
 func (hub *Hub) WriteNotify() {
@@ -217,12 +359,16 @@ func (hub *Hub) WriteNotify() {
 		}
 		pkt.DecRef()
 
-		dst, ok := packetDestination(packet.bytes)
-		if !ok {
+		ip := header.IPv4(packet.bytes)
+		if !ip.IsValid(len(packet.bytes)) {
 			packet.Release()
 			hub.droppedInvalidPacket.Add(1)
 			continue
 		}
+
+		var dstRaw [4]byte
+		copy(dstRaw[:], ip.DestinationAddressSlice())
+		dst := netip.AddrFrom4(dstRaw)
 
 		hub.mu.RLock()
 		attached := hub.routes[dst]
@@ -254,6 +400,7 @@ func (hub *Hub) Stats() Stats {
 		DroppedNoRoute:       hub.droppedNoRoute.Load(),
 		DroppedTUNQueueFull:  hub.droppedTUNQueueFull.Load(),
 		DroppedInvalidPacket: hub.droppedInvalidPacket.Load(),
+		DroppedPolicy:        hub.droppedPolicy.Load(),
 		GVisorOutboundQueued: hub.ep.NumQueued(),
 		TUNQueued:            tunQueued,
 	}
@@ -380,51 +527,63 @@ func (ns *Network) ListenTCP(addr *net.TCPAddr) (*gonet.TCPListener, error) {
 }
 
 func (ns *Network) ListenTCPAddrPort(addr netip.AddrPort) (*gonet.TCPListener, error) {
-	fullAddr, proto := convertToFullAddr(addr)
-	return gonet.ListenTCP(ns.stack, fullAddr, proto)
+	return gonet.ListenTCP(ns.stack, fullAddress(addr), ipv4.ProtocolNumber)
 }
 
 func (ns *Network) ListenUDPAddrPort(addr netip.AddrPort) (*gonet.UDPConn, error) {
-	fullAddr, proto := convertToFullAddr(addr)
-	return gonet.DialUDP(ns.stack, &fullAddr, nil, proto)
+	fullAddr := fullAddress(addr)
+	return gonet.DialUDP(ns.stack, &fullAddr, nil, ipv4.ProtocolNumber)
 }
 
-func convertToFullAddr(endpoint netip.AddrPort) (tcpip.FullAddress, tcpip.NetworkProtocolNumber) {
-	var proto tcpip.NetworkProtocolNumber
-	if endpoint.Addr().Is4() {
-		proto = ipv4.ProtocolNumber
-	} else {
-		proto = ipv6.ProtocolNumber
-	}
-
+func fullAddress(endpoint netip.AddrPort) tcpip.FullAddress {
 	return tcpip.FullAddress{
 		NIC:  1,
 		Addr: tcpip.AddrFromSlice(endpoint.Addr().AsSlice()),
 		Port: endpoint.Port(),
-	}, proto
+	}
 }
 
-func packetDestination(packet []byte) (netip.Addr, bool) {
-	if len(packet) == 0 {
-		return netip.Addr{}, false
+func parsePacketInfo(packet []byte) (packetInfo, bool) {
+	ip := header.IPv4(packet)
+	if !ip.IsValid(len(packet)) {
+		return packetInfo{}, false
 	}
-	switch packet[0] >> 4 {
-	case 4:
-		if len(packet) < 20 {
-			return netip.Addr{}, false
+
+	var source [4]byte
+	copy(source[:], ip.SourceAddressSlice())
+	var dest [4]byte
+	copy(dest[:], ip.DestinationAddressSlice())
+
+	info := packetInfo{
+		source: netip.AddrFrom4(source),
+		dest:   netip.AddrFrom4(dest),
+	}
+	info.protocol, info.srcPort, info.destPort = parseTransport(ip.TransportProtocol(), ip.Payload())
+	return info, true
+}
+
+func parseTransport(protocol tcpip.TransportProtocolNumber, payload []byte) (TrafficProtocol, *uint16, *uint16) {
+	switch protocol {
+	case header.TCPProtocolNumber:
+		if len(payload) < header.TCPMinimumSize {
+			return TrafficProtocolTCP, nil, nil
 		}
-		var dst [4]byte
-		copy(dst[:], packet[16:20])
-		return netip.AddrFrom4(dst), true
-	case 6:
-		if len(packet) < 40 {
-			return netip.Addr{}, false
+		tcp := header.TCP(payload)
+		sourcePort := tcp.SourcePort()
+		destPort := tcp.DestinationPort()
+		return TrafficProtocolTCP, &sourcePort, &destPort
+	case header.UDPProtocolNumber:
+		if len(payload) < header.UDPMinimumSize {
+			return TrafficProtocolUDP, nil, nil
 		}
-		var dst [16]byte
-		copy(dst[:], packet[24:40])
-		return netip.AddrFrom16(dst), true
+		udp := header.UDP(payload)
+		sourcePort := udp.SourcePort()
+		destPort := udp.DestinationPort()
+		return TrafficProtocolUDP, &sourcePort, &destPort
+	case header.ICMPv4ProtocolNumber:
+		return TrafficProtocolICMP, nil, nil
 	default:
-		return netip.Addr{}, false
+		return TrafficProtocolAny, nil, nil
 	}
 }
 

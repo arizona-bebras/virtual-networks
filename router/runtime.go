@@ -61,6 +61,7 @@ func buildRuntimeParts(cfg Config) (map[string]*overlayRuntime, []ProtocolInstan
 		closeOverlayRuntimes(overlays)
 		return nil, nil, err
 	}
+	configureOverlayTrafficRules(cfg, overlays)
 
 	return overlays, protocols, nil
 }
@@ -184,6 +185,97 @@ func buildProtocols(cfg Config, overlays map[string]*overlayRuntime) ([]Protocol
 	}
 
 	return instances, nil
+}
+
+func configureOverlayTrafficRules(cfg Config, overlays map[string]*overlayRuntime) {
+	peerAddrByNetworkID := peerAddrsByNetworkID(cfg.Protocols)
+	for _, overlayCfg := range cfg.Overlays {
+		overlay := overlays[overlayCfg.NetworkID]
+		if overlay == nil || overlay.tun == nil {
+			continue
+		}
+		overlay.tun.SetTrafficRules(netstackTrafficRules(overlayCfg.Rules, peerAddrByNetworkID[overlayCfg.NetworkID]))
+	}
+}
+
+func peerAddrsByNetworkID(protocols []ProtocolConfig) map[string]map[string]netip.Addr {
+	out := make(map[string]map[string]netip.Addr)
+	for _, protocol := range protocols {
+		if protocol.WireGuard == nil {
+			continue
+		}
+		peers := out[protocol.NetworkID]
+		if peers == nil {
+			peers = make(map[string]netip.Addr)
+			out[protocol.NetworkID] = peers
+		}
+		for _, peer := range protocol.WireGuard.Peers {
+			if peer.ID != "" && peer.Addr.IsValid() {
+				peers[peer.ID] = peer.Addr
+			}
+		}
+	}
+	return out
+}
+
+func netstackTrafficRules(
+	rules []PeerTrafficRuleConfig,
+	peerAddrsByID map[string]netip.Addr,
+) []netstack.TrafficRule {
+	out := make([]netstack.TrafficRule, 0, len(rules))
+	for _, rule := range rules {
+		out = append(out, netstack.TrafficRule{
+			Source:      netstackTrafficPeerSelector(rule.Source, peerAddrsByID),
+			Destination: netstackTrafficPeerSelector(rule.Destination, peerAddrsByID),
+			Protocol:    netstackTrafficProtocol(rule.Protocol),
+			Port:        copyTrafficPort(rule.Port),
+		})
+	}
+	return out
+}
+
+func netstackTrafficPeerSelector(
+	selector PeerTrafficRulePeerSelector,
+	peerAddrsByID map[string]netip.Addr,
+) netstack.TrafficPeerSelector {
+	if selector.All {
+		return netstack.TrafficPeerSelector{All: true}
+	}
+	addrs := make([]netip.Addr, 0, len(selector.PeerIDs))
+	seen := make(map[netip.Addr]struct{}, len(selector.PeerIDs))
+	for _, peerID := range selector.PeerIDs {
+		addr, ok := peerAddrsByID[peerID]
+		if !ok || !addr.IsValid() {
+			continue
+		}
+		if _, exists := seen[addr]; exists {
+			continue
+		}
+		seen[addr] = struct{}{}
+		addrs = append(addrs, addr)
+	}
+	return netstack.TrafficPeerSelector{Addrs: addrs}
+}
+
+func netstackTrafficProtocol(protocol TrafficProtocol) netstack.TrafficProtocol {
+	switch protocol {
+	case TrafficProtocolTCP:
+		return netstack.TrafficProtocolTCP
+	case TrafficProtocolUDP:
+		return netstack.TrafficProtocolUDP
+	case TrafficProtocolICMP:
+		return netstack.TrafficProtocolICMP
+	default:
+		return netstack.TrafficProtocolAny
+	}
+}
+
+func copyTrafficPort(port *uint16) *uint16 {
+	if port == nil {
+		return nil
+	}
+	value := *port
+	return &value
 }
 
 func (r *Runtime) Start(ctx context.Context) error {
@@ -426,6 +518,7 @@ func (r *Runtime) applyConfigInPlaceLocked(cfg Config, revision string) error {
 			return fmt.Errorf("update protocol %q: %w", protocolCfg.ID, err)
 		}
 	}
+	configureOverlayTrafficRules(cfg, r.overlays)
 
 	r.cfg = cfg
 	r.revision = revision
@@ -463,6 +556,7 @@ func (r *Runtime) restoreInPlaceConfigLocked(cfg Config, revision string) {
 			_ = updater.UpdateConfig(protocolCfg)
 		}
 	}
+	configureOverlayTrafficRules(cfg, r.overlays)
 }
 
 func canUpdateConfigInPlace(previous Config, next Config, protocols []ProtocolInstance) bool {

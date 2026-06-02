@@ -337,6 +337,7 @@ func (c *routerCollector) Collect(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(c.netstackDroppedPackets, prometheus.CounterValue, float64(stats.DroppedNoRoute), networkID, "no_route")
 		ch <- prometheus.MustNewConstMetric(c.netstackDroppedPackets, prometheus.CounterValue, float64(stats.DroppedTUNQueueFull), networkID, "tun_queue_full")
 		ch <- prometheus.MustNewConstMetric(c.netstackDroppedPackets, prometheus.CounterValue, float64(stats.DroppedInvalidPacket), networkID, "invalid_packet")
+		ch <- prometheus.MustNewConstMetric(c.netstackDroppedPackets, prometheus.CounterValue, float64(stats.DroppedPolicy), networkID, "policy")
 		ch <- prometheus.MustNewConstMetric(c.netstackQueuePackets, prometheus.GaugeValue, float64(stats.GVisorOutboundQueued), networkID, "gvisor_outbound")
 		ch <- prometheus.MustNewConstMetric(c.netstackQueuePackets, prometheus.GaugeValue, float64(stats.TUNQueued), networkID, "tun_outbound")
 	}
