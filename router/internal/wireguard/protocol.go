@@ -31,9 +31,14 @@ type instance struct {
 	overlay   router.OverlayConfig
 	serverID  router.WireGuardIdentity
 	peers     []peer
+	routes    routeUpdater
 	frontend  conn.Bind
 	logger    func(backend string) []router.PeerObservation
 	device    *device.Device
+}
+
+type routeUpdater interface {
+	UpdateRoutes([]netip.Addr)
 }
 
 type peerUAPIStatus struct {
@@ -84,7 +89,9 @@ func (Protocol) Build(build router.ProtocolBuild) (router.ProtocolInstance, erro
 	}
 
 	logger := device.NewLogger(device.LogLevelError, fmt.Sprintf("userspace-wg[%s]: ", build.Config.ID))
-	wgDevice := device.NewDevice(build.AttachTUN(build.Config.ID, peerAddrs(peers)), build.WireGuardBind, logger)
+	tunDevice := build.AttachTUN(build.Config.ID, peerAddrs(peers))
+	routes, _ := tunDevice.(routeUpdater)
+	wgDevice := device.NewDevice(tunDevice, build.WireGuardBind, logger)
 
 	if build.Config.WireGuard == nil || build.Config.WireGuard.InterfacePrivateKey == nil || build.Config.WireGuard.InterfacePublicKey == nil {
 		return nil, fmt.Errorf("wireguard interface private and public keys are required")
@@ -100,6 +107,7 @@ func (Protocol) Build(build router.ProtocolBuild) (router.ProtocolInstance, erro
 		overlay:   build.Overlay,
 		serverID:  serverID,
 		peers:     peers,
+		routes:    routes,
 		frontend:  build.WireGuardBind,
 		logger:    build.PeerObservations,
 		device:    wgDevice,
@@ -135,6 +143,35 @@ func (i *instance) Close() {
 	if i.frontend != nil {
 		_ = i.frontend.Close()
 	}
+}
+
+func (i *instance) UpdateConfig(cfg router.ProtocolConfig) error {
+	if i.device == nil {
+		return fmt.Errorf("wireguard device is not initialized")
+	}
+	peers, err := selectPeers(cfg)
+	if err != nil {
+		return fmt.Errorf("select peers: %w", err)
+	}
+	if cfg.WireGuard == nil || cfg.WireGuard.InterfacePrivateKey == nil || cfg.WireGuard.InterfacePublicKey == nil {
+		return fmt.Errorf("wireguard interface private and public keys are required")
+	}
+	serverID := router.WireGuardIdentity{
+		Private: *cfg.WireGuard.InterfacePrivateKey,
+		Public:  *cfg.WireGuard.InterfacePublicKey,
+	}
+	if ipc := renderServerUpdateIPC(i.peers, peers); ipc != "" {
+		if err := i.device.IpcSet(ipc); err != nil {
+			return fmt.Errorf("configure wireguard device: %w", err)
+		}
+	}
+	if i.routes != nil {
+		i.routes.UpdateRoutes(peerAddrs(peers))
+	}
+	i.cfg = cfg
+	i.serverID = serverID
+	i.peers = peers
+	return nil
 }
 
 func (i *instance) BootstrapInfo() router.ProtocolBootstrapInfo {
@@ -335,6 +372,68 @@ func renderServerIPC(cfg router.ProtocolConfig, serverID router.WireGuardIdentit
 		fmt.Fprintf(&b, "allowed_ip=%s/32\n", peer.Addr)
 	}
 	return b.String()
+}
+
+func renderServerUpdateIPC(previousPeers []peer, nextPeers []peer) string {
+	var b strings.Builder
+
+	nextByID := make(map[string]peer, len(nextPeers))
+	for _, peer := range nextPeers {
+		nextByID[peer.ID] = peer
+	}
+	for _, previous := range previousPeers {
+		next, ok := nextByID[previous.ID]
+		if !ok || next.Identity.Public != previous.Identity.Public {
+			fmt.Fprintf(&b, "public_key=%s\n", hex.EncodeToString(previous.Identity.Public[:]))
+			b.WriteString("remove=true\n")
+		}
+	}
+
+	for _, peer := range nextPeers {
+		previous, hadPrevious := previousPeerByID(previousPeers, peer.ID)
+		if hadPrevious && !peerNeedsUpdate(previous, peer) {
+			continue
+		}
+		fmt.Fprintf(&b, "public_key=%s\n", hex.EncodeToString(peer.Identity.Public[:]))
+		if !hadPrevious || !presharedKeysEqual(previous.PresharedKey, peer.PresharedKey) {
+			if peer.PresharedKey == nil {
+				fmt.Fprintf(&b, "preshared_key=%064x\n", 0)
+			} else {
+				fmt.Fprintf(&b, "preshared_key=%s\n", hex.EncodeToString(peer.PresharedKey[:]))
+			}
+		}
+		if !hadPrevious || previous.Identity.Public != peer.Identity.Public || previous.Addr != peer.Addr {
+			b.WriteString("replace_allowed_ips=true\n")
+			fmt.Fprintf(&b, "allowed_ip=%s/32\n", peer.Addr)
+		}
+	}
+	return b.String()
+}
+
+func previousPeerByID(peers []peer, id string) (peer, bool) {
+	for _, peer := range peers {
+		if peer.ID == id {
+			return peer, true
+		}
+	}
+	return peer{}, false
+}
+
+func peerNeedsUpdate(previous peer, next peer) bool {
+	return previous.Identity.Public != next.Identity.Public ||
+		previous.Addr != next.Addr ||
+		!presharedKeysEqual(previous.PresharedKey, next.PresharedKey)
+}
+
+func presharedKeysEqual(a *[32]byte, b *[32]byte) bool {
+	switch {
+	case a == nil && b == nil:
+		return true
+	case a == nil || b == nil:
+		return false
+	default:
+		return *a == *b
+	}
 }
 
 func encodeBase64(key []byte) string {

@@ -216,34 +216,52 @@ func startRuntimeParts(
 	overlays map[string]*overlayRuntime,
 	protocols []ProtocolInstance,
 ) ([]func() error, error) {
-	closers := []func() error{}
 	for _, protocol := range protocols {
 		if err := protocol.Start(); err != nil {
-			closeRuntimeParts(cfg, overlays, protocols, closers)
+			closeRuntimeParts(cfg, overlays, protocols, nil)
 			return nil, fmt.Errorf("start %s: %w", protocol.ID(), err)
 		}
 	}
+	closers, err := startOverlayServices(cfg, overlays)
+	if err != nil {
+		closeRuntimeParts(cfg, overlays, protocols, closers)
+		return nil, err
+	}
+	return closers, nil
+}
+
+func startOverlayServices(
+	cfg Config,
+	overlays map[string]*overlayRuntime,
+) ([]func() error, error) {
+	closers := []func() error{}
 	for _, overlayCfg := range cfg.Overlays {
 		overlay := overlays[overlayCfg.NetworkID]
 		if overlay == nil {
-			closeRuntimeParts(cfg, overlays, protocols, closers)
+			closeOverlayServices(closers)
 			return nil, fmt.Errorf("network runtime %q is missing", overlayCfg.NetworkID)
 		}
 		closeDNS, err := startDNSResolver(overlay.net, overlay.cfg, cfg.Protocols)
 		if err != nil {
-			closeRuntimeParts(cfg, overlays, protocols, closers)
+			closeOverlayServices(closers)
 			return nil, fmt.Errorf("start userspace netstack dns resolver for network %q: %w", overlay.networkID, err)
 		}
 		closers = append(closers, closeDNS)
 
 		closeStatus, err := startStatusServer(overlay.net, overlay.cfg, overlay.protocols)
 		if err != nil {
-			closeRuntimeParts(cfg, overlays, protocols, closers)
+			closeOverlayServices(closers)
 			return nil, fmt.Errorf("start userspace netstack status server for network %q: %w", overlay.networkID, err)
 		}
 		closers = append(closers, closeStatus)
 	}
 	return closers, nil
+}
+
+func closeOverlayServices(closers []func() error) {
+	for i := len(closers) - 1; i >= 0; i-- {
+		_ = closers[i]()
+	}
 }
 
 func (r *Runtime) Close() {
@@ -279,9 +297,7 @@ func closeRuntimeParts(
 	protocols []ProtocolInstance,
 	closers []func() error,
 ) {
-	for i := len(closers) - 1; i >= 0; i-- {
-		_ = closers[i]()
-	}
+	closeOverlayServices(closers)
 	for i := len(protocols) - 1; i >= 0; i-- {
 		protocols[i].Close()
 	}
@@ -329,6 +345,18 @@ func (r *Runtime) watchControlPlane(ctx context.Context, currentRevision string,
 }
 
 func (r *Runtime) ApplyConfig(cfg Config, revision string) error {
+	if err := validateConfig(cfg); err != nil {
+		return err
+	}
+
+	r.mu.Lock()
+	if canUpdateConfigInPlace(r.cfg, cfg, r.protocols) {
+		err := r.applyConfigInPlaceLocked(cfg, revision)
+		r.mu.Unlock()
+		return err
+	}
+	r.mu.Unlock()
+
 	nextOverlays, nextProtocols, err := buildRuntimeParts(cfg)
 	if err != nil {
 		return err
@@ -374,6 +402,145 @@ func (r *Runtime) ApplyConfig(cfg Config, revision string) error {
 	r.protocols = restoreProtocols
 	r.closers = restoreClosers
 	return err
+}
+
+func (r *Runtime) applyConfigInPlaceLocked(cfg Config, revision string) error {
+	previousCfg := r.cfg
+	previousRevision := r.revision
+	previousClosers := r.closers
+
+	for _, overlayCfg := range cfg.Overlays {
+		if overlay := r.overlays[overlayCfg.NetworkID]; overlay != nil {
+			overlay.cfg = overlayCfg
+		}
+	}
+
+	for _, protocolCfg := range cfg.Protocols {
+		protocol := protocolByID(r.protocols, protocolCfg.ID)
+		updater, ok := protocol.(ProtocolConfigUpdater)
+		if !ok {
+			return fmt.Errorf("protocol %q does not support in-place config updates", protocolCfg.ID)
+		}
+		if err := updater.UpdateConfig(protocolCfg); err != nil {
+			r.restoreInPlaceConfigLocked(previousCfg, previousRevision)
+			return fmt.Errorf("update protocol %q: %w", protocolCfg.ID, err)
+		}
+	}
+
+	r.cfg = cfg
+	r.revision = revision
+	closeOverlayServices(previousClosers)
+	r.closers = nil
+
+	nextClosers, err := startOverlayServices(r.cfg, r.overlays)
+	if err == nil {
+		r.closers = nextClosers
+		return nil
+	}
+
+	r.cfg = previousCfg
+	r.revision = previousRevision
+	r.restoreInPlaceConfigLocked(previousCfg, previousRevision)
+	restoreClosers, restoreErr := startOverlayServices(previousCfg, r.overlays)
+	if restoreErr != nil {
+		r.closers = nil
+		return fmt.Errorf("restart overlay services: %w; restore previous overlay services: %v", err, restoreErr)
+	}
+	r.closers = restoreClosers
+	return err
+}
+
+func (r *Runtime) restoreInPlaceConfigLocked(cfg Config, revision string) {
+	r.cfg = cfg
+	r.revision = revision
+	for _, overlayCfg := range cfg.Overlays {
+		if overlay := r.overlays[overlayCfg.NetworkID]; overlay != nil {
+			overlay.cfg = overlayCfg
+		}
+	}
+	for _, protocolCfg := range cfg.Protocols {
+		if updater, ok := protocolByID(r.protocols, protocolCfg.ID).(ProtocolConfigUpdater); ok {
+			_ = updater.UpdateConfig(protocolCfg)
+		}
+	}
+}
+
+func canUpdateConfigInPlace(previous Config, next Config, protocols []ProtocolInstance) bool {
+	if len(previous.Overlays) != len(next.Overlays) || len(previous.Protocols) != len(next.Protocols) {
+		return false
+	}
+	for _, nextOverlay := range next.Overlays {
+		previousOverlay, ok := overlayForNetworkID(previous.Overlays, nextOverlay.NetworkID)
+		if !ok {
+			return false
+		}
+		if previousOverlay.MTU != nextOverlay.MTU ||
+			previousOverlay.ServerAddr != nextOverlay.ServerAddr ||
+			previousOverlay.OverlayCIDR != nextOverlay.OverlayCIDR ||
+			previousOverlay.StatusPort != nextOverlay.StatusPort {
+			return false
+		}
+	}
+	for _, nextProtocol := range next.Protocols {
+		previousProtocol, ok := protocolConfigByID(previous.Protocols, nextProtocol.ID)
+		if !ok {
+			return false
+		}
+		if previousProtocol.Name != nextProtocol.Name ||
+			previousProtocol.NetworkID != nextProtocol.NetworkID ||
+			previousProtocol.ListenPort != nextProtocol.ListenPort ||
+			previousProtocol.PublicHost != nextProtocol.PublicHost {
+			return false
+		}
+		if !wireGuardInterfaceKeysEqual(previousProtocol.WireGuard, nextProtocol.WireGuard) {
+			return false
+		}
+		protocol := protocolByID(protocols, nextProtocol.ID)
+		if protocol == nil {
+			return false
+		}
+		if _, ok := protocol.(ProtocolConfigUpdater); !ok {
+			return false
+		}
+	}
+	return true
+}
+
+func wireGuardInterfaceKeysEqual(previous *WireGuardProtocolConfig, next *WireGuardProtocolConfig) bool {
+	if previous == nil || next == nil {
+		return previous == next
+	}
+	return configKeysEqual(previous.InterfacePrivateKey, next.InterfacePrivateKey) &&
+		configKeysEqual(previous.InterfacePublicKey, next.InterfacePublicKey)
+}
+
+func configKeysEqual(previous *[32]byte, next *[32]byte) bool {
+	switch {
+	case previous == nil && next == nil:
+		return true
+	case previous == nil || next == nil:
+		return false
+	default:
+		return *previous == *next
+	}
+}
+
+func protocolConfigByID(protocols []ProtocolConfig, id string) (ProtocolConfig, bool) {
+	for _, protocol := range protocols {
+		if protocol.ID == id {
+			return protocol, true
+		}
+	}
+	return ProtocolConfig{}, false
+}
+
+func protocolByID(protocols []ProtocolInstance, id string) ProtocolInstance {
+	for _, protocol := range protocols {
+		if protocol.ID() == id {
+			return protocol
+		}
+	}
+	return nil
 }
 
 func (r *Runtime) reportConnections(ctx context.Context) {
