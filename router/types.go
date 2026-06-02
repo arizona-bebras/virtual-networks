@@ -108,6 +108,10 @@ type ProtocolInstance interface {
 	StatusInfo(requesterAddr string) ProtocolStatusInfo
 }
 
+type ProtocolConfigUpdater interface {
+	UpdateConfig(cfg ProtocolConfig) error
+}
+
 type ConnectionReporter interface {
 	ConnectionReports() ([]PeerConnectionReport, error)
 }

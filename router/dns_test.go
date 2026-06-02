@@ -15,14 +15,16 @@ func TestDNSResolverAnswersInternalDevice(t *testing.T) {
 	resolver := newDNSResolver(
 		OverlayConfig{
 			NetworkID:  "primary",
+			Domain:     "internal",
 			ServerAddr: netip.MustParseAddr("10.44.0.1"),
 		},
 		[]ProtocolConfig{{
 			NetworkID: "primary",
 			WireGuard: &WireGuardProtocolConfig{
 				Peers: []WireGuardPeerConfig{{
-					ID:   "device-1",
-					Addr: netip.MustParseAddr("10.44.0.2"),
+					ID:     "device-1",
+					Domain: "device-1",
+					Addr:   netip.MustParseAddr("10.44.0.2"),
 				}},
 			},
 		}},
@@ -48,10 +50,166 @@ func TestDNSResolverAnswersInternalDevice(t *testing.T) {
 	}
 }
 
+func TestDNSResolverAnswersQualifiedPeerDomain(t *testing.T) {
+	resolver := newDNSResolver(
+		OverlayConfig{
+			NetworkID:  "primary",
+			Domain:     "internal",
+			ServerAddr: netip.MustParseAddr("10.44.0.1"),
+		},
+		[]ProtocolConfig{{
+			NetworkID: "primary",
+			WireGuard: &WireGuardProtocolConfig{
+				Peers: []WireGuardPeerConfig{{
+					ID:     "device-1",
+					Domain: "device-1.internal",
+					Addr:   netip.MustParseAddr("10.44.0.2"),
+				}},
+			},
+		}},
+		"127.0.0.1:1",
+	)
+
+	response, err := resolver.resolve(dnsQuery("device-1.internal", dnsmessage.TypeA), "udp")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assertDNSRCode(t, response, 0)
+	message := unpackDNSResponse(t, response)
+	if got := len(message.Answers); got != 1 {
+		t.Fatalf("answer count = %d, want 1", got)
+	}
+	answer, ok := message.Answers[0].Body.(*dnsmessage.AResource)
+	if !ok {
+		t.Fatalf("answer type = %T, want A", message.Answers[0].Body)
+	}
+	if got := netip.AddrFrom4(answer.A); got != netip.MustParseAddr("10.44.0.2") {
+		t.Fatalf("A record = %s, want 10.44.0.2", got)
+	}
+}
+
+func TestDNSResolverAnswersPeerDomainAfterOverlayDomainChanges(t *testing.T) {
+	resolver := newDNSResolver(
+		OverlayConfig{
+			NetworkID:  "primary",
+			Domain:     "new.internal",
+			ServerAddr: netip.MustParseAddr("10.44.0.1"),
+		},
+		[]ProtocolConfig{{
+			NetworkID: "primary",
+			WireGuard: &WireGuardProtocolConfig{
+				Peers: []WireGuardPeerConfig{{
+					ID:     "device-1",
+					Domain: "device-1.old.internal",
+					Addr:   netip.MustParseAddr("10.44.0.2"),
+				}},
+			},
+		}},
+		"127.0.0.1:1",
+	)
+
+	response, err := resolver.resolve(dnsQuery("device-1.new.internal", dnsmessage.TypeA), "udp")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assertDNSRCode(t, response, 0)
+	message := unpackDNSResponse(t, response)
+	if got := len(message.Answers); got != 1 {
+		t.Fatalf("answer count = %d, want 1", got)
+	}
+	answer, ok := message.Answers[0].Body.(*dnsmessage.AResource)
+	if !ok {
+		t.Fatalf("answer type = %T, want A", message.Answers[0].Body)
+	}
+	if got := netip.AddrFrom4(answer.A); got != netip.MustParseAddr("10.44.0.2") {
+		t.Fatalf("A record = %s, want 10.44.0.2", got)
+	}
+}
+
+func TestDNSResolverPTRUsesCurrentOverlayDomain(t *testing.T) {
+	resolver := newDNSResolver(
+		OverlayConfig{
+			NetworkID:  "primary",
+			Domain:     "new.internal",
+			ServerAddr: netip.MustParseAddr("10.44.0.1"),
+		},
+		[]ProtocolConfig{{
+			NetworkID: "primary",
+			WireGuard: &WireGuardProtocolConfig{
+				Peers: []WireGuardPeerConfig{{
+					ID:     "device-1",
+					Domain: "device-1.old.internal",
+					Addr:   netip.MustParseAddr("10.44.0.2"),
+				}},
+			},
+		}},
+		"127.0.0.1:1",
+	)
+
+	response, err := resolver.resolve(dnsQuery("2.0.44.10.in-addr.arpa", dnsmessage.TypePTR), "udp")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assertDNSRCode(t, response, 0)
+	message := unpackDNSResponse(t, response)
+	if got := len(message.Answers); got != 1 {
+		t.Fatalf("answer count = %d, want 1", got)
+	}
+	answer, ok := message.Answers[0].Body.(*dnsmessage.PTRResource)
+	if !ok {
+		t.Fatalf("answer type = %T, want PTR", message.Answers[0].Body)
+	}
+	if got := answer.PTR.String(); got != "device-1.new.internal." {
+		t.Fatalf("PTR record = %s, want device-1.new.internal.", got)
+	}
+}
+
+func TestDNSResolverSkipsEmptyPeerDomain(t *testing.T) {
+	resolver := newDNSResolver(
+		OverlayConfig{
+			NetworkID:  "primary",
+			Domain:     "internal",
+			ServerAddr: netip.MustParseAddr("10.44.0.1"),
+		},
+		[]ProtocolConfig{{
+			NetworkID: "primary",
+			WireGuard: &WireGuardProtocolConfig{
+				Peers: []WireGuardPeerConfig{{
+					ID:   "device-1",
+					Addr: netip.MustParseAddr("10.44.0.2"),
+				}},
+			},
+		}},
+		"127.0.0.1:1",
+	)
+
+	response, err := resolver.resolve(dnsQuery("internal", dnsmessage.TypeA), "udp")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assertDNSRCode(t, response, 0)
+	message := unpackDNSResponse(t, response)
+	if got := len(message.Answers); got != 1 {
+		t.Fatalf("answer count = %d, want 1", got)
+	}
+	answer, ok := message.Answers[0].Body.(*dnsmessage.AResource)
+	if !ok {
+		t.Fatalf("answer type = %T, want A", message.Answers[0].Body)
+	}
+	if got := netip.AddrFrom4(answer.A); got != netip.MustParseAddr("10.44.0.1") {
+		t.Fatalf("A record = %s, want router address", got)
+	}
+}
+
 func TestDNSResolverAnswersRouter(t *testing.T) {
 	resolver := newDNSResolver(
 		OverlayConfig{
 			NetworkID:  "primary",
+			Domain:     "internal",
 			ServerAddr: netip.MustParseAddr("10.44.0.1"),
 		},
 		nil,
@@ -84,8 +242,9 @@ func TestDNSResolverAnswersPTR(t *testing.T) {
 			NetworkID: "primary",
 			WireGuard: &WireGuardProtocolConfig{
 				Peers: []WireGuardPeerConfig{{
-					ID:   "device-1",
-					Addr: netip.MustParseAddr("10.44.0.2"),
+					ID:     "device-1",
+					Domain: "device-1",
+					Addr:   netip.MustParseAddr("10.44.0.2"),
 				}},
 			},
 		}},
@@ -108,6 +267,7 @@ func TestDNSResolverReturnsNXDOMAINForUnknownInternal(t *testing.T) {
 	resolver := newDNSResolver(
 		OverlayConfig{
 			NetworkID:  "primary",
+			Domain:     "internal",
 			ServerAddr: netip.MustParseAddr("10.44.0.1"),
 		},
 		nil,

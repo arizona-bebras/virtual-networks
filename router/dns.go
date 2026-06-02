@@ -67,9 +67,11 @@ func startDNSResolver(
 }
 
 func newDNSResolver(overlay OverlayConfig, protocols []ProtocolConfig, forwarder string) *dnsResolver {
-	records := map[string]netip.Addr{
-		"router.internal.":               overlay.ServerAddr,
-		normalizeDNSName(overlay.Domain): overlay.ServerAddr,
+	records := map[string]netip.Addr{}
+	ptrRecords := map[string]string{}
+	setDNSRecord(records, ptrRecords, "router.internal.", overlay.ServerAddr, true)
+	if overlay.Domain != "" {
+		setDNSRecord(records, ptrRecords, overlay.Domain, overlay.ServerAddr, true)
 	}
 
 	for _, protocol := range protocols {
@@ -77,19 +79,13 @@ func newDNSResolver(overlay OverlayConfig, protocols []ProtocolConfig, forwarder
 			continue
 		}
 		for _, peer := range protocol.WireGuard.Peers {
-			name := normalizeDNSName(peer.Domain + "." + overlay.Domain)
-			if existing, ok := records[name]; ok && existing != peer.Addr {
-				log.Printf("dns record %s has conflicting addresses %s and %s; keeping %s", name, existing, peer.Addr, existing)
-				continue
+			for index, name := range peerDNSNames(peer.Domain, overlay.Domain) {
+				if existing, ok := records[name]; ok && existing != peer.Addr {
+					log.Printf("dns record %s has conflicting addresses %s and %s; keeping %s", name, existing, peer.Addr, existing)
+					continue
+				}
+				setDNSRecord(records, ptrRecords, name, peer.Addr, index == 0)
 			}
-			records[name] = peer.Addr
-		}
-	}
-
-	ptrRecords := make(map[string]string, len(records))
-	for name, addr := range records {
-		if ptr, ok := reverseName(addr); ok {
-			ptrRecords[ptr] = name
 		}
 	}
 
@@ -99,6 +95,47 @@ func newDNSResolver(overlay OverlayConfig, protocols []ProtocolConfig, forwarder
 		records:    records,
 		ptrRecords: ptrRecords,
 	}
+}
+
+func setDNSRecord(records map[string]netip.Addr, ptrRecords map[string]string, name string, addr netip.Addr, ptr bool) {
+	normalizedName := normalizeDNSName(name)
+	records[normalizedName] = addr
+	if !ptr {
+		return
+	}
+	if reverse, ok := reverseName(addr); ok {
+		ptrRecords[reverse] = normalizedName
+	}
+}
+
+func peerDNSNames(peerDomain string, overlayDomain string) []string {
+	peerDomain = strings.TrimSpace(peerDomain)
+	if peerDomain == "" {
+		return nil
+	}
+
+	name := normalizeDNSName(peerDomain)
+	if overlayDomain == "" {
+		return []string{name}
+	}
+
+	overlayName := normalizeDNSName(overlayDomain)
+	if name == overlayName || strings.HasSuffix(name, "."+overlayName) {
+		return []string{name}
+	}
+
+	relativeName := firstDNSLabel(peerDomain)
+	qualifiedName := normalizeDNSName(relativeName + "." + overlayDomain)
+	if name == qualifiedName {
+		return []string{name}
+	}
+	return []string{qualifiedName, name}
+}
+
+func firstDNSLabel(name string) string {
+	name = strings.TrimSpace(strings.TrimSuffix(name, "."))
+	label, _, _ := strings.Cut(name, ".")
+	return label
 }
 
 func (r *dnsResolver) serveUDP(ctx context.Context, conn net.PacketConn) {
@@ -224,10 +261,14 @@ func (r *dnsResolver) privateQuestionAnswers(question dnsmessage.Question) (bool
 	}
 	name := normalizeDNSName(question.Name.String())
 
-  addr, ok := r.records[name]
-  if ok {
-    return true, true, addressAnswers(question, addr)
-  }
+	addr, ok := r.records[name]
+	if ok {
+		return true, true, addressAnswers(question, addr)
+	}
+
+	if isOverlayDNSName(name, r.cfg.Domain) {
+		return true, false, nil
+	}
 
 	if !isReverseDNSName(name) {
 		return false, true, nil
@@ -460,6 +501,14 @@ func normalizeDNSName(name string) string {
 
 func isReverseDNSName(name string) bool {
 	return strings.HasSuffix(name, ".in-addr.arpa.") || strings.HasSuffix(name, ".ip6.arpa.")
+}
+
+func isOverlayDNSName(name string, overlayDomain string) bool {
+	if strings.TrimSpace(overlayDomain) == "" {
+		return false
+	}
+	overlayName := normalizeDNSName(overlayDomain)
+	return name == overlayName || strings.HasSuffix(name, "."+overlayName)
 }
 
 func reverseName(addr netip.Addr) (string, bool) {

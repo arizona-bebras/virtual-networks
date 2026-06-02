@@ -212,6 +212,10 @@ export class NetworksService {
   }
 
   async update(id: string, network: UpdateNetworkDto) {
+    await this.db
+      .update(schema.networks)
+      .set(network)
+      .where(eq(schema.networks.id, id));
     this.routerService.emitEvent(
       ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_NETWORK_CHANGED,
       [
@@ -223,13 +227,10 @@ export class NetworksService {
         },
       ],
     );
-    await this.db
-      .update(schema.networks)
-      .set(network)
-      .where(eq(schema.networks.id, id));
   }
 
   async delete(id: string) {
+    await this.db.delete(schema.networks).where(eq(schema.networks.id, id));
     this.routerService.emitEvent(
       ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_NETWORK_CHANGED,
       [
@@ -241,7 +242,6 @@ export class NetworksService {
         },
       ],
     );
-    await this.db.delete(schema.networks).where(eq(schema.networks.id, id));
   }
 
   async getFreeIp(networkId: string): Promise<string> {

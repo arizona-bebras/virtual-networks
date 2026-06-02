@@ -304,8 +304,37 @@ func (b *sharedBind) BatchSize() int {
 	return b.parent.inner.BatchSize()
 }
 func (b *sharedBind) Send(bufs [][]byte, ep conn.Endpoint) error {
+	bufs = filterOutboundPackets(b.backendName, bufs, ep)
+	if len(bufs) == 0 {
+		return nil
+	}
 	b.parent.trackOutbound(b, bufs)
-	return b.parent.inner.Send(bufs, ep)
+	for _, packet := range bufs {
+		b.parent.logger.recordOutbound(ep, b.backendName, parsePacketMetadata(packet))
+	}
+	if err := b.parent.inner.Send(bufs, ep); err != nil {
+		log.Printf("shared wireguard send[%s]: endpoint=%s packets=%d error: %v", b.backendName, ep.DstToString(), len(bufs), err)
+		return err
+	}
+	return nil
+}
+
+func filterOutboundPackets(backend string, bufs [][]byte, ep conn.Endpoint) [][]byte {
+	out := bufs[:0]
+	for _, packet := range bufs {
+		meta := parsePacketMetadata(packet)
+		if meta.Type == device.MessageInitiationType {
+			log.Printf(
+				"shared wireguard send[%s]: suppressing responder-only handshake initiation to endpoint=%s sender_idx=%d",
+				backend,
+				ep.DstToString(),
+				meta.SenderIndex,
+			)
+			continue
+		}
+		out = append(out, packet)
+	}
+	return out
 }
 func (b *sharedBind) enqueue(queueIdx int, packet inboundPacket) {
 	b.mu.RLock()

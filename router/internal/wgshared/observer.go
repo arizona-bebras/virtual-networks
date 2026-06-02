@@ -61,6 +61,14 @@ func newObserverLog() *observerLog {
 }
 
 func (l *observerLog) record(ep conn.Endpoint, backend string, meta packetMetadata) {
+	l.recordDirection("inbound", ep, backend, meta)
+}
+
+func (l *observerLog) recordOutbound(ep conn.Endpoint, backend string, meta packetMetadata) {
+	l.recordDirection("outbound", ep, backend, meta)
+}
+
+func (l *observerLog) recordDirection(direction string, ep conn.Endpoint, backend string, meta packetMetadata) {
 	key := ep.DstToString()
 	now := time.Now().UTC()
 
@@ -89,8 +97,8 @@ func (l *observerLog) record(ep conn.Endpoint, backend string, meta packetMetada
 
 	if l.logPackets {
 		log.Printf(
-			"frontend: endpoint=%s backend=%s packet_type=%s size=%d sender_idx=%d receiver_idx=%d",
-			key, backend, meta.TypeName, meta.Size, meta.SenderIndex, meta.ReceiverIndex,
+			"frontend: direction=%s endpoint=%s backend=%s packet_type=%s size=%d sender_idx=%d receiver_idx=%d",
+			direction, key, backend, meta.TypeName, meta.Size, meta.SenderIndex, meta.ReceiverIndex,
 		)
 	}
 }

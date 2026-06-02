@@ -327,6 +327,21 @@ func (tunDev *deviceTun) ReadPacket(ctx context.Context) ([]byte, error) {
 
 func (tunDev *deviceTun) WritePacket(packet []byte) error { return tunDev.parent.WritePacket(packet) }
 
+func (tunDev *deviceTun) UpdateRoutes(routes []netip.Addr) {
+	tunDev.parent.mu.Lock()
+	defer tunDev.parent.mu.Unlock()
+
+	for _, route := range tunDev.routes {
+		if tunDev.parent.routes[route] == tunDev {
+			delete(tunDev.parent.routes, route)
+		}
+	}
+	tunDev.routes = append(tunDev.routes[:0], routes...)
+	for _, route := range tunDev.routes {
+		tunDev.parent.routes[route] = tunDev
+	}
+}
+
 func (tunDev *deviceTun) Close() error {
 	tunDev.parent.mu.Lock()
 	delete(tunDev.parent.attachments, tunDev)
