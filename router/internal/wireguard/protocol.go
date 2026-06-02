@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/netip"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -88,7 +89,7 @@ func (Protocol) Build(build router.ProtocolBuild) (router.ProtocolInstance, erro
 		return nil, fmt.Errorf("select peers: %w", err)
 	}
 
-	logger := device.NewLogger(device.LogLevelError, fmt.Sprintf("userspace-wg[%s]: ", build.Config.ID))
+	logger := device.NewLogger(wireGuardLogLevel(), fmt.Sprintf("userspace-wg[%s]: ", build.Config.ID))
 	tunDevice := build.AttachTUN(build.Config.ID, peerAddrs(peers))
 	routes, _ := tunDevice.(routeUpdater)
 	wgDevice := device.NewDevice(tunDevice, build.WireGuardBind, logger)
@@ -438,4 +439,15 @@ func presharedKeysEqual(a *[32]byte, b *[32]byte) bool {
 
 func encodeBase64(key []byte) string {
 	return base64.StdEncoding.EncodeToString(key)
+}
+
+func wireGuardLogLevel() int {
+	switch strings.ToLower(strings.TrimSpace(os.Getenv("ROUTER_WIREGUARD_LOG_LEVEL"))) {
+	case "silent", "off", "none":
+		return device.LogLevelSilent
+	case "verbose", "debug":
+		return device.LogLevelVerbose
+	default:
+		return device.LogLevelError
+	}
 }
