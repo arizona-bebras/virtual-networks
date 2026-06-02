@@ -106,8 +106,12 @@ export class RulesController {
   @ApiBody({ type: UpdateRuleDto })
   @ApiResponse({ status: 200, description: "Правило успешно обновлено" })
   @ApiResponse({ status: 404, description: "Правило не найдено" })
-  async update(@Param("rule_id") rule_id: string, @Body() rule: UpdateRuleDto) {
-    await this.rulesService.update(rule_id, rule);
+  async update(
+    @Param("network_id") network_id: string,
+    @Param("rule_id") rule_id: string,
+    @Body() rule: UpdateRuleDto,
+  ) {
+    await this.rulesService.update(rule_id, network_id, rule);
   }
 
   @Delete(":rule_id")
@@ -120,7 +124,10 @@ export class RulesController {
   })
   @ApiResponse({ status: 200, description: "Правило успешно удалено" })
   @ApiResponse({ status: 404, description: "Правило не найдено" })
-  async delete(@Param("rule_id") rule_id: string) {
-    await this.rulesService.delete(rule_id);
+  async delete(
+    @Param("network_id") network_id: string,
+    @Param("rule_id") rule_id: string,
+  ) {
+    await this.rulesService.delete(rule_id, network_id);
   }
 }

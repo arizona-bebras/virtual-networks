@@ -23,7 +23,28 @@ type OverlayConfig struct {
 	ServerAddr  netip.Addr
 	OverlayCIDR netip.Prefix
 	StatusPort  int
+	Rules       []PeerTrafficRuleConfig
 }
+
+type PeerTrafficRuleConfig struct {
+	ID          string
+	Source      PeerTrafficRulePeerSelector
+	Destination PeerTrafficRulePeerSelector
+	Protocol    TrafficProtocol
+	Port        *uint16
+}
+
+type PeerTrafficRulePeerSelector struct {
+	All     bool
+	PeerIDs []string
+}
+
+type TrafficProtocol string
+
+const TrafficProtocolAny TrafficProtocol = ""
+const TrafficProtocolTCP TrafficProtocol = "tcp"
+const TrafficProtocolUDP TrafficProtocol = "udp"
+const TrafficProtocolICMP TrafficProtocol = "icmp"
 
 type ProtocolConfig struct {
 	ID         string

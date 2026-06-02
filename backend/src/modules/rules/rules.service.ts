@@ -8,15 +8,25 @@ import {
   ilike,
   inArray,
 } from "drizzle-orm/sql/expressions/conditions";
+import {
+  ChangedResourceType,
+  ChangeOperation,
+  ConfigurationUpdateReason,
+} from "proto";
 import { type Database, DRIZZLE } from "../../db/database.module.js";
 import * as schema from "../../db/schema.js";
+import { RouterService } from "../router/router.service.js";
 
 @Injectable()
 export class RulesService {
-  constructor(@Inject(DRIZZLE) private readonly db: Database) {}
+  constructor(
+    @Inject(DRIZZLE) private readonly db: Database,
+    private readonly routerService: RouterService,
+  ) {}
 
   async create(rule: CreateRuleDto, networkId: string) {
     await this.db.insert(schema.rules).values({ ...rule, networkId });
+    this.emitRuleChanged(networkId, ChangeOperation.CHANGE_OPERATION_CREATED);
   }
 
   async get(ruleId: string): Promise<RuleDto | undefined> {
@@ -126,14 +136,36 @@ export class RulesService {
     });
   }
 
-  async update(ruleId: string, rule: UpdateRuleDto) {
+  async update(ruleId: string, networkId: string, rule: UpdateRuleDto) {
     await this.db
       .update(schema.rules)
       .set(rule)
-      .where(eq(schema.rules.id, ruleId));
+      .where(
+        and(eq(schema.rules.id, ruleId), eq(schema.rules.networkId, networkId)),
+      );
+    this.emitRuleChanged(networkId, ChangeOperation.CHANGE_OPERATION_UPDATED);
   }
 
-  async delete(ruleId: string) {
-    await this.db.delete(schema.rules).where(eq(schema.rules.id, ruleId));
+  async delete(ruleId: string, networkId: string) {
+    await this.db
+      .delete(schema.rules)
+      .where(
+        and(eq(schema.rules.id, ruleId), eq(schema.rules.networkId, networkId)),
+      );
+    this.emitRuleChanged(networkId, ChangeOperation.CHANGE_OPERATION_DELETED);
+  }
+
+  private emitRuleChanged(networkId: string, operation: ChangeOperation) {
+    this.routerService.emitEvent(
+      ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_NETWORK_CHANGED,
+      [
+        {
+          type: ChangedResourceType.CHANGED_RESOURCE_TYPE_NETWORK,
+          id: networkId,
+          networkId,
+          operation,
+        },
+      ],
+    );
   }
 }

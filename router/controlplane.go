@@ -348,6 +348,7 @@ func configFromControlPlane(snapshot *controlplanepb.RouterConfiguration) (Confi
 			ServerAddr:  serverAddr,
 			OverlayCIDR: overlayCIDR,
 			StatusPort:  statusPortValue,
+			Rules:       trafficRulesFromControlPlane(network.GetRules(), network.GetId()),
 		})
 		peersByNetworkID[network.GetId()] = network.GetPeers()
 		validNetworkIDs[network.GetId()] = struct{}{}
@@ -417,6 +418,91 @@ func configFromControlPlane(snapshot *controlplanepb.RouterConfiguration) (Confi
 		return Config{}, err
 	}
 	return cfg, nil
+}
+
+func trafficRulesFromControlPlane(
+	rules []*controlplanepb.PeerTrafficRuleConfig,
+	networkID string,
+) []PeerTrafficRuleConfig {
+	out := make([]PeerTrafficRuleConfig, 0, len(rules))
+	seenRuleIDs := make(map[string]struct{}, len(rules))
+	for _, rule := range rules {
+		if rule.GetId() == "" {
+			log.Printf("skipping invalid control plane rule for network %q: missing id", networkID)
+			continue
+		}
+		if _, exists := seenRuleIDs[rule.GetId()]; exists {
+			log.Printf("skipping invalid control plane rule %q for network %q: duplicate id", rule.GetId(), networkID)
+			continue
+		}
+		port, ok := trafficRulePortFromControlPlane(rule)
+		if !ok {
+			log.Printf("skipping invalid control plane rule %q for network %q: port %d is outside uint16 range", rule.GetId(), networkID, rule.GetPort())
+			continue
+		}
+		seenRuleIDs[rule.GetId()] = struct{}{}
+		out = append(out, PeerTrafficRuleConfig{
+			ID:          rule.GetId(),
+			Source:      trafficRulePeerSelectorFromControlPlane(rule.GetSource()),
+			Destination: trafficRulePeerSelectorFromControlPlane(rule.GetDestination()),
+			Protocol:    trafficProtocolFromControlPlane(rule.GetProtocol()),
+			Port:        port,
+		})
+	}
+	return out
+}
+
+func trafficRulePeerSelectorFromControlPlane(
+	selector *controlplanepb.PeerTrafficRulePeerSelector,
+) PeerTrafficRulePeerSelector {
+	if selector == nil || selector.GetAll() {
+		return PeerTrafficRulePeerSelector{All: true}
+	}
+	return PeerTrafficRulePeerSelector{
+		PeerIDs: compactStrings(selector.GetPeerIds()),
+	}
+}
+
+func trafficProtocolFromControlPlane(protocol controlplanepb.TrafficProtocol) TrafficProtocol {
+	switch protocol {
+	case controlplanepb.TrafficProtocol_TRAFFIC_PROTOCOL_TCP:
+		return TrafficProtocolTCP
+	case controlplanepb.TrafficProtocol_TRAFFIC_PROTOCOL_UDP:
+		return TrafficProtocolUDP
+	case controlplanepb.TrafficProtocol_TRAFFIC_PROTOCOL_ICMP:
+		return TrafficProtocolICMP
+	default:
+		return TrafficProtocolAny
+	}
+}
+
+func trafficRulePortFromControlPlane(rule *controlplanepb.PeerTrafficRuleConfig) (*uint16, bool) {
+	if rule.Port == nil {
+		return nil, true
+	}
+	raw := rule.GetPort()
+	if raw > 65535 {
+		return nil, false
+	}
+	port := uint16(raw)
+	return &port, true
+}
+
+func compactStrings(values []string) []string {
+	out := make([]string, 0, len(values))
+	seen := make(map[string]struct{}, len(values))
+	for _, value := range values {
+		value = strings.TrimSpace(value)
+		if value == "" {
+			continue
+		}
+		if _, exists := seen[value]; exists {
+			continue
+		}
+		seen[value] = struct{}{}
+		out = append(out, value)
+	}
+	return out
 }
 
 func selectWireGuardPeers(

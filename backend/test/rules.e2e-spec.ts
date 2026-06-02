@@ -1,12 +1,19 @@
+import { jest } from "@jest/globals";
 import type { INestApplication } from "@nestjs/common";
 import { Test, type TestingModule } from "@nestjs/testing";
 import type { RuleRelation } from "common/schemas/rule/index";
+import {
+  ChangedResourceType,
+  ChangeOperation,
+  ConfigurationUpdateReason,
+} from "proto";
 import request from "supertest";
 import type { App } from "supertest/types.js";
 import { Role } from "../src/authorization/role.enum.js";
 import { RolesGuard } from "../src/authorization/roles.guard.js";
 import { DRIZZLE } from "../src/db/database.module.js";
 import * as schema from "../src/db/schema.js";
+import { RouterService } from "../src/modules/router/router.service.js";
 import { RulesController } from "../src/modules/rules/rules.controller.js";
 import { RulesService } from "../src/modules/rules/rules.service.js";
 import {
@@ -74,9 +81,11 @@ const seedRule = async (db: TestDatabase) => {
 describe("RulesController (e2e)", () => {
   let app: INestApplication<App>;
   let db: TestDatabase;
+  let emitRouterEvent: jest.Mock;
 
   beforeEach(async () => {
     db = await createTestDatabase();
+    emitRouterEvent = jest.fn();
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [RulesController],
@@ -86,6 +95,12 @@ describe("RulesController (e2e)", () => {
         {
           provide: DRIZZLE,
           useValue: db,
+        },
+        {
+          provide: RouterService,
+          useValue: {
+            emitEvent: emitRouterEvent,
+          },
         },
       ],
     }).compile();
@@ -117,6 +132,18 @@ describe("RulesController (e2e)", () => {
         sourceId: sourceTagId,
       })
       .expect(201);
+
+    expect(emitRouterEvent).toHaveBeenCalledWith(
+      ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_NETWORK_CHANGED,
+      [
+        {
+          type: ChangedResourceType.CHANGED_RESOURCE_TYPE_NETWORK,
+          id: networkId,
+          networkId,
+          operation: ChangeOperation.CHANGE_OPERATION_CREATED,
+        },
+      ],
+    );
 
     await request(app.getHttpServer())
       .get(`/networks/${networkId}/rules`)
@@ -177,6 +204,18 @@ describe("RulesController (e2e)", () => {
       .send({ description: "Allow updated backend", port: 8443 })
       .expect(200);
 
+    expect(emitRouterEvent).toHaveBeenCalledWith(
+      ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_NETWORK_CHANGED,
+      [
+        {
+          type: ChangedResourceType.CHANGED_RESOURCE_TYPE_NETWORK,
+          id: networkId,
+          networkId,
+          operation: ChangeOperation.CHANGE_OPERATION_UPDATED,
+        },
+      ],
+    );
+
     await request(app.getHttpServer())
       .get(`/networks/${networkId}/rules/${ruleId}`)
       .expect(200)
@@ -192,6 +231,18 @@ describe("RulesController (e2e)", () => {
     await request(app.getHttpServer())
       .delete(`/networks/${networkId}/rules/${ruleId}`)
       .expect(200);
+
+    expect(emitRouterEvent).toHaveBeenCalledWith(
+      ConfigurationUpdateReason.CONFIGURATION_UPDATE_REASON_NETWORK_CHANGED,
+      [
+        {
+          type: ChangedResourceType.CHANGED_RESOURCE_TYPE_NETWORK,
+          id: networkId,
+          networkId,
+          operation: ChangeOperation.CHANGE_OPERATION_DELETED,
+        },
+      ],
+    );
 
     const rule = await db.query.rules.findFirst({
       where: {

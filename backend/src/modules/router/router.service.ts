@@ -6,6 +6,7 @@ import {
   type ProtocolInstanceConfig,
   type RouterConfiguration,
   type RouterConfigurationUpdate,
+  TrafficProtocol,
 } from "proto";
 import { concatWith, defer, from, map, Observable, Subject } from "rxjs";
 import { type Database, DRIZZLE } from "../../db/database.module.js";
@@ -35,6 +36,37 @@ export class RouterService {
             keys: {
               columns: {
                 publicKey: true,
+              },
+            },
+          },
+        },
+        rules: {
+          columns: {
+            id: true,
+            port: true,
+            protocol: true,
+            sourceId: true,
+            destId: true,
+          },
+          with: {
+            source: {
+              columns: {},
+              with: {
+                devices: {
+                  columns: {
+                    id: true,
+                  },
+                },
+              },
+            },
+            dest: {
+              columns: {},
+              with: {
+                devices: {
+                  columns: {
+                    id: true,
+                  },
+                },
               },
             },
           },
@@ -69,6 +101,21 @@ export class RouterService {
             wireguard: {
               publicKey: device.keys?.publicKey ?? new Uint8Array([]),
             },
+          };
+        }),
+        rules: network.rules.map((rule) => {
+          return {
+            id: rule.id,
+            source: {
+              all: rule.sourceId === null,
+              peerIds: rule.source?.devices.map((device) => device.id) ?? [],
+            },
+            destination: {
+              all: rule.destId === null,
+              peerIds: rule.dest?.devices.map((device) => device.id) ?? [],
+            },
+            protocol: trafficProtocolFromRule(rule.protocol),
+            port: rule.port ?? undefined,
           };
         }),
       };
@@ -127,3 +174,18 @@ export class RouterService {
     );
   }
 }
+
+const trafficProtocolFromRule = (
+  protocol: "TCP" | "UDP" | "ICMP" | null,
+): TrafficProtocol => {
+  switch (protocol) {
+    case "TCP":
+      return TrafficProtocol.TRAFFIC_PROTOCOL_TCP;
+    case "UDP":
+      return TrafficProtocol.TRAFFIC_PROTOCOL_UDP;
+    case "ICMP":
+      return TrafficProtocol.TRAFFIC_PROTOCOL_ICMP;
+    default:
+      return TrafficProtocol.TRAFFIC_PROTOCOL_UNSPECIFIED;
+  }
+};

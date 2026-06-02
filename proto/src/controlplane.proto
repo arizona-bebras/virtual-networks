@@ -43,6 +43,7 @@ message NetworkConfig {
   uint32 status_port = 6;
   repeated PeerConfig peers = 7;
   string domain = 8;
+  repeated PeerTrafficRuleConfig rules = 9;
 }
 
 message PeerConfig {
@@ -55,6 +56,26 @@ message PeerConfig {
   oneof protocol {
     WireGuardPeerConfig wireguard = 10;
   }
+}
+
+message PeerTrafficRuleConfig {
+  string id = 1;
+  PeerTrafficRulePeerSelector source = 2;
+  PeerTrafficRulePeerSelector destination = 3;
+  TrafficProtocol protocol = 4;
+  optional uint32 port = 5;
+}
+
+message PeerTrafficRulePeerSelector {
+  bool all = 1;
+  repeated string peer_ids = 2;
+}
+
+enum TrafficProtocol {
+  TRAFFIC_PROTOCOL_UNSPECIFIED = 0;
+  TRAFFIC_PROTOCOL_TCP = 1;
+  TRAFFIC_PROTOCOL_UDP = 2;
+  TRAFFIC_PROTOCOL_ICMP = 3;
 }
 
 message WireGuardPeerConfig {
