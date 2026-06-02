@@ -128,6 +128,45 @@ func TestDNSResolverAnswersPeerDomainAfterOverlayDomainChanges(t *testing.T) {
 	}
 }
 
+func TestDNSResolverPTRUsesCurrentOverlayDomain(t *testing.T) {
+	resolver := newDNSResolver(
+		OverlayConfig{
+			NetworkID:  "primary",
+			Domain:     "new.internal",
+			ServerAddr: netip.MustParseAddr("10.44.0.1"),
+		},
+		[]ProtocolConfig{{
+			NetworkID: "primary",
+			WireGuard: &WireGuardProtocolConfig{
+				Peers: []WireGuardPeerConfig{{
+					ID:     "device-1",
+					Domain: "device-1.old.internal",
+					Addr:   netip.MustParseAddr("10.44.0.2"),
+				}},
+			},
+		}},
+		"127.0.0.1:1",
+	)
+
+	response, err := resolver.resolve(dnsQuery("2.0.44.10.in-addr.arpa", dnsmessage.TypePTR), "udp")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assertDNSRCode(t, response, 0)
+	message := unpackDNSResponse(t, response)
+	if got := len(message.Answers); got != 1 {
+		t.Fatalf("answer count = %d, want 1", got)
+	}
+	answer, ok := message.Answers[0].Body.(*dnsmessage.PTRResource)
+	if !ok {
+		t.Fatalf("answer type = %T, want PTR", message.Answers[0].Body)
+	}
+	if got := answer.PTR.String(); got != "device-1.new.internal." {
+		t.Fatalf("PTR record = %s, want device-1.new.internal.", got)
+	}
+}
+
 func TestDNSResolverSkipsEmptyPeerDomain(t *testing.T) {
 	resolver := newDNSResolver(
 		OverlayConfig{
