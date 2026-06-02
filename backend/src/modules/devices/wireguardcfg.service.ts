@@ -37,8 +37,10 @@ export class WireguardCfgService {
       ``,
       `[Peer]`,
       `PublicKey = ${device?.network?.keys?.publicKey?.toString("base64")}`,
-      `AllowedIps = ${device?.network?.cidr}`,
+      `AllowedIPs = ${device?.network?.cidr}`,
       `Endpoint = ${process.env.WIREGUARD_ENDPOINT}`,
+      `PersistentKeepalive = 25`,
+      ``,
     ].join("\n");
 
     const qrCodeDataUrl = await QRCode.toDataURL(configData, {
