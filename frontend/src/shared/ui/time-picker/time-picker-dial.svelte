@@ -12,10 +12,10 @@ let {
   view: "hours" | "minutes";
 } = $props();
 
-const DIAL_SIZE = 220;
+const DIAL_SIZE = 180;
 const CENTER = DIAL_SIZE / 2;
-const OUTER_RADIUS = 90;
-const INNER_RADIUS = 56;
+const OUTER_RADIUS = 72;
+const INNER_RADIUS = 44;
 
 let isDragging = $state(false);
 let dialRef: HTMLDivElement | null = null;
@@ -125,7 +125,7 @@ function onPointerUp(e: PointerEvent) {
 </script>
 
 <div
-  class="relative rounded-full bg-muted/50 touch-none"
+  class="relative rounded-full bg-muted/40 touch-none shadow-inner border border-border/50"
   style="width: {DIAL_SIZE}px; height: {DIAL_SIZE}px;"
   bind:this={dialRef}
   role="presentation"
@@ -133,46 +133,69 @@ function onPointerUp(e: PointerEvent) {
   onpointermove={onPointerMove}
   onpointerup={onPointerUp}
 >
+  <!-- Decorative dial ticks -->
+  <div
+    class="absolute inset-3 rounded-full border border-dashed border-border/30 pointer-events-none"
+  ></div>
+
   <!-- Center dot -->
   <div
-    class="absolute bg-accent rounded-full"
-    style="width: 8px; height: 8px; top: {CENTER - 4}px; left: {CENTER - 4}px;"
+    class="absolute bg-secondary rounded-full shadow-sm z-20"
+    style="width: 4px; height: 4px; top: {CENTER - 2}px; left: {CENTER - 2}px;"
   ></div>
 
-  <!-- Pointer line -->
+  <!-- Pointer Group -->
   <div
-    class="absolute bg-secondary pointer-events-none"
+    class={cn(
+      "absolute pointer-events-none",
+      !isDragging && "transition-transform duration-200 ease-out"
+    )}
     style="
-      width: 2px;
-      height: {Math.max(0, pointerData.radius - 10)}px;
-      bottom: 50%;
-      left: calc(50% - 1px);
-      transform-origin: bottom center;
+      top: {CENTER}px; 
+      left: {CENTER}px; 
       transform: rotate({pointerData.angle}deg);
     "
-  ></div>
-
-  <!-- Pointer circle (selection thumb) -->
-  <div
-    class="absolute bg-secondary rounded-full flex items-center justify-center pointer-events-none"
-    style="width: 20px; height: 20px; top: {pointerData.y - 10}px; left: {pointerData.x - 10}px;"
   >
-    <!-- Если выбор попадает не точно на нарисованную цифру минут (например, 12 минут), показываем маленький кружок -->
-    {#if view === "minutes" && minutes % 5 !== 0}
-      <div class="w-2 h-2 bg-accent-foreground rounded-full"></div>
-    {/if}
+    <!-- Pointer line -->
+    <div
+      class={cn(
+        "absolute bg-secondary/40 origin-bottom",
+        !isDragging && "transition-all duration-200 ease-out"
+      )}
+      style="
+        width: 1.5px;
+        height: {pointerData.radius - 2}px;
+        left: -0.75px;
+        bottom: 0;
+      "
+    ></div>
+
+    <!-- Pointer circle (selection thumb) -->
+    <div
+      class={cn(
+        "absolute bg-secondary rounded-full flex items-center justify-center shadow-md z-10",
+        !isDragging && "transition-all duration-200 ease-out"
+      )}
+      style="
+        width: {view === 'hours' || minutes % 5 === 0 ? 26 : 8}px; 
+        height: {view === 'hours' || minutes % 5 === 0 ? 26 : 8}px; 
+        left: -{view === 'hours' || minutes % 5 === 0 ? 13 : 4}px;
+        top: -{pointerData.radius + (view === 'hours' || minutes % 5 === 0 ? 13 : 4)}px;
+      "
+    ></div>
   </div>
 
   <!-- Numbers -->
   {#if view === "hours"}
     {#each hourNumbers as h}
       {@const coords = getNumberCoords(h, true)}
+      {@const isSelected = hours === h}
       <span
         class={cn(
-          "absolute text-sm font-medium flex justify-center items-center pointer-events-none",
-          hours === h ? "text-primary-foreground z-10" : "text-foreground"
+          "absolute text-[10px] font-bold flex justify-center items-center pointer-events-none transition-colors duration-200 z-20",
+          isSelected ? "text-secondary-foreground" : "text-foreground/70"
         )}
-        style="width: 32px; height: 32px; top: {coords.y - 16}px; left: {coords.x - 16}px;"
+        style="width: 24px; height: 24px; top: {coords.y - 12}px; left: {coords.x - 12}px;"
       >
         {h === 0 ? "00" : h.toString()}
       </span>
@@ -180,12 +203,13 @@ function onPointerUp(e: PointerEvent) {
   {:else}
     {#each minuteNumbers as m}
       {@const coords = getNumberCoords(m, false)}
+      {@const isSelected = minutes === m}
       <span
         class={cn(
-          "absolute text-sm font-medium flex justify-center items-center pointer-events-none",
-          minutes === m ? "text-primary-foreground z-10" : "text-foreground"
+          "absolute text-[10px] font-bold flex justify-center items-center pointer-events-none transition-colors duration-200 z-20",
+          isSelected ? "text-secondary-foreground" : "text-foreground/70"
         )}
-        style="width: 32px; height: 32px; top: {coords.y - 16}px; left: {coords.x - 16}px;"
+        style="width: 24px; height: 24px; top: {coords.y - 12}px; left: {coords.x - 12}px;"
       >
         {m.toString().padStart(2, "0")}
       </span>

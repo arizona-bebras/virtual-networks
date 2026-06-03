@@ -76,12 +76,15 @@ function handleSave() {
 }
 </script>
 
-<div class="flex flex-col w-[280px] p-2  font-sans select-none">
+<div class="flex flex-col w-[260px] p-3 select-none">
   <!-- Header: Заголовок -->
-  <div class="flex justify-between items-center mb-3 min-h-[28px]">
-    <span class="text-sm font-medium tracking-wide text-muted-foreground">
-      Выберите время
+  <div class="flex justify-between items-center mb-4">
+    <span
+      class="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60"
+    >
+      Выбор времени
     </span>
+    <div class="h-0.5 w-6 bg-border rounded-full opacity-50"></div>
   </div>
 
   {#if mode === "dial"}
@@ -91,92 +94,108 @@ function handleSave() {
         <button
           type="button"
           class={cn(
-            "flex justify-center items-center h-[72px] w-[80px] rounded-xl cursor-pointer transition-colors",
+            "flex flex-col justify-center items-center h-16 w-20 rounded-xl cursor-pointer transition-all duration-300",
             activeTarget === "single" && view === "hours"
-              ? "bg-primary/20 text-primary hover:bg-primary/30"
-              : "bg-muted/50 text-foreground hover:bg-muted"
+              ? "bg-secondary text-secondary-foreground shadow-md scale-105"
+              : "bg-muted/30 text-foreground/70 hover:bg-muted/50"
           )}
           onclick={() => { activeTarget = "single"; view = "hours"; }}
         >
-          <span class="text-5xl font-normal leading-none">
+          <span class="text-4xl font-bold leading-none tracking-tighter">
             {formatTime(times.single.h)}
           </span>
+          <span class="text-[7px] uppercase font-black opacity-50 mt-0.5">
+            Hour
+          </span>
         </button>
-        <span class="text-5xl font-normal text-foreground leading-none mb-1">
+
+        <span class="text-3xl font-light text-muted-foreground/30 leading-none">
           :
         </span>
+
         <button
           type="button"
           class={cn(
-            "flex justify-center items-center h-[72px] w-[80px] rounded-xl cursor-pointer transition-colors",
+            "flex flex-col justify-center items-center h-16 w-20 rounded-xl cursor-pointer transition-all duration-300",
             activeTarget === "single" && view === "minutes"
-              ? "bg-primary/20 text-primary hover:bg-primary/30"
-              : "bg-muted/50 text-foreground hover:bg-muted"
+              ? "bg-secondary text-secondary-foreground shadow-md scale-105"
+              : "bg-muted/30 text-foreground/70 hover:bg-muted/50"
           )}
           onclick={() => { activeTarget = "single"; view = "minutes"; }}
         >
-          <span class="text-5xl font-normal leading-none">
+          <span class="text-4xl font-bold leading-none tracking-tighter">
             {formatTime(times.single.m)}
+          </span>
+          <span class="text-[7px] uppercase font-black opacity-50 mt-0.5">
+            Min
           </span>
         </button>
       </div>
     {:else}
-      <div class="flex justify-center items-center gap-1 mb-6">
+      <div class="flex justify-center items-center gap-1.5 mb-6">
         <!-- Start -->
-        <div class="flex items-center">
+        <div
+          class="flex items-center p-0.5 rounded-xl bg-muted/20 border border-border"
+        >
           <button
             type="button"
             class={cn(
-              "flex justify-center items-center h-[56px] w-[48px] rounded-lg cursor-pointer transition-colors",
-              activeTarget === "start" && view === "hours" ? "bg-primary/20 text-foreground/50" : "bg-muted/50 text-foreground"
+              "flex justify-center items-center h-10 w-10 rounded-lg cursor-pointer transition-all duration-200",
+              activeTarget === "start" && view === "hours" ? "bg-secondary text-secondary-foreground shadow-sm" : "bg-transparent text-foreground/70"
             )}
             onclick={() => { activeTarget = "start"; view = "hours"; }}
           >
-            <span class="text-2xl font-normal leading-none">
+            <span class="text-xl font-bold leading-none">
               {formatTime(times.start.h)}
             </span>
           </button>
-          <span class="text-2xl font-normal mx-1 mb-1">:</span>
+          <span class="text-lg font-light text-muted-foreground/40 mx-0.5">
+            :
+          </span>
           <button
             type="button"
             class={cn(
-              "flex justify-center items-center h-[56px] w-[48px] rounded-lg cursor-pointer transition-colors",
-              activeTarget === "start" && view === "minutes" ? "bg-primary/20 text-foreground/50" : "bg-muted/50 text-foreground"
+              "flex justify-center items-center h-10 w-10 rounded-lg cursor-pointer transition-all duration-200",
+              activeTarget === "start" && view === "minutes" ? "bg-secondary text-secondary-foreground shadow-sm" : "bg-transparent text-foreground/70"
             )}
             onclick={() => { activeTarget = "start"; view = "minutes"; }}
           >
-            <span class="text-2xl font-normal leading-none">
+            <span class="text-xl font-bold leading-none">
               {formatTime(times.start.m)}
             </span>
           </button>
         </div>
 
-        <span class="text-xl text-muted-foreground mx-1 mb-1">—</span>
+        <span class="text-muted-foreground/30 font-light text-xs">—</span>
 
         <!-- End -->
-        <div class="flex items-center">
+        <div
+          class="flex items-center p-0.5 rounded-xl bg-muted/20 border border-border"
+        >
           <button
             type="button"
             class={cn(
-              "flex justify-center items-center h-[56px] w-[48px] rounded-lg cursor-pointer transition-colors",
-              activeTarget === "end" && view === "hours" ? "bg-primary/20 text-foreground/50" : "bg-muted/50 text-foreground"
+              "flex justify-center items-center h-10 w-10 rounded-lg cursor-pointer transition-all duration-200",
+              activeTarget === "end" && view === "hours" ? "bg-secondary text-secondary-foreground shadow-sm" : "bg-transparent text-foreground/70"
             )}
             onclick={() => { activeTarget = "end"; view = "hours"; }}
           >
-            <span class="text-2xl font-normal leading-none">
+            <span class="text-xl font-bold leading-none">
               {formatTime(times.end.h)}
             </span>
           </button>
-          <span class="text-2xl font-normal mx-1 mb-1">:</span>
+          <span class="text-lg font-light text-muted-foreground/40 mx-0.5">
+            :
+          </span>
           <button
             type="button"
             class={cn(
-              "flex justify-center items-center h-[56px] w-[48px] rounded-lg cursor-pointer transition-colors",
-              activeTarget === "end" && view === "minutes" ? "bg-primary/20 text-foreground/50" : "bg-muted/50 text-foreground"
+              "flex justify-center items-center h-10 w-10 rounded-lg cursor-pointer transition-all duration-200",
+              activeTarget === "end" && view === "minutes" ? "bg-secondary text-secondary-foreground shadow-sm" : "bg-transparent text-foreground/70"
             )}
             onclick={() => { activeTarget = "end"; view = "minutes"; }}
           >
-            <span class="text-2xl font-normal leading-none">
+            <span class="text-xl font-bold leading-none">
               {formatTime(times.end.m)}
             </span>
           </button>
@@ -186,7 +205,7 @@ function handleSave() {
   {/if}
 
   <!-- Content: Dial or Input -->
-  <div class="flex justify-center min-h-[220px]">
+  <div class="flex justify-center items-center min-h-[200px]">
     {#if mode === "dial"}
       <TimePickerDial
         bind:hours={times[activeTarget].h}
@@ -194,36 +213,33 @@ function handleSave() {
         bind:view
       />
     {:else}
-      <div class="flex items-start pt-4">
+      <div class="flex items-center w-full">
         <TimePickerInput {isRange} bind:times bind:activeTarget bind:view />
       </div>
     {/if}
   </div>
 
   <!-- Footer: Кнопки действий -->
-  <div class="flex justify-between items-center mt-6">
+  <div
+    class="flex justify-between items-center mt-6 pt-3 border-t border-border"
+  >
     <Button
       variant="ghost"
       size="icon"
-      class="rounded-full text-muted-foreground hover:text-foreground"
+      class="rounded-xl text-muted-foreground hover:bg-muted/50 hover:text-secondary transition-all"
       onclick={() => (mode = mode === "dial" ? "input" : "dial")}
     >
       {#if mode === "dial"}
-        <Keyboard class="size-6" />
+        <Keyboard class="size-4" />
       {:else}
-        <Clock class="size-6" />
+        <Clock class="size-4" />
       {/if}
       <span class="sr-only">Переключить режим ввода</span>
     </Button>
-    <div class="flex gap-2">
+
+    <div class="flex gap-1.5">
       <Button
-        class="bg-secondary! text-primary font-medium px-4 rounded-[6px]"
-        onclick={onCancel}
-      >
-        Отмена
-      </Button>
-      <Button
-        class="bg-secondary! text-primary font-medium px-4 rounded-[6px]"
+        class="bg-secondary text-secondary-foreground text-[10px] font-black uppercase tracking-widest px-4 rounded-[6px] shadow-lg hover:shadow-secondary/20 transition-all active:scale-95"
         onclick={handleSave}
       >
         Применить
