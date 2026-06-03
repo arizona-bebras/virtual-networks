@@ -76,9 +76,7 @@ function handleSave() {
 }
 </script>
 
-<div
-  class="flex flex-col w-[300px] p-5 bg-background rounded-[24px] shadow-lg font-sans select-none"
->
+<div class="flex flex-col w-[280px] p-2  font-sans select-none">
   <!-- Header: Заголовок -->
   <div class="flex justify-between items-center mb-3 min-h-[28px]">
     <span class="text-sm font-medium tracking-wide text-muted-foreground">

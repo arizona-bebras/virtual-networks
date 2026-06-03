@@ -40,7 +40,7 @@ function toggleEntity(value: string) {
 }
 </script>
 
-<div class="flex flex-col gap-4 p-2">
+<div class="flex flex-col gap-4">
   {#if selectedList.length > 0}
     <div class="space-y-2">
       <p
@@ -53,7 +53,7 @@ function toggleEntity(value: string) {
           {@const Icon = item.icon}
           <button
             type="button"
-            class="flex w-full items-center gap-2 rounded-md p-2 text-sm transition-colors hover:bg-accent"
+            class="flex w-full items-center gap-2 rounded-md p-1 text-sm transition-colors hover:bg-accent"
             onclick={() => toggleEntity(item.value)}
           >
             <Icon class="size-4 text-muted-foreground" />
@@ -78,7 +78,7 @@ function toggleEntity(value: string) {
         {#each availableList as item}
           {@const Icon = item.icon}
           <button
-            class="flex w-full items-center gap-2 rounded-md p-2 text-sm transition-colors hover:bg-accent"
+            class="flex w-full items-center gap-2 rounded-md p-1 text-sm transition-colors hover:bg-accent"
             type="button"
             onclick={() => toggleEntity(item.value)}
           >

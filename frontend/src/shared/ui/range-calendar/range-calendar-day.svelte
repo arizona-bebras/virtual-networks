@@ -16,9 +16,9 @@ let {
 		"not-data-selected:hover:bg-accent/50 not-data-selected:hover:text-accent-foreground",
 		"[&[data-today]:not([data-selected])]:bg-accent [&[data-today]:not([data-selected])]:text-accent-foreground [&[data-today][data-disabled]]:text-muted-foreground data-[range-middle]:rounded-none",
 		// range Start
-		"data-[range-start]:bg-secondary data-[range-start]:text-primary-foreground data-[range-start]:hover:text-primary-foreground",
+		"data-[range-start]:bg-secondary data-[range-start]:text-primary-foreground data-[range-start]:hover:text-primary-foreground data-[range-start]: rounded-[6px]",
 		// range End
-		"data-[range-end]:bg-secondary data-[range-end]:text-primary-foreground data-[range-end]:hover:text-primary-foreground",
+		"data-[range-end]:bg-secondary data-[range-end]:text-primary-foreground data-[range-end]:hover:text-primary-foreground data-[range-end]: rounded-[6px]",
 		// Outside months
 		"[&[data-outside-month]:not([data-selected])]:text-muted-foreground [&[data-outside-month]:not([data-selected])]:hover:text-accent-foreground",
 		// Disabled

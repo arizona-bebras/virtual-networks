@@ -23,4 +23,4 @@ $effect(() => {
 });
 </script>
 
-<RangeCalendar bind:value class="rounded-md border" />
+<RangeCalendar bind:value />

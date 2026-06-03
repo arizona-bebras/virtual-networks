@@ -43,7 +43,7 @@ function toggleAction(action: string) {
 }
 </script>
 
-<div class="flex flex-col gap-4 p-2">
+<div class="flex flex-col gap-4">
   {#if selectedList.length > 0}
     <div class="space-y-2">
       <p
@@ -69,7 +69,7 @@ function toggleAction(action: string) {
       </p>
     {/if}
     {#if availableList.length > 0}
-      <div class="flex flex-col gap-1">
+      <div class="flex  gap-1">
         {#each availableList as action}
           <EventActionCell {action} onclick={() => toggleAction(action)} />
         {/each}

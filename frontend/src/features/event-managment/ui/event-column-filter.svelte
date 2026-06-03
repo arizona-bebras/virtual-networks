@@ -69,7 +69,7 @@ let filterValue = $derived(
     {:else}
       <Popover.Root bind:open>
         <Popover.Trigger><Funnel class="size-3 p-0" /></Popover.Trigger>
-        <Popover.Content class="w-80">
+        <Popover.Content class="w-fit">
           {#if type === "date"}
             <RangeCalendar {column} />
           {:else if type === "time"}
