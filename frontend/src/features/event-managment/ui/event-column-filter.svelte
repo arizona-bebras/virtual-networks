@@ -12,6 +12,7 @@ import UserFilterPopover from "$entities/user/ui/user-filter-popover.svelte";
 import type { FilterValueWithId } from "$features/device-management/model/types";
 import ActionFilter from "$features/event-managment/ui/filters/action-filter.svelte";
 import RangeCalendar from "$features/event-managment/ui/filters/date-filter.svelte";
+import EntityFilter from "$features/event-managment/ui/filters/entity-filter.svelte";
 import TimePicker from "$features/event-managment/ui/filters/time-filter.svelte";
 import * as Popover from "$shared/ui/popover/index.js";
 
@@ -75,6 +76,8 @@ let filterValue = $derived(
             <TimePicker {column} bind:open />
           {:else if type === "action"}
             <ActionFilter {column} />
+          {:else if type === "entities"}
+            <EntityFilter {column} />
           {/if}
           <!-- <p class="text-sm text-muted-foreground">Базовый фильтр</p> -->
         </Popover.Content>

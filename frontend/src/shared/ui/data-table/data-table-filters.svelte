@@ -8,7 +8,9 @@ import { X } from "@lucide/svelte";
 import type { Table } from "@tanstack/table-core";
 import { fade } from "svelte/transition";
 import EventActionCell from "$entities/event/ui/action-cell.svelte";
+import EntityBadge from "$entities/event/ui/entity-badge.svelte";
 import TagBadge from "$entities/tag/ui/tag-badge.svelte";
+import EntityCell from "$features/event-managment/ui/event-entity-cell.svelte";
 import { Badge } from "$shared/ui/badge/index.js";
 import { Button } from "$shared/ui/button/index.js";
 
@@ -82,13 +84,27 @@ function getFilterLabel(columnName: string, value: unknown): string {
     {#each columnFilters as filter (filter.id)}
       {@const column = table.getColumn(filter.id)}
       {@const Icon = column?.columnDef.meta?.icon}
-      {console.log(getFilterLabel(filter.id, filter.value))}
+      {console.log(filter.id, filter.value)}
       <!-- Обработка тегов и массива фильтров -->
       {#if Array.isArray(filter.value)}
-        {#if filter.id === "action"}
-          {#each filter.value as value}
+        {#each filter.value as value}
+          {#if filter.id === "action"}
             <EventActionCell action={value} />
-          <!-- <button
+          {:else if filter.id === "entities"}
+            <EntityBadge
+              entityType={value}
+              // onclick={() => {
+              //   const newValue = (filter.value as string[]).filter((v) => v !== value);
+              //   column?.setFilterValue(newValue.length > 0 ? newValue : undefined);
+              // }}
+            />
+          {:else}
+            {#each filter.value as value}
+              <TagBadge tag={value} isIcon={true} />
+            {/each}
+          {/if}
+        {/each}
+      <!-- <button
               type="button"
               class="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
               onclick={() => {
@@ -99,12 +115,6 @@ function getFilterLabel(columnName: string, value: unknown): string {
               <X class="size-3 text-muted-foreground hover:text-foreground" />
               <span class="sr-only">Удалить фильтр</span>
             </button> -->
-          {/each}
-        {:else}
-          {#each filter.value as value}
-            <TagBadge tag={value} isIcon={true} />
-          {/each}
-        {/if}
       {:else}
         <Badge
           variant="secondary"
