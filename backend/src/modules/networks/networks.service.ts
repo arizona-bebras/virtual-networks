@@ -317,10 +317,29 @@ export class NetworksService {
     }
 
     const ip = new Address4(ipString);
+    const subnet = new Address4(network.cidr);
 
-    if (!ip.isInSubnet(new Address4(network.cidr))) {
+    if (
+      !ip.isInSubnet(subnet) ||
+      ip === subnet.startAddress() ||
+      ip === subnet.endAddress()
+    ) {
       return {
         status: "outOfSubnet",
+      };
+    }
+
+    if (ip.address === subnet.startAddress().address) {
+      return {
+        status: "alreadyInUse",
+        ownerHostName: "_network_address",
+      };
+    }
+
+    if (ip.address === subnet.endAddress().address) {
+      return {
+        status: "alreadyInUse",
+        ownerHostName: "_broadcast",
       };
     }
 

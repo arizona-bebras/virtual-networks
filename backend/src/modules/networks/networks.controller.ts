@@ -192,6 +192,7 @@ export class NetworksController {
   }
 
   @Get(":network_id/check_ip")
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @ApiOperation({ summary: "Проверить занятость ip адреса в сети" })
   @ApiParam({
