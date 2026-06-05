@@ -9,6 +9,7 @@ import {
 import type { CreateNetworkDto } from "common/dto/network/create-network";
 import type { NetworkEnterCredentialsDto } from "common/dto/network/enter-credentials";
 import { NetworkDto } from "common/dto/network/index";
+import type { IpAddressStatusDto } from "common/dto/network/ip-address-status";
 import type { NetworkUsersDto } from "common/dto/network/network-users";
 import type { UpdateNetworkDto } from "common/dto/network/update-network";
 import { sql } from "drizzle-orm";
@@ -287,5 +288,72 @@ export class NetworksService {
       }
       throw new BadRequestException(`The subnet is full`);
     });
+  }
+
+  async checkIpAvailability(
+    networkId: string,
+    ipString: string,
+  ): Promise<IpAddressStatusDto> {
+    const network = await this.db.query.networks.findFirst({
+      where: {
+        id: networkId,
+      },
+      with: {
+        devices: {
+          columns: {
+            name: true,
+            ip: true,
+          },
+        },
+      },
+    });
+
+    if (!network) {
+      throw new NotFoundException("Network not found");
+    }
+
+    if (!Address4.isValid(ipString)) {
+      throw new BadRequestException("Invalid ip address input");
+    }
+
+    const ip = new Address4(ipString);
+    const subnet = new Address4(network.cidr);
+
+    if (
+      !ip.isInSubnet(subnet) ||
+      ip === subnet.startAddress() ||
+      ip === subnet.endAddress()
+    ) {
+      return {
+        status: "outOfSubnet",
+      };
+    }
+
+    if (ip.address === subnet.startAddress().address) {
+      return {
+        status: "alreadyInUse",
+        ownerHostName: "_network_address",
+      };
+    }
+
+    if (ip.address === subnet.endAddress().address) {
+      return {
+        status: "alreadyInUse",
+        ownerHostName: "_broadcast",
+      };
+    }
+
+    for (const host of network.devices) {
+      if (host.ip === ipString) {
+        return {
+          status: "alreadyInUse",
+          ownerHostName: host.name,
+        };
+      }
+    }
+
+    return {
+      status: "available",
+    };
   }
 }

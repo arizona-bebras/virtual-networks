@@ -92,6 +92,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/networks/{network_id}/check_ip": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Проверить занятость ip адреса в сети */
+    get: operations["NetworksController_checkIpAvailability"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/networks/{network_id}/devices": {
     parameters: {
       query?: never;
@@ -307,6 +324,15 @@ export interface components {
       description?: string;
       /** Format: cidrv4 */
       cidr: string;
+    };
+    IpAddressStatusDto: {
+      /**
+       * @description The status of the address in the network
+       * @enum {string}
+       */
+      status: "available" | "alreadyInUse" | "outOfSubnet";
+      /** @description The name of the host that owns the address, if address is already in use */
+      ownerHostName?: string | null;
     };
     CreateDeviceDto: {
       /** @description The name of the device */
@@ -687,6 +713,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
+        /** @description UUID сети */
         network_id: string;
       };
       cookie?: never;
@@ -705,6 +732,46 @@ export interface operations {
         };
       };
       /** @description Сеть переполнена */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Сети с таким network_id не существует */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  NetworksController_checkIpAvailability: {
+    parameters: {
+      query: {
+        /** @description ip адрес, статус которого нужно узнать */
+        ip: string;
+      };
+      header?: never;
+      path: {
+        /** @description UUID сети */
+        network_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Информация о статусе адреса получена */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["IpAddressStatusDto"];
+        };
+      };
+      /** @description Передан невалидный ip адрес */
       400: {
         headers: {
           [name: string]: unknown;
@@ -857,10 +924,10 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
+        /** @description UUID сети */
+        network_id: string;
         /** @description UUID устройства */
         device_id: string;
-        /** @description UUID сети */
-        network_id: unknown;
       };
       cookie?: never;
     };
@@ -1202,6 +1269,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
+        network_id: string;
         /** @description UUID правила */
         rule_id: string;
       };
@@ -1234,6 +1302,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
+        network_id: string;
         /** @description UUID правила */
         rule_id: string;
       };
