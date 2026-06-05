@@ -14,6 +14,6 @@ export const PeerStateSchema = createInsertSchema(peerStates, {
   bytesReceived: () => z.string().describe("Count of the received bytes"),
 
   bytesSent: () => z.string().describe("Count of the sent bytes"),
-}).omit({ id: true, deviceId: true, updatedAt: true });
+}).omit({ id: true, deviceId: true, networkId: true, updatedAt: true });
 
 export type PeerState = z.infer<typeof PeerStateSchema>;

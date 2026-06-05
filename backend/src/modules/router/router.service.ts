@@ -5,7 +5,6 @@ import {
   ConfigurationUpdateReason,
   PeerConnectionState,
   type ProtocolInstanceConfig,
-  type ReportRouterEventsResponse,
   type RouterConfiguration,
   type RouterConfigurationUpdate,
   type RouterEvent,
@@ -199,16 +198,15 @@ export class RouterService {
 
     await this.db
       .insert(schema.peerStates)
-      .values({ ...payload, deviceId: peerData.peerId })
+      .values({
+        ...payload,
+        deviceId: peerData.peerId,
+        networkId: peerData.networkId,
+      })
       .onConflictDoUpdate({
         target: schema.peerStates.deviceId,
         set: payload,
       });
-  }
-
-  async getAcceptedEventsCount(): Promise<ReportRouterEventsResponse> {
-    const count = await this.db.$count(schema.peerStates);
-    return { acceptedEvents: count };
   }
 }
 

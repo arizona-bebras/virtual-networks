@@ -1,7 +1,7 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "414d2549-f343-4afb-b6c0-4238015e5bc6",
+  "id": "5e5afee7-271f-4ef1-884f-83906f77774e",
   "prevIds": ["00000000-0000-0000-0000-000000000000"],
   "ddl": [
     {
@@ -699,6 +699,19 @@
       "table": "peer_states"
     },
     {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "network_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "peer_states"
+    },
+    {
       "type": "timestamp",
       "typeSchema": null,
       "notNull": true,
@@ -1329,6 +1342,19 @@
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "peer_states_device_id_devices_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "peer_states"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["network_id"],
+      "schemaTo": "public",
+      "tableTo": "networks",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "peer_states_network_id_networks_id_fkey",
       "entityType": "fks",
       "schema": "public",
       "table": "peer_states"

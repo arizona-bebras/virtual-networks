@@ -149,6 +149,11 @@ export const peerStates = pgTable("peer_states", {
     })
     .notNull()
     .unique(),
+  networkId: uuid(`network_id`)
+    .references(() => networks.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
   updatedAt: timestamp(`updated_at`)
     .notNull()
     .$onUpdate(() => new Date()),

@@ -13,6 +13,7 @@ import { RouterService } from "./router.service.js";
 @RouterControlPlaneControllerMethods()
 export class RouterController implements RouterControlPlaneController {
   constructor(private readonly routerService: RouterService) {}
+
   watchRouterConfiguration(): Observable<RouterConfigurationUpdate> {
     return this.routerService.getEventsObservableStream();
   }
@@ -20,14 +21,15 @@ export class RouterController implements RouterControlPlaneController {
   async reportRouterEvents(
     requestsStream: Observable<RouterEvent>,
   ): Promise<ReportRouterEventsResponse> {
+    let events_count = 0;
     await lastValueFrom(
       requestsStream.pipe(
-        concatMap((event) => this.routerService.writeRouterEvent(event)),
+        concatMap((event) => {
+          events_count += 1;
+          return this.routerService.writeRouterEvent(event);
+        }),
       ),
     );
-
-    const acceptedEvents = await this.routerService.getAcceptedEventsCount();
-
-    return acceptedEvents;
+    return { acceptedEvents: events_count };
   }
 }

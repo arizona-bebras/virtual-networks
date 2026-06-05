@@ -1012,7 +1012,7 @@ export interface operations {
         /** @description UUID устройства */
         device_id: string;
         /** @description UUID сети */
-        network_id: unknown;
+        network_id: string;
       };
       cookie?: never;
     };

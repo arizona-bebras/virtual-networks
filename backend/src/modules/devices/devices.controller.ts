@@ -253,8 +253,11 @@ export class DevicesController {
     type: PeerStateDto,
   })
   @ApiResponse({ status: 404, description: "Устройство не найдено" })
-  async getDeviceStatus(@Param("device_id") id: string): Promise<PeerStateDto> {
-    const status = await this.devicesService.getStatus(id);
+  async getDeviceStatus(
+    @Param("device_id") id: string,
+    @Param("network_id") networkId: string,
+  ): Promise<PeerStateDto> {
+    const status = await this.devicesService.getStatus(id, networkId);
 
     return status;
   }

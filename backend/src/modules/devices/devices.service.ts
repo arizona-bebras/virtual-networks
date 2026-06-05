@@ -275,7 +275,7 @@ export class DevicesService {
       );
   }
 
-  async getStatus(deviceId: string): Promise<PeerStateDto> {
+  async getStatus(deviceId: string, networkId: string): Promise<PeerStateDto> {
     const status = await this.db.query.peerStates.findFirst({
       columns: {
         isOnline: true,
@@ -285,6 +285,7 @@ export class DevicesService {
       },
       where: {
         deviceId,
+        networkId,
       },
     });
 
