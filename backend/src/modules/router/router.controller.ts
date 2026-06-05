@@ -2,10 +2,11 @@ import { Controller } from "@nestjs/common";
 import {
   type ReportRouterEventsResponse,
   type RouterConfigurationUpdate,
+  type RouterEvent,
   RouterControlPlaneController,
   RouterControlPlaneControllerMethods,
 } from "proto";
-import { Observable } from "rxjs";
+import { Observable, concatMap, lastValueFrom } from "rxjs";
 import { RouterService } from "./router.service.js";
 
 @Controller()
@@ -16,12 +17,17 @@ export class RouterController implements RouterControlPlaneController {
     return this.routerService.getEventsObservableStream();
   }
 
-  reportRouterEvents():
-    | Promise<ReportRouterEventsResponse>
-    | Observable<ReportRouterEventsResponse>
-    | ReportRouterEventsResponse {
-    return {
-      acceptedEvents: 0,
-    };
+  async reportRouterEvents(
+    requestsStream: Observable<RouterEvent>,
+  ): Promise<ReportRouterEventsResponse> {
+    await lastValueFrom(
+      requestsStream.pipe(
+        concatMap(event => this.routerService.writeRouterEvent(event))
+      )
+    );
+  
+    const acceptedEvents = await this.routerService.getAcceptedEventsCount();
+    
+    return acceptedEvents;
   }
 }
