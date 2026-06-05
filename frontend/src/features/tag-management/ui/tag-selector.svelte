@@ -59,7 +59,7 @@ function toggleTag(tag: FilterValueWithId) {
 
 {#if selectedTags.length > 0}
   <div class="space-y-2">
-    <p
+    и <p
       class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
     >
       Выбранные

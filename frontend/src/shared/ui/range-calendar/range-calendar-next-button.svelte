@@ -1,0 +1,36 @@
+<script lang="ts">
+import { RangeCalendar as RangeCalendarPrimitive } from "bits-ui";
+import CaretRightIcon from "phosphor-svelte/lib/CaretRight";
+import { cn } from "$shared/lib/utils.js";
+import { type ButtonVariant, buttonVariants } from "$shared/ui/button/index.js";
+
+let {
+  ref = $bindable(null),
+  class: className,
+  children,
+  variant = "ghost",
+  ...restProps
+}: RangeCalendarPrimitive.NextButtonProps & {
+  variant?: ButtonVariant;
+} = $props();
+</script>
+
+{#snippet Fallback()}
+  <CaretRightIcon class={cn("size-4", className)} />
+{/snippet}
+
+<RangeCalendarPrimitive.NextButton
+  bind:ref
+  class={cn(
+		buttonVariants({ variant }),
+		"size-(--cell-size) bg-transparent p-0 select-none disabled:opacity-50 rtl:rotate-180",
+		className
+	)}
+  {...restProps}
+>
+  {#if children}
+    {@render children?.()}
+  {:else}
+    {@render Fallback()}
+  {/if}
+</RangeCalendarPrimitive.NextButton>

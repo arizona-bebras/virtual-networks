@@ -24,6 +24,8 @@ let displayingPageName = $derived.by(() => {
     return "Правила";
   } else if (currentPageName === "tags") {
     return "Теги";
+  } else if (currentPageName === "events") {
+    return "События";
   } else {
     return "Конфигурация";
   }

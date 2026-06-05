@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   LogOut,
   Monitor,
+  NotebookText,
   PanelRightClose,
   Plus,
   Settings,
@@ -64,6 +65,11 @@ const navItems = $derived([
     title: "Конфигурация",
     url: `/app/network/${currentNetworkUUID}/config`,
     icon: Settings,
+  },
+  {
+    title: "События",
+    url: `/app/network/${currentNetworkUUID}/events`,
+    icon: NotebookText,
   },
 ]);
 async function handleLogout() {

@@ -1,6 +1,7 @@
 import {
   LayoutDashboard,
   Monitor,
+  NotebookText,
   Settings,
   ShieldAlert,
   Tag,
@@ -19,6 +20,8 @@ export function getNavItemIcon(navItemTitle: string) {
       return Tag;
     case "configuration":
       return Settings;
+    case "events":
+      return NotebookText;
     default:
       return LayoutDashboard;
   }

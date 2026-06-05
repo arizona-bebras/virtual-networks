@@ -3,17 +3,15 @@ import { createQuery } from "@tanstack/svelte-query";
 import type { ColumnFiltersState, Table } from "@tanstack/table-core";
 import type { DeviceRelations } from "common/schemas/device/index";
 import { Debounced } from "runed";
-import { goto } from "$app/navigation";
-import { page } from "$app/state";
 import Header from "$entities/table-page/ui/Header.svelte";
 import { columns } from "$features/device-management/model/device-table-columns.js";
 import DeviceDialog from "$features/device-management/ui/device-dialog.svelte";
+import SearchParamsHandler from "$features/device-management/ui/device-param-handler.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import DataTable from "$shared/ui/data-table/data-table.svelte";
 import { deviceQuery } from "../api/query";
 
 let isAddDeviceDialogOpen = $state(false);
-let isEditingDialogOpen = $state(false);
 
 let currentNetworkId = $derived(getNetworkId().id);
 let globalFilter = $state("");
@@ -42,25 +40,6 @@ const userDevices = createQuery(() =>
   }),
 );
 
-let deviceIdSearchParam = $derived(page.url.searchParams.get("editDevice"));
-let editingDevice = $derived(
-  userDevices.data?.find((d) => d.id === deviceIdSearchParam),
-);
-
-$effect(() => {
-  if (deviceIdSearchParam) {
-    isEditingDialogOpen = true;
-  }
-});
-
-$effect(() => {
-  if (!isEditingDialogOpen && deviceIdSearchParam) {
-    const newUrl = new URL(page.url);
-    newUrl.searchParams.delete("editDevice");
-    goto(newUrl, { replaceState: true, keepFocus: true });
-  }
-});
-
 // TODO: в ожидании реализации bulk delete на бэке
 // biome-ignore lint/correctness/noUnusedVariables: <waiting for implementation>
 function bulkRemoveSelected() {
@@ -84,12 +63,7 @@ function bulkRemoveSelected() {
     description="Заполните все необходимые поля, чтобы добавить новое устройство в сеть"
   />
 
-  <DeviceDialog
-    bind:open={isEditingDialogOpen}
-    title="Редактирование устройства"
-    device={editingDevice}
-    description="Измените параметры своего устройства"
-  />
+  <SearchParamsHandler devices={userDevices.data} bind:globalFilter />
 
   <DataTable
     {columns}
