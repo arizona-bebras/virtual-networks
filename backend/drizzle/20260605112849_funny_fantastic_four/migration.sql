@@ -69,7 +69,7 @@ CREATE TABLE "peer_states" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	"is_online" boolean NOT NULL,
 	"last_handshake_time" timestamp,
-	"bytes_recived" bigint NOT NULL,
+	"bytes_received" bigint NOT NULL,
 	"bytes_sent" bigint NOT NULL,
 	"device_id" uuid NOT NULL UNIQUE,
 	"updated_at" timestamp NOT NULL

@@ -2,11 +2,11 @@ import { Controller } from "@nestjs/common";
 import {
   type ReportRouterEventsResponse,
   type RouterConfigurationUpdate,
-  type RouterEvent,
   RouterControlPlaneController,
   RouterControlPlaneControllerMethods,
+  type RouterEvent,
 } from "proto";
-import { Observable, concatMap, lastValueFrom } from "rxjs";
+import { concatMap, lastValueFrom, Observable } from "rxjs";
 import { RouterService } from "./router.service.js";
 
 @Controller()
@@ -22,12 +22,12 @@ export class RouterController implements RouterControlPlaneController {
   ): Promise<ReportRouterEventsResponse> {
     await lastValueFrom(
       requestsStream.pipe(
-        concatMap(event => this.routerService.writeRouterEvent(event))
-      )
+        concatMap((event) => this.routerService.writeRouterEvent(event)),
+      ),
     );
-  
+
     const acceptedEvents = await this.routerService.getAcceptedEventsCount();
-    
+
     return acceptedEvents;
   }
 }

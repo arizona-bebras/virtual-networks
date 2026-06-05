@@ -1,12 +1,12 @@
 import { defineRelations } from "drizzle-orm";
 import {
+  bigint,
   boolean,
   bytea,
   cidr,
   index,
   inet,
   integer,
-  bigint,
   pgEnum,
   pgTable,
   primaryKey,
@@ -141,7 +141,7 @@ export const peerStates = pgTable("peer_states", {
   id: uuid(`id`).primaryKey().defaultRandom(),
   isOnline: boolean(`is_online`).notNull(),
   lastHandshakeTime: timestamp(`last_handshake_time`),
-  bytesRecived: bigint(`bytes_recived`, { mode: "bigint" }).notNull(),
+  bytesReceived: bigint(`bytes_received`, { mode: "bigint" }).notNull(),
   bytesSent: bigint(`bytes_sent`, { mode: "bigint" }).notNull(),
   deviceId: uuid(`device_id`)
     .references(() => devices.id, {

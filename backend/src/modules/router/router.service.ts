@@ -3,13 +3,13 @@ import { Address4 } from "ip-address";
 import {
   ChangedResource,
   ConfigurationUpdateReason,
+  PeerConnectionState,
   type ProtocolInstanceConfig,
+  type ReportRouterEventsResponse,
   type RouterConfiguration,
   type RouterConfigurationUpdate,
   type RouterEvent,
-  type ReportRouterEventsResponse,
   TrafficProtocol,
-  PeerConnectionState,
 } from "proto";
 import { concatWith, defer, from, map, Observable, Subject } from "rxjs";
 import { type Database, DRIZZLE } from "../../db/database.module.js";
@@ -178,13 +178,11 @@ export class RouterService {
     );
   }
 
-  async writeRouterEvent(
-    event: RouterEvent,
-  ) {
+  async writeRouterEvent(event: RouterEvent) {
     const peerData = event.wireguardConnection;
 
     if (!peerData) {
-      return
+      return;
     }
 
     const lastHandshakeTime = peerData.latestHandshakeAt
@@ -195,7 +193,7 @@ export class RouterService {
       isOnline:
         peerData.state === PeerConnectionState.PEER_CONNECTION_STATE_CONNECTED,
       lastHandshakeTime,
-      bytesRecived: BigInt(peerData.rxBytes),
+      bytesReceived: BigInt(peerData.rxBytes),
       bytesSent: BigInt(peerData.txBytes),
     };
 

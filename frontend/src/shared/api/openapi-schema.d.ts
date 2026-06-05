@@ -164,6 +164,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/networks/{network_id}/devices/{device_id}/status": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Узнать состояние устройтва в сети */
+    get: operations["DevicesController_getDeviceStatus"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/networks/{network_id}/tags": {
     parameters: {
       query?: never;
@@ -374,6 +391,15 @@ export interface components {
       clientPublicKey: string;
       /** @description base64 encoded qrcode image */
       qrCode: string;
+    };
+    PeerStateDto: {
+      /** @description The status of the device */
+      isOnline: boolean;
+      lastHandshakeTime?: (string | null) | null;
+      /** @description Count of the received bytes */
+      bytesReceived: string;
+      /** @description Count of the sent bytes */
+      bytesSent: string;
     };
     CreateTagDto: {
       /** @description The name of the tag */
@@ -857,10 +883,10 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
+        /** @description UUID сети */
+        network_id: string;
         /** @description UUID устройства */
         device_id: string;
-        /** @description UUID сети */
-        network_id: unknown;
       };
       cookie?: never;
     };
@@ -887,7 +913,9 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
+        /** @description UUID устройства */
         device_id: string;
+        /** @description UUID тега */
         tag_id: string;
         /** @description UUID сети */
         network_id: unknown;
@@ -917,7 +945,9 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
+        /** @description UUID устройства */
         device_id: string;
+        /** @description UUID тега */
         tag_id: string;
         /** @description UUID сети */
         network_id: unknown;
@@ -963,6 +993,38 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["DeviceCfgDto"];
+        };
+      };
+      /** @description Устройство не найдено */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  DevicesController_getDeviceStatus: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description UUID устройства */
+        device_id: string;
+        /** @description UUID сети */
+        network_id: unknown;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Состояние получено */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PeerStateDto"];
         };
       };
       /** @description Устройство не найдено */
@@ -1202,6 +1264,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
+        network_id: string;
         /** @description UUID правила */
         rule_id: string;
       };
@@ -1234,6 +1297,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
+        network_id: string;
         /** @description UUID правила */
         rule_id: string;
       };
