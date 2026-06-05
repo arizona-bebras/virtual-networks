@@ -23,6 +23,7 @@ import { AuthGuard, Session } from "@thallesp/nestjs-better-auth";
 import { CreateDeviceDto } from "common/dto/device/create-device";
 import { DeviceCfgDto } from "common/dto/device/device-cfg";
 import { DeviceRelationsDto } from "common/dto/device/index";
+import { PeerStateDto } from "common/dto/device/peer-state";
 import { UpdateDeviceDto } from "common/dto/device/update-device";
 import { Role } from "../../authorization/role.enum.js";
 import { Roles } from "../../authorization/roles.decorator.js";
@@ -171,6 +172,16 @@ export class DevicesController {
   @Post(":device_id/add_tag/:tag_id")
   @Roles(Role.Admin)
   @ApiOperation({ summary: "Добавить тег на устройство" })
+  @ApiParam({
+    name: "device_id",
+    description: "UUID устройства",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  })
+  @ApiParam({
+    name: "tag_id",
+    description: "UUID тега",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  })
   @ApiResponse({
     status: 201,
     description: "Тег успешно добавлен к устройству",
@@ -186,6 +197,16 @@ export class DevicesController {
   @Delete(":device_id/add_tag/:tag_id")
   @Roles(Role.Admin)
   @ApiOperation({ summary: "Удалить тег с устройства" })
+  @ApiParam({
+    name: "device_id",
+    description: "UUID устройства",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  })
+  @ApiParam({
+    name: "tag_id",
+    description: "UUID тега",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  })
   @ApiResponse({
     status: 204,
     description: "Тег успешно удален с устройства",
@@ -216,5 +237,28 @@ export class DevicesController {
     const config = await this.wireguardCfgService.genClientCfg(id);
 
     return config;
+  }
+
+  @Get(":device_id/status")
+  @Roles(Role.Admin, Role.User)
+  @ApiOperation({ summary: "Узнать состояние устройтва в сети" })
+  @ApiParam({
+    name: "device_id",
+    description: "UUID устройства",
+    example: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Состояние получено",
+    type: PeerStateDto,
+  })
+  @ApiResponse({ status: 404, description: "Устройство не найдено" })
+  async getDeviceStatus(
+    @Param("device_id") id: string,
+    @Param("network_id") networkId: string,
+  ): Promise<PeerStateDto> {
+    const status = await this.devicesService.getStatus(id, networkId);
+
+    return status;
   }
 }

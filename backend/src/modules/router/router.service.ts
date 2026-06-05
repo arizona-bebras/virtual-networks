@@ -3,13 +3,16 @@ import { Address4 } from "ip-address";
 import {
   ChangedResource,
   ConfigurationUpdateReason,
+  PeerConnectionState,
   type ProtocolInstanceConfig,
   type RouterConfiguration,
   type RouterConfigurationUpdate,
+  type RouterEvent,
   TrafficProtocol,
 } from "proto";
 import { concatWith, defer, from, map, Observable, Subject } from "rxjs";
 import { type Database, DRIZZLE } from "../../db/database.module.js";
+import * as schema from "../../db/schema.js";
 
 @Injectable()
 export class RouterService {
@@ -172,6 +175,38 @@ export class RouterService {
       }),
       concatWith(this.events.asObservable()),
     );
+  }
+
+  async writeRouterEvent(event: RouterEvent) {
+    const peerData = event.wireguardConnection;
+
+    if (!peerData) {
+      return;
+    }
+
+    const lastHandshakeTime = peerData.latestHandshakeAt
+      ? new Date(peerData.latestHandshakeAt.seconds * 1000)
+      : undefined;
+
+    const payload = {
+      isOnline:
+        peerData.state === PeerConnectionState.PEER_CONNECTION_STATE_CONNECTED,
+      lastHandshakeTime,
+      bytesReceived: BigInt(peerData.rxBytes),
+      bytesSent: BigInt(peerData.txBytes),
+      networkId: peerData.networkId,
+    };
+
+    await this.db
+      .insert(schema.peerStates)
+      .values({
+        ...payload,
+        deviceId: peerData.peerId,
+      })
+      .onConflictDoUpdate({
+        target: schema.peerStates.deviceId,
+        set: payload,
+      });
   }
 }
 

@@ -1,5 +1,6 @@
 import { defineRelations } from "drizzle-orm";
 import {
+  bigint,
   boolean,
   bytea,
   cidr,
@@ -136,6 +137,28 @@ export const devices = pgTable(
   (t) => [unique("network_ip_unique_idx").on(t.ip, t.networkId)],
 );
 
+export const peerStates = pgTable("peer_states", {
+  id: uuid(`id`).primaryKey().defaultRandom(),
+  isOnline: boolean(`is_online`).notNull(),
+  lastHandshakeTime: timestamp(`last_handshake_time`),
+  bytesReceived: bigint(`bytes_received`, { mode: "bigint" }).notNull(),
+  bytesSent: bigint(`bytes_sent`, { mode: "bigint" }).notNull(),
+  deviceId: uuid(`device_id`)
+    .references(() => devices.id, {
+      onDelete: "cascade",
+    })
+    .notNull()
+    .unique(),
+  networkId: uuid(`network_id`)
+    .references(() => networks.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
+  updatedAt: timestamp(`updated_at`)
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
+
 export const colorEnum = pgEnum("color", [
   "red",
   "green",
@@ -209,6 +232,7 @@ export const relations = defineRelations(
     rules,
     networkUsers,
     keys,
+    peerStates,
   },
   (r) => ({
     user: {
@@ -269,6 +293,10 @@ export const relations = defineRelations(
         from: r.devices.keysId,
         to: r.keys.id,
       }),
+      peerState: r.one.peerStates({
+        from: r.devices.id,
+        to: r.peerStates.deviceId,
+      }),
     },
 
     tags: {
@@ -299,6 +327,13 @@ export const relations = defineRelations(
       dest: r.one.tags({
         from: r.rules.destId,
         to: r.tags.id,
+      }),
+    },
+
+    peerStates: {
+      device: r.one.devices({
+        from: r.peerStates.deviceId,
+        to: r.devices.id,
       }),
     },
   }),

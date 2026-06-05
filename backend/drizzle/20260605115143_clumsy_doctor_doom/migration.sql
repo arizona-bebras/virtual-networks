@@ -65,6 +65,17 @@ CREATE TABLE "networks" (
 	"keys_id" uuid
 );
 --> statement-breakpoint
+CREATE TABLE "peer_states" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+	"is_online" boolean NOT NULL,
+	"last_handshake_time" timestamp,
+	"bytes_received" bigint NOT NULL,
+	"bytes_sent" bigint NOT NULL,
+	"device_id" uuid NOT NULL UNIQUE,
+	"network_id" uuid NOT NULL,
+	"updated_at" timestamp NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "rules" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	"source_id" uuid,
@@ -125,6 +136,8 @@ ALTER TABLE "network_users" ADD CONSTRAINT "network_users_network_id_networks_id
 ALTER TABLE "network_users" ADD CONSTRAINT "network_users_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "networks" ADD CONSTRAINT "networks_creator_id_user_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "user"("id");--> statement-breakpoint
 ALTER TABLE "networks" ADD CONSTRAINT "networks_keys_id_keys_id_fkey" FOREIGN KEY ("keys_id") REFERENCES "keys"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "peer_states" ADD CONSTRAINT "peer_states_device_id_devices_id_fkey" FOREIGN KEY ("device_id") REFERENCES "devices"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "peer_states" ADD CONSTRAINT "peer_states_network_id_networks_id_fkey" FOREIGN KEY ("network_id") REFERENCES "networks"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "rules" ADD CONSTRAINT "rules_source_id_tags_id_fkey" FOREIGN KEY ("source_id") REFERENCES "tags"("id");--> statement-breakpoint
 ALTER TABLE "rules" ADD CONSTRAINT "rules_dest_id_tags_id_fkey" FOREIGN KEY ("dest_id") REFERENCES "tags"("id");--> statement-breakpoint
 ALTER TABLE "rules" ADD CONSTRAINT "rules_network_id_networks_id_fkey" FOREIGN KEY ("network_id") REFERENCES "networks"("id") ON DELETE CASCADE;--> statement-breakpoint

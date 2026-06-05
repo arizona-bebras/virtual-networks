@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import type { CreateDeviceDto } from "common/dto/device/create-device";
+import type { PeerStateDto } from "common/dto/device/peer-state";
 import type { UpdateDeviceDto } from "common/dto/device/update-device";
 import type { DeviceRelations } from "common/schemas/device/index";
 import type { SQL } from "drizzle-orm";
@@ -272,5 +273,31 @@ export class DevicesService {
           eq(schema.devicesTags.tagId, tagId),
         ),
       );
+  }
+
+  async getStatus(deviceId: string, networkId: string): Promise<PeerStateDto> {
+    const status = await this.db.query.peerStates.findFirst({
+      columns: {
+        isOnline: true,
+        lastHandshakeTime: true,
+        bytesReceived: true,
+        bytesSent: true,
+      },
+      where: {
+        deviceId,
+        networkId,
+      },
+    });
+
+    if (!status) {
+      throw new NotFoundException("device not found");
+    }
+
+    return {
+      isOnline: status.isOnline,
+      lastHandshakeTime: status.lastHandshakeTime?.toISOString(),
+      bytesReceived: status.bytesReceived.toString(),
+      bytesSent: status.bytesSent.toString(),
+    };
   }
 }
