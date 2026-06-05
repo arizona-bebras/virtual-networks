@@ -194,6 +194,7 @@ export class RouterService {
       lastHandshakeTime,
       bytesReceived: BigInt(peerData.rxBytes),
       bytesSent: BigInt(peerData.txBytes),
+      networkId: peerData.networkId,
     };
 
     await this.db
@@ -201,7 +202,6 @@ export class RouterService {
       .values({
         ...payload,
         deviceId: peerData.peerId,
-        networkId: peerData.networkId,
       })
       .onConflictDoUpdate({
         target: schema.peerStates.deviceId,

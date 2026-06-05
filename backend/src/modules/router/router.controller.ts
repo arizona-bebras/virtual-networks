@@ -25,7 +25,9 @@ export class RouterController implements RouterControlPlaneController {
     await lastValueFrom(
       requestsStream.pipe(
         concatMap((event) => {
-          events_count += 1;
+          if (event.wireguardConnection) {
+            events_count += 1;
+          }
           return this.routerService.writeRouterEvent(event);
         }),
       ),
