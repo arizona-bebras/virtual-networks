@@ -192,8 +192,8 @@ export class RouterService {
       isOnline:
         peerData.state === PeerConnectionState.PEER_CONNECTION_STATE_CONNECTED,
       lastHandshakeTime,
-      bytesReceived: BigInt(peerData.rxBytes),
-      bytesSent: BigInt(peerData.txBytes),
+      bytesReceived: BigInt(peerData.rxBytes ?? 0),
+      bytesSent: BigInt(peerData.txBytes ?? 0),
       networkId: peerData.networkId,
     };
 

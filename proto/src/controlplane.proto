@@ -161,8 +161,8 @@ message WireGuardConnectionLog {
   string endpoint = 5;
   PeerConnectionState state = 6;
   google.protobuf.Timestamp latest_handshake_at = 7;
-  uint64 rx_bytes = 8;
-  uint64 tx_bytes = 9;
+  optional uint64 rx_bytes = 8;
+  optional uint64 tx_bytes = 9;
 }
 
 enum PeerConnectionState {

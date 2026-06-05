@@ -86,14 +86,16 @@ func connectionLogFromReport(report PeerConnectionReport) *controlplanepb.WireGu
 		state = controlplanepb.PeerConnectionState_PEER_CONNECTION_STATE_CONNECTED
 	}
 
+	rxBytes := report.RxBytes
+	txBytes := report.TxBytes
 	log := &controlplanepb.WireGuardConnectionLog{
 		NetworkId:          report.NetworkID,
 		ProtocolInstanceId: report.ProtocolInstanceID,
 		PeerId:             report.PeerID,
 		Endpoint:           report.Endpoint,
 		State:              state,
-		RxBytes:            report.RxBytes,
-		TxBytes:            report.TxBytes,
+		RxBytes:            &rxBytes,
+		TxBytes:            &txBytes,
 	}
 	if !report.LatestHandshakeAt.IsZero() {
 		log.LatestHandshakeAt = timestamppb.New(report.LatestHandshakeAt)
