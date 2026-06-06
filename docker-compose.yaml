@@ -36,6 +36,24 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: example
       POSTGRES_DB: postgres
+      ROUTER_ADDRESS: ${ROUTER_ADDRESS:-localhost}
+
+  router:
+    build:
+      context: .
+      dockerfile: router/Dockerfile
+    restart: always
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "51820:51820/udp"
+      - "9090:9090"
+    environment:
+      ROUTER_CONTROL_PLANE_ADDR: backend:50051
+      ROUTER_ID: ${ROUTER_ID:-local-router}
+      ROUTER_VERSION: ${ROUTER_VERSION:-compose}
+      ROUTER_PROMETHEUS_ADDR: :9090
 
 volumes:
   postgres:
