@@ -38,12 +38,27 @@ export const deviceQuery = {
           },
         );
         if (error) throw error;
-
-        // TODO: удалить после реализации стастуса на бэке
-        return data!.map((device) => ({
-          ...device,
-          status: "online" as const,
-        }));
+        return data;
       },
     }),
 };
+export const deviceStatus = (networkId: string, deviceId: string) =>
+  queryOptions({
+    queryKey: queryKeys.networkDeviceStatus(networkId, deviceId),
+    queryFn: async () => {
+      const { data, error } = await client.GET(
+        "/networks/{network_id}/devices/{device_id}/status",
+        {
+          params: {
+            path: {
+              network_id: networkId,
+              device_id: deviceId,
+            },
+          },
+        },
+      );
+      if (error) throw error;
+      return data;
+    },
+    refetchInterval: () => 30000,
+  });

@@ -78,7 +78,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     },
     cell: ({ row }) => {
       return renderComponent(DeviceStatusCell, {
-        status: row.getValue("status"),
+        deviceId: row.original.id,
       });
     },
     enableGlobalFilter: false,
