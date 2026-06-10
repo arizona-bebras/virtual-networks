@@ -22,6 +22,7 @@ import DeviceActionsCell from "../ui/device-actions-cell.svelte";
 import DeviceOwnerFilter from "../ui/device-owner-filter.svelte";
 import DeviceTagsFilter from "../ui/device-tags-filter.svelte";
 import type { DeviceTagsFilterValue } from "./types";
+import type { PeerState } from "common/schemas/device/peer-state";
 
 export const columns: ColumnDef<DeviceRelations>[] = [
   {
@@ -67,7 +68,8 @@ export const columns: ColumnDef<DeviceRelations>[] = [
     enableGlobalFilter: true,
   },
   {
-    accessorKey: "status",
+    id: "status",
+    accessorFn: (row: any) => row.status?.isOnline ?? false,
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
         label: "Статус",

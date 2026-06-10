@@ -1,12 +1,14 @@
 <script lang="ts">
-import { createQuery } from "@tanstack/svelte-query";
+import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import type { ColumnFiltersState, Table } from "@tanstack/table-core";
 import type { DeviceRelations } from "common/schemas/device/index";
+import type { PeerState } from "common/schemas/device/peer-state";
 import { Debounced } from "runed";
 import Header from "$entities/table-page/ui/Header.svelte";
 import { columns } from "$features/device-management/model/device-table-columns.js";
 import DeviceDialog from "$features/device-management/ui/device-dialog.svelte";
 import SearchParamsHandler from "$features/device-management/ui/device-param-handler.svelte";
+import { queryKeys } from "$shared/api/query-keys";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import DataTable from "$shared/ui/data-table/data-table.svelte";
 import { deviceQuery } from "../api/query";
@@ -18,7 +20,7 @@ let globalFilter = $state("");
 const debounced = new Debounced(() => globalFilter, 500);
 let columnFilters = $state<ColumnFiltersState>([]);
 let selectedIds = $state<string[]>([]);
-let table = $state<Table<DeviceRelations>>();
+let table = $state<Table<DeviceRelations & { status?: PeerState }>>();
 
 let tagsFilter = $derived(
   (
@@ -30,6 +32,8 @@ let tagsFilter = $derived(
 let onwerFilter = $derived(
   columnFilters.find((f) => f.id === "owner")?.value as string | undefined,
 );
+
+const queryClient = useQueryClient();
 
 const userDevices = createQuery(() =>
   deviceQuery.userDevices({
@@ -46,6 +50,15 @@ function bulkRemoveSelected() {
   console.log("Delete devices:", selectedIds);
   selectedIds = [];
 }
+
+const tableData = $derived(
+  userDevices.data?.map((device) => ({
+    ...device,
+    status: queryClient.getQueryData(
+      queryKeys.networkDeviceStatus(currentNetworkId, device.id),
+    ),
+  })) ?? [],
+);
 </script>
 
 <div class="p-2.5">
@@ -67,7 +80,7 @@ function bulkRemoveSelected() {
 
   <DataTable
     {columns}
-    data={userDevices.data || []}
+    data={tableData}
     bind:selectedIds
     bind:table
     onColumnFiltersChange={(filters) => (columnFilters = filters)}
