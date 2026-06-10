@@ -10,6 +10,7 @@ import {
 } from "@lucide/svelte";
 import type { ColumnDef } from "@tanstack/table-core";
 import type { DeviceRelations } from "common/schemas/device/index";
+import type { PeerState } from "common/schemas/device/peer-state";
 import type { Tag as TagType } from "common/schemas/tag/index";
 import DeviceDomainCell from "$entities/device/ui/device-domain-cell.svelte";
 import DeviceNameCell from "$entities/device/ui/device-name-cell.svelte";
@@ -22,9 +23,10 @@ import DeviceActionsCell from "../ui/device-actions-cell.svelte";
 import DeviceOwnerFilter from "../ui/device-owner-filter.svelte";
 import DeviceTagsFilter from "../ui/device-tags-filter.svelte";
 import type { DeviceTagsFilterValue } from "./types";
-import type { PeerState } from "common/schemas/device/peer-state";
 
-export const columns: ColumnDef<DeviceRelations>[] = [
+export type DeviceWithStatus = DeviceRelations & { status?: PeerState };
+
+export const columns: ColumnDef<DeviceWithStatus>[] = [
   {
     id: "select",
     header: ({ table }) => {
@@ -69,7 +71,7 @@ export const columns: ColumnDef<DeviceRelations>[] = [
   },
   {
     id: "status",
-    accessorFn: (row: any) => row.status?.isOnline ?? false,
+    accessorFn: (row) => row.status?.isOnline ?? false,
     header: ({ column }) => {
       return renderComponent(DataTableSortButton, {
         label: "Статус",

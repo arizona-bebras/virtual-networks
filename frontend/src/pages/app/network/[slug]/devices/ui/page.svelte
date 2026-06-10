@@ -1,11 +1,13 @@
 <script lang="ts">
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import type { ColumnFiltersState, Table } from "@tanstack/table-core";
-import type { DeviceRelations } from "common/schemas/device/index";
 import type { PeerState } from "common/schemas/device/peer-state";
 import { Debounced } from "runed";
 import Header from "$entities/table-page/ui/Header.svelte";
-import { columns } from "$features/device-management/model/device-table-columns.js";
+import {
+  columns,
+  type DeviceWithStatus,
+} from "$features/device-management/model/device-table-columns.js";
 import DeviceDialog from "$features/device-management/ui/device-dialog.svelte";
 import SearchParamsHandler from "$features/device-management/ui/device-param-handler.svelte";
 import { queryKeys } from "$shared/api/query-keys";
@@ -20,7 +22,7 @@ let globalFilter = $state("");
 const debounced = new Debounced(() => globalFilter, 500);
 let columnFilters = $state<ColumnFiltersState>([]);
 let selectedIds = $state<string[]>([]);
-let table = $state<Table<DeviceRelations & { status?: PeerState }>>();
+let table = $state<Table<DeviceWithStatus>>();
 
 let tagsFilter = $derived(
   (
@@ -54,7 +56,7 @@ function bulkRemoveSelected() {
 const tableData = $derived(
   userDevices.data?.map((device) => ({
     ...device,
-    status: queryClient.getQueryData(
+    status: queryClient.getQueryData<PeerState>(
       queryKeys.networkDeviceStatus(currentNetworkId, device.id),
     ),
   })) ?? [],
