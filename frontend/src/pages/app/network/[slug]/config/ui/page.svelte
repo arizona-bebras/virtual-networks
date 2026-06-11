@@ -9,6 +9,7 @@ import { untrack } from "svelte";
 import { z } from "zod";
 import { goto } from "$app/navigation";
 import type { ValidationResult } from "$features/config/model/types";
+import CidrInfo from "$features/config/ui/CidrInfo.svelte";
 import CidrInput from "$features/config/ui/CidrInput.svelte";
 import CidrSuggestion from "$features/config/ui/CidrSuggestion.svelte";
 import { queryKeys } from "$shared/api/query-keys";
@@ -143,20 +144,7 @@ function handleDelete() {
                 bind:value={$formData.cidr}
                 bind:info={cidrFieldInfo}
               />
-              {#if cidrFieldInfo}
-                {#if cidrFieldInfo?.isValid}
-                  <p>
-                    Диапазон хостов: {cidrFieldInfo.firstHost} - {cidrFieldInfo.lastHost}
-                  </p>
-                  <p>Размер сети: {cidrFieldInfo.hostCount}</p>
-                {:else}
-                  {@const error = cidrFieldInfo.error}
-                  <p class="text-sm font-medium text-destructive">
-                    Ближайшие цифры {error.suggestion.lower}
-                    {error.suggestion.upper === -1 ? '' : `и ${error.suggestion.upper}`}
-                  </p>
-                {/if}
-              {/if}
+              <CidrInfo info={cidrFieldInfo} />
               <div class="mt-1">
                 <CidrSuggestion bind:cidr={$formData.cidr} />
               </div>
