@@ -78,10 +78,11 @@ function getRecommendedRange(
 
   if (isContainedInPrivateRange(ip, maskInt)) return null;
 
-  if (maskInt <= 8) return privateRanges[0]!;
-  if (maskInt <= 12) return privateRanges[1]!;
+  if (maskInt >= 16) return privateRanges[2]!;
+  if (maskInt >= 12) return privateRanges[1]!;
+  if (maskInt >= 8) return privateRanges[0]!;
 
-  return privateRanges[2]!;
+  return null;
 }
 
 let recommendedRange = $derived(getRecommendedRange(cidr));
