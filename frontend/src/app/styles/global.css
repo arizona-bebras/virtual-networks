@@ -123,6 +123,23 @@ button {
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+@keyframes orbit {
+  0% {
+    transform: rotate(calc(var(--angle) * 1deg))
+      translateY(calc(var(--radius) * 1px)) rotate(calc(var(--angle) * -1deg));
+  }
+  100% {
+    transform: rotate(calc(var(--angle) * 1deg + 360deg))
+      translateY(calc(var(--radius) * 1px))
+      rotate(calc(var(--angle) * -1deg - 360deg));
+  }
+}
+
+.animate-orbit {
+  animation: orbit var(--duration, 20s) linear infinite;
+  animation-delay: calc(var(--delay, 0) * 1000ms);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

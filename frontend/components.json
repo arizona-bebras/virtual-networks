@@ -16,5 +16,8 @@
   "style": "lyra",
   "iconLibrary": "phosphor",
   "menuColor": "default",
-  "menuAccent": "subtle"
+  "menuAccent": "subtle",
+  "registries": {
+    "@sveltebits": "https://sveltebits.xyz/r/{name}.json"
+  }
 }
