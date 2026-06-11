@@ -3,6 +3,10 @@ import { Network, Plus } from "@lucide/svelte";
 import { createMutation, getQueryClientContext } from "@tanstack/svelte-query";
 import { CreateNetworkSchema } from "common/schemas/network/create-network";
 import { goto } from "$app/navigation";
+import type { ValidationResult } from "$features/config/model/types.js";
+import CidrInfo from "$features/config/ui/CidrInfo.svelte";
+import CidrInput from "$features/config/ui/CidrInput.svelte";
+import CidrSuggestion from "$features/config/ui/CidrSuggestion.svelte";
 import { queryKeys } from "$shared/api/query-keys";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import * as Dialog from "$shared/ui/dialog/index.js";
@@ -24,6 +28,7 @@ const query = createMutation(() =>
 );
 
 let { isDialogOpen = $bindable() }: { isDialogOpen: boolean } = $props();
+let cidrFieldInfo: ValidationResult | null = $state(null);
 
 let {
   forms: form,
@@ -44,7 +49,7 @@ let {
 </script>
 
 <Dialog.Root bind:open={isDialogOpen}>
-  <Dialog.Content>
+  <Dialog.Content class="w-120 max-w-[90vw]!">
     <Dialog.Header class="flex flex-row items items-center gap-2 mb-1">
       <div class="p-2 border border-muted-foreground bg-secondary rounded-full">
         <Network class="size-6.5 stroke-secondary-foreground" />
@@ -87,12 +92,16 @@ let {
       <Form.Field {form} name="cidr">
         <Form.Control>
           {#snippet children({ props })}
-            <Form.Label type="required">CIDR</Form.Label>
-            <Input
+            <CidrInput bind:value={$formData.cidr} bind:info={cidrFieldInfo} />
+            <CidrInfo info={cidrFieldInfo} />
+            <div class="mt-1">
+              <CidrSuggestion bind:cidr={$formData.cidr} />
+            </div>
+          <!-- <Input
               {...props}
               bind:value={$formData.cidr}
               placeholder="10.0.0.0/24"
-            />
+            /> -->
           {/snippet}
         </Form.Control>
 

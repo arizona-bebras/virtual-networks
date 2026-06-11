@@ -54,7 +54,7 @@ function handleMaskChange(mask: string) {
   <p class="text-destructive">*</p>
 </div>
 <div
-  class="flex bg-input/50 border gap-2 justify-between transition-colors focus-within:ring-2 focus-within:ring-offset-2 {info?.isValid ? 'border-slate-200 focus-within:ring-slate-950' : 'border-destructive/40 focus-within:ring-red-500'} mb-2 rounded-[6px]"
+  class="mb-2 flex justify-between gap-2 rounded-[6px] border border-input bg-input/30 transition-colors outline-none focus-within:border-ring focus-within:ring-1 focus-within:ring-ring/50 {info && !info.isValid ? 'border-destructive ring-1 ring-destructive/20 dark:border-destructive/50 dark:ring-destructive/40' : ''}"
 >
   <IpInput
     bind:ip={ipPart}

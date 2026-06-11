@@ -20,6 +20,13 @@ let {
 } = $props();
 
 const sidebar = useSidebar();
+const isMobileIconSidebar = $derived(
+  sidebar.isMobile && collapsible === "icon",
+);
+const state = $derived(isMobileIconSidebar ? "collapsed" : sidebar.state);
+const collapsibleState = $derived(
+  isMobileIconSidebar || sidebar.state === "collapsed" ? collapsible : "",
+);
 </script>
 
 {#if collapsible === 'none'}
@@ -33,7 +40,7 @@ const sidebar = useSidebar();
   >
     {@render children?.()}
   </div>
-{:else if sidebar.isMobile}
+{:else if sidebar.isMobile && collapsible !== 'icon'}
   <Sheet.Root
     bind:open={() => sidebar.openMobile, (v) => sidebar.setOpenMobile(v)}
     {...restProps}
@@ -60,9 +67,12 @@ const sidebar = useSidebar();
 {:else}
   <div
     bind:this={ref}
-    class="group peer hidden text-sidebar-foreground md:block"
-    data-state={sidebar.state}
-    data-collapsible={sidebar.state === 'collapsed' ? collapsible : ''}
+    class={cn(
+			'group peer text-sidebar-foreground',
+			isMobileIconSidebar ? 'block' : 'hidden md:block'
+		)}
+    data-state={state}
+    data-collapsible={collapsibleState}
     data-variant={variant}
     data-side={side}
     data-slot="sidebar"
@@ -82,7 +92,8 @@ const sidebar = useSidebar();
     <div
       data-slot="sidebar-container"
       class={cn(
-				'fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex',
+				'fixed inset-y-0 z-10 h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear',
+				isMobileIconSidebar ? 'flex' : 'hidden md:flex',
 				side === 'left'
 					? 'start-0 group-data-[collapsible=offcanvas]:start-[calc(var(--sidebar-width)*-1)]'
 					: 'end-0 group-data-[collapsible=offcanvas]:end-[calc(var(--sidebar-width)*-1)]',
