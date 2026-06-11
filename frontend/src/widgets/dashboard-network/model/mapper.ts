@@ -190,7 +190,7 @@ function upsertFolderNode(
 }
 
 export function deviceDataToNode(
-  devices: DeviceRelations[],
+  devices: DeviceRelations[] | undefined,
   isDestFolders: boolean = false,
   tagNodes: Node[] = [],
 ): Node<FolderNodeData>[] {
@@ -202,7 +202,7 @@ export function deviceDataToNode(
   const UNTAGGED_Y =
     Math.max(...Array.from(tagPosMap.values()), 0) + DEVICE_Y_WITHOUT_TAGS;
 
-  for (const device of devices) {
+  for (const device of devices ?? []) {
     const effectiveTags =
       device.tags && device.tags.length > 0
         ? device.tags

@@ -19,12 +19,7 @@ export const deviceQuery = {
           },
         );
         if (error) throw error;
-
-        // TODO: удалить после реализации стастуса на бэке
-        return data!.map((device) => ({
-          ...device,
-          status: "online" as const,
-        }));
+        return data;
       },
     }),
 };

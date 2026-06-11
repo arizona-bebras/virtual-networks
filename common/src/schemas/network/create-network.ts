@@ -13,7 +13,10 @@ export const CreateNetworkSchema = createInsertSchema(networks, {
       .regex(/^[a-z0-9-]+$/)
       .default("internal")
       .describe("The domain of the network"),
-  cidr: z.cidrv4(),
+  cidr: z
+    .cidrv4()
+    .default("10.0.44.0/24")
+    .describe("The CIDR block of the network"),
 }).omit({ id: true, creatorId: true, keysId: true });
 
 export type CreateNetwork = z.infer<typeof CreateNetworkSchema>;

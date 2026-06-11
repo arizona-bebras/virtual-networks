@@ -1,8 +1,4 @@
 <script lang="ts">
-import {
-  type validateHostIP,
-  validateNetworkCidr,
-} from "$shared/lib/cidr-operation";
 import type { ValidationResult } from "../model/types";
 
 let {
@@ -42,7 +38,6 @@ function inputHandler(e: Event, i: number) {
   if (inputValue.toString().length >= 3) {
     if (inputValue > 255) {
       inputValue = 255;
-      target.value = inputValue.toString();
     }
     inputs[i + 1]?.focus();
     inputs[i + 1]?.select();
@@ -51,6 +46,7 @@ function inputHandler(e: Event, i: number) {
     inputs[i - 1]?.select();
   }
 
+  target.value = inputValue.toString();
   octetsArr[i] = inputValue.toString();
   ip = octetsArr.join(".");
 }

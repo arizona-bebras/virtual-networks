@@ -15,6 +15,8 @@ export const queryKeys = {
     [...queryKeys.networkDevices(networkId), deviceId] as const,
   networkDeviceConfig: (networkId: string, deviceId: string) =>
     [...queryKeys.networkDevice(networkId, deviceId), "config"] as const,
+  networkDeviceStatus: (networkId: string, deviceId: string) =>
+    [...queryKeys.networkDevice(networkId, deviceId), "status"] as const,
   networkDeviceIp: (networkId: string) =>
     [...queryKeys.network(networkId), "device", "ip"] as const,
   networkTags: (networkId: string) =>

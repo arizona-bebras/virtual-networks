@@ -1,19 +1,16 @@
 <script lang="ts">
 import {
-  ChevronDown,
   LayoutDashboard,
   LogOut,
   Monitor,
   NotebookText,
   PanelRightClose,
-  Plus,
+  PanelRightOpen,
   Settings,
   ShieldAlert,
   Tag,
 } from "@lucide/svelte";
-import { createQuery, getQueryClientContext } from "@tanstack/svelte-query";
-import { PanelRightOpen } from "lucide-svelte";
-import { getContext, untrack } from "svelte";
+import { createQuery } from "@tanstack/svelte-query";
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
 import { authClient } from "$shared/api/auth-client";
@@ -23,19 +20,9 @@ import { useSidebar } from "$shared/ui/sidebar/index.js";
 import NetworkSelector from "$widgets/app-sidebar/ui/network-select.svelte";
 import { sidebarQuerys } from "../api/index.svelte";
 
-// Mock networks.
-const networks = [
-  { id: "1", name: "Default Network", cidr: "10.0.0.0/24" },
-  { id: "2", name: "IT Department", cidr: "192.168.1.0/24" },
-  { id: "3", name: "Production", cidr: "172.16.0.0/16" },
-];
-
 let currentNetworkUUID = $derived(getNetworkId().id);
 
 const userNetworks = createQuery(() => sidebarQuerys.userNetworks());
-const queryClient = getQueryClientContext();
-
-let isDialogOpen = $state(false);
 let selectedNetwork = $derived(
   userNetworks.data?.find((n) => n.id === currentNetworkUUID),
 );
@@ -82,14 +69,7 @@ async function handleLogout() {
   });
 }
 
-// $effect(() => {
-//   if (userNetworks.isSuccess){
-//     untrack(() => {
-
-//     })
-//   })
 const sidebar = useSidebar();
-$inspect(sidebar.state);
 </script>
 {#if userNetworks.isSuccess}
   <Sidebar.Root collapsible="icon">
@@ -135,7 +115,10 @@ $inspect(sidebar.state);
             <span>Выйти</span>
           </Sidebar.MenuButton>
         </Sidebar.MenuItem>
-        <Sidebar.MenuItem onclick={() => sidebar.toggle()}>
+        <Sidebar.MenuItem
+          onclick={() => sidebar.toggle()}
+          class="hidden md:block"
+        >
           <Sidebar.MenuButton class="rounded-[6px]">
             {#if sidebar.state === 'collapsed'}
               <PanelRightClose />
