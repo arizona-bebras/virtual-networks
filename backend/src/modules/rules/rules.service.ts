@@ -15,8 +15,10 @@ import {
 } from "proto";
 import { type Database, DRIZZLE } from "../../db/database.module.js";
 import * as schema from "../../db/schema.js";
+import { LogEvents } from "../../logging/logging.decorator.js";
 import { RouterService } from "../router/router.service.js";
 
+@LogEvents("rule")
 @Injectable()
 export class RulesService {
   constructor(
@@ -24,7 +26,7 @@ export class RulesService {
     private readonly routerService: RouterService,
   ) {}
 
-  async create(rule: CreateRuleDto, networkId: string) {
+  async create(rule: CreateRuleDto, networkId: string, _: string) {
     await this.db.insert(schema.rules).values({ ...rule, networkId });
     this.emitRuleChanged(networkId, ChangeOperation.CHANGE_OPERATION_CREATED);
   }
@@ -136,7 +138,7 @@ export class RulesService {
     });
   }
 
-  async update(ruleId: string, networkId: string, rule: UpdateRuleDto) {
+  async update(ruleId: string, rule: UpdateRuleDto, networkId: string) {
     await this.db
       .update(schema.rules)
       .set(rule)

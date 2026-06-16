@@ -7,6 +7,7 @@ import {
   index,
   inet,
   integer,
+  json,
   pgEnum,
   pgTable,
   primaryKey,
@@ -220,6 +221,23 @@ export const rules = pgTable("rules", {
     .references(() => networks.id, { onDelete: "cascade" }),
 });
 
+export const actionEnum = pgEnum("actions", ["create", "update", "delete"]);
+export const entityEnum = pgEnum("entities", [
+  "network",
+  "device",
+  "rule",
+  "tag",
+]);
+
+export const events = pgTable("events", {
+  id: uuid(`id`).primaryKey().defaultRandom(),
+  action: actionEnum("action"),
+  entity: entityEnum("entity"),
+  updatedFields: json("updated_fields"),
+  userId: text("user_id").references(() => user.id, { onDelete: "no action" }),
+  time: timestamp("time").defaultNow(),
+});
+
 export const relations = defineRelations(
   {
     user,
@@ -233,6 +251,7 @@ export const relations = defineRelations(
     networkUsers,
     keys,
     peerStates,
+    events,
   },
   (r) => ({
     user: {
@@ -334,6 +353,13 @@ export const relations = defineRelations(
       device: r.one.devices({
         from: r.peerStates.deviceId,
         to: r.devices.id,
+      }),
+    },
+
+    event: {
+      user: r.one.user({
+        from: r.events.userId,
+        to: r.user.id,
       }),
     },
   }),

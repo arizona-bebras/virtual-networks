@@ -17,6 +17,7 @@ import {
   createTestDatabase,
   type TestDatabase,
 } from "./test-database.js";
+import { ClsMiddleware, ClsServiceManager } from "nestjs-cls";
 
 const networkId = "11111111-1111-1111-1111-111111111111";
 const otherNetworkId = "22222222-2222-2222-2222-222222222222";
@@ -81,16 +82,39 @@ describe("DevicesController (e2e)", () => {
         RouterService,
         {
           provide: DRIZZLE,
-          useValue: db,
+          useFactory: () => {
+            const cls = ClsServiceManager.getClsService();
+            return new Proxy(db, {
+              get(target, prop) {
+                const tx = cls.get("CURRENT_TRANSACTION");
+                // Если функция, обязательно биндим её контекст, чтобы Drizzle не ругался
+                if (tx && typeof tx[prop] === "function") {
+                  return tx[prop].bind(tx);
+                }
+                return tx ? tx[prop] : target[prop];
+              },
+            });
+          },
         },
       ],
     }).compile();
 
     app = moduleFixture.createNestApplication();
+  
     app.use((req, _res, next) => {
       req.session = { user: { id: userId } };
       next();
     });
+  
+    app.use((req, _res, next) => {
+      const cls = ClsServiceManager.getClsService();
+      
+      cls.run(() => {
+        cls.set("userId", req?.session?.user?.id);
+        next();
+      });
+    });
+  
     await app.init();
   });
 

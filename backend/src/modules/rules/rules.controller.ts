@@ -17,7 +17,8 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { AuthGuard } from "@thallesp/nestjs-better-auth";
+import type { UserSession } from "@thallesp/nestjs-better-auth";
+import { AuthGuard, Session } from "@thallesp/nestjs-better-auth";
 import { CreateRuleDto } from "common/dto/rule/create-rule";
 import { RuleDto } from "common/dto/rule/index";
 import { UpdateRuleDto } from "common/dto/rule/update-rule";
@@ -40,8 +41,9 @@ export class RulesController {
   async create(
     @Param("network_id") network_id: string,
     @Body() rule: CreateRuleDto,
+    @Session() session: UserSession,
   ) {
-    await this.rulesService.create(rule, network_id);
+    await this.rulesService.create(rule, network_id, session.user.id);
   }
 
   @Get()
@@ -109,9 +111,9 @@ export class RulesController {
   async update(
     @Param("network_id") network_id: string,
     @Param("rule_id") rule_id: string,
-    @Body() rule: UpdateRuleDto,
+    @Body() rule: UpdateRuleDto
   ) {
-    await this.rulesService.update(rule_id, network_id, rule);
+    await this.rulesService.update(rule_id, rule, network_id);
   }
 
   @Delete(":rule_id")

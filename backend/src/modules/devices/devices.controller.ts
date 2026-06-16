@@ -149,7 +149,7 @@ export class DevicesController {
     @Param("device_id") id: string,
     @Body() device: UpdateDeviceDto,
   ) {
-    await this.devicesService.update(id, networkId, device);
+    await this.devicesService.update(id, device, networkId);
   }
 
   @Delete(":device_id")

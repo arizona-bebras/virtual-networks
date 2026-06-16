@@ -19,14 +19,16 @@ import {
 } from "proto";
 import { type Database, DRIZZLE } from "../../db/database.module.js";
 import * as schema from "../../db/schema.js";
+import { LogEvents } from "../../logging/logging.decorator.js";
 import { RouterService } from "../router/router.service.js";
 
+@LogEvents("device")
 @Injectable()
 export class DevicesService {
   constructor(
     @Inject(DRIZZLE) private readonly db: Database,
     private readonly routerService: RouterService,
-  ) {}
+  ) { }
 
   private buildTagFilter(
     deviceId: typeof schema.devices.id,
@@ -78,7 +80,10 @@ export class DevicesService {
     return filters;
   }
 
-  async create(device: Required<CreateDeviceDto>, networkId: string) {
+  async create(
+    device: Required<CreateDeviceDto>,
+    networkId: string,
+  ) {
     const createdDevice = await this.db.transaction(async (tx) => {
       const { publicKey, privateKey } = generateKeyPairSync("x25519");
       const [keys] = await tx
@@ -201,7 +206,11 @@ export class DevicesService {
     });
   }
 
-  async update(id: string, networkId: string, device: UpdateDeviceDto) {
+  async update(
+    id: string,
+    device: UpdateDeviceDto,
+    networkId: string,
+  ) {
     await this.db
       .update(schema.devices)
       .set(device)

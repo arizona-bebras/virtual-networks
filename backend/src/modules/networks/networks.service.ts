@@ -22,8 +22,11 @@ import {
 } from "proto";
 import { type Database, DRIZZLE } from "../../db/database.module.js";
 import * as schema from "../../db/schema.js";
+import { LogEvents } from "../../logging/logging.decorator.js";
 import { RouterService } from "../router/router.service.js";
+import { ClsServiceManager } from "nestjs-cls";
 
+@LogEvents("network")
 @Injectable()
 export class NetworksService {
   constructor(
@@ -33,8 +36,8 @@ export class NetworksService {
 
   async create(
     networkData: CreateNetworkDto,
-    userId: string,
   ): Promise<NetworkDto | undefined> {
+    const userId = ClsServiceManager.getClsService().get("userId");
     return this.db.transaction(async (tx) => {
       const { publicKey, privateKey } = generateKeyPairSync("x25519");
       const [keys] = await tx
@@ -106,8 +109,8 @@ export class NetworksService {
   async enter(
     _credentials: NetworkEnterCredentialsDto,
     networkId: string,
-    userId: string,
   ) {
+    const userId = ClsServiceManager.getClsService().get("userId");
     await this.db.insert(schema.networkUsers).values({
       userId,
       networkId,
@@ -149,8 +152,8 @@ export class NetworksService {
 
   async getNetworkUsers(
     networkId: string,
-    userId: string,
   ): Promise<NetworkUsersDto> {
+    const userId = ClsServiceManager.getClsService().get("userId");
     const users = await this.db
       .select({
         id: schema.user.id,
@@ -174,7 +177,8 @@ export class NetworksService {
     return { users };
   }
 
-  async getMyNetworks(userId: string): Promise<NetworkDto[]> {
+  async getMyNetworks(): Promise<NetworkDto[]> {
+    const userId = ClsServiceManager.getClsService().get("userId");
     const user = await this.db.query.user.findFirst({
       columns: {},
       where: {

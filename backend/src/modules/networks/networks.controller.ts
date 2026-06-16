@@ -8,7 +8,6 @@ import {
   Post,
   Put,
   Query,
-  Session,
   UseGuards,
 } from "@nestjs/common";
 import {
@@ -19,7 +18,6 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import type { UserSession } from "@thallesp/nestjs-better-auth";
 import { AuthGuard } from "@thallesp/nestjs-better-auth";
 import { CreateNetworkDto } from "common/dto/network/create-network";
 import { NetworkEnterCredentialsDto } from "common/dto/network/enter-credentials";
@@ -46,9 +44,8 @@ export class NetworksController {
   })
   async create(
     @Body() network: CreateNetworkDto,
-    @Session() session: UserSession,
   ): Promise<NetworkDto | undefined> {
-    return await this.networksService.create(network, session.user.id);
+    return await this.networksService.create(network);
   }
 
   @Get()
@@ -59,8 +56,8 @@ export class NetworksController {
     type: NetworkDto,
     isArray: true,
   })
-  async getMyNetworks(@Session() session: UserSession): Promise<NetworkDto[]> {
-    return await this.networksService.getMyNetworks(session.user.id);
+  async getMyNetworks(): Promise<NetworkDto[]> {
+    return await this.networksService.getMyNetworks();
   }
 
   @Get(":network_id")
@@ -99,12 +96,8 @@ export class NetworksController {
   @ApiResponse({ status: 404, description: "Сеть не найдена" })
   async getNetworkUsers(
     @Param("network_id") id: string,
-    @Session() session: UserSession,
   ): Promise<NetworkUsersDto> {
-    const users = await this.networksService.getNetworkUsers(
-      id,
-      session.user.id,
-    );
+    const users = await this.networksService.getNetworkUsers(id);
     return users;
   }
 
@@ -121,9 +114,8 @@ export class NetworksController {
   async enter(
     @Body() credentials: NetworkEnterCredentialsDto,
     @Param("network_id") networkId: string,
-    @Session() session: UserSession,
   ) {
-    await this.networksService.enter(credentials, networkId, session.user.id);
+    await this.networksService.enter(credentials, networkId);
   }
 
   @Put(":network_id")

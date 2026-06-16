@@ -7,7 +7,9 @@ import { and, eq } from "drizzle-orm";
 import { ilike, sql } from "drizzle-orm/sql";
 import { type Database, DRIZZLE } from "../../db/database.module.js";
 import * as schema from "../../db/schema.js";
+import { LogEvents } from "../../logging/logging.decorator.js";
 
+@LogEvents("tag")
 @Injectable()
 export class TagsService {
   constructor(@Inject(DRIZZLE) private readonly db: Database) {}
@@ -30,10 +32,11 @@ export class TagsService {
     await this.db.insert(schema.tags).values({ ...tag, networkId });
   }
 
-  async read(id: string): Promise<TagDto | undefined> {
+  async read(id: string, networkId: string): Promise<TagDto | undefined> {
     return this.db.query.tags.findFirst({
       where: {
         id,
+        networkId,
       },
       extras: {
         devicesCount:
@@ -64,11 +67,16 @@ export class TagsService {
       .orderBy(q ? sql`length(${schema.tags.name}) ASC` : schema.tags.name);
   }
 
-  async update(id: string, tag: UpdateTagDto) {
-    await this.db.update(schema.tags).set(tag).where(eq(schema.tags.id, id));
+  async update(id: string, tag: UpdateTagDto, networkId: string) {
+    await this.db
+      .update(schema.tags)
+      .set(tag)
+      .where(and(eq(schema.tags.id, id), eq(schema.tags.networkId, networkId)));
   }
 
-  async delete(id: string) {
-    await this.db.delete(schema.tags).where(eq(schema.tags.id, id));
+  async delete(id: string, networkId: string) {
+    await this.db
+      .delete(schema.tags)
+      .where(and(eq(schema.tags.id, id), eq(schema.tags.networkId, networkId)));
   }
 }
