@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { UserSchema } from "../user/index.js";
 
-export const RolesEnum = z.enum(["user", "admin"]).nullable();
+export const RolesEnum = z.enum(["user", "admin"]).nullable().optional();
 export const User = UserSchema.extend({
   role: RolesEnum.describe("A role of the user"),
 });

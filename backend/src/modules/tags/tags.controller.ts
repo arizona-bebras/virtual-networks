@@ -47,7 +47,8 @@ export class TagsController {
     @Param("network_id") network_id: string,
     @Body() tag: CreateTagDto,
   ) {
-    await this.tagsService.create(tag, network_id);
+    const createdTag = await this.tagsService.create(tag, network_id);
+    return createdTag
   }
 
   @Get()

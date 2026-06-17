@@ -38,10 +38,13 @@ export const LogEvents = (entity: "network" | "device" | "rule" | "tag") => {
           cls.set("CURRENT_TRANSACTION", tx)
           const result = await createMethod.call(this, data, networkId, ...args);
 
+          console.log(result.id)
           if (result) {
             await tx.insert(schema.events).values({
               action: "create",
               entity,
+              entity_object_id: result.id,
+              networkId: networkId,
               userId: cls.get("userId"),
             });
           }
@@ -85,7 +88,9 @@ export const LogEvents = (entity: "network" | "device" | "rule" | "tag") => {
           await tx.insert(schema.events).values({
             action: "update",
             entity: entity,
+            entity_object_id: id,
             updatedFields: changes,
+            networkId: networkId,
             userId: cls.get("userId"),
           });
 
@@ -99,6 +104,7 @@ export const LogEvents = (entity: "network" | "device" | "rule" | "tag") => {
     if (deleteMethod) {
       target.prototype["delete"] = async function (
         id: string,
+        networkId?: string,
         ...args: (string | object)[]
       ) {
         return this.db.transaction(async (tx) => {
@@ -108,6 +114,8 @@ export const LogEvents = (entity: "network" | "device" | "rule" | "tag") => {
           await tx.insert(schema.events).values({
             action: "delete",
             entity: entity,
+            entity_object_id: id,
+            networkId: networkId,
             userId: cls.get("userId"),
           });
 

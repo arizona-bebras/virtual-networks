@@ -15,7 +15,7 @@ const ActionEnum = z.union([
     type: z.literal("update"),
     updatedFields: z.array(
       z.object({ key: z.string(), old: z.string(), new: z.string() }),
-    ),
+    ).optional().nullable(),
   }),
   z.object({
     type: z.literal("delete"),
@@ -42,9 +42,10 @@ const EntitiesUnion = z.union([
 
 export const EventSchema = z.object({
   id: z.uuid(),
-  user: User,
+  user: User.optional().nullable(),
   action: ActionEnum,
-  entities: EntitiesUnion,
+  entity: EntitiesUnion,
+  networkId: z.string().nullable().optional(),
   time: z.iso.datetime(),
 });
 

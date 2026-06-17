@@ -28,7 +28,7 @@ export class DevicesService {
   constructor(
     @Inject(DRIZZLE) private readonly db: Database,
     private readonly routerService: RouterService,
-  ) { }
+  ) {}
 
   private buildTagFilter(
     deviceId: typeof schema.devices.id,
@@ -80,10 +80,7 @@ export class DevicesService {
     return filters;
   }
 
-  async create(
-    device: Required<CreateDeviceDto>,
-    networkId: string,
-  ) {
+  async create(device: Required<CreateDeviceDto>, networkId: string) {
     const createdDevice = await this.db.transaction(async (tx) => {
       const { publicKey, privateKey } = generateKeyPairSync("x25519");
       const [keys] = await tx
@@ -100,9 +97,16 @@ export class DevicesService {
       const [newDevice] = await tx
         .insert(schema.devices)
         .values({ ...device, keysId: keys.id, networkId })
-        .returning({ id: schema.devices.id });
+        .returning({
+          id: schema.devices.id,
+          name: schema.devices.name,
+          slug: schema.devices.slug,
+          ip: schema.devices.ip,
+          ownerId: schema.devices.ownerId,
+          networkId: schema.devices.networkId,
+        });
 
-      return newDevice.id;
+      return newDevice;
     });
 
     this.routerService.emitEvent(
@@ -206,11 +210,7 @@ export class DevicesService {
     });
   }
 
-  async update(
-    id: string,
-    device: UpdateDeviceDto,
-    networkId: string,
-  ) {
+  async update(id: string, device: UpdateDeviceDto, networkId: string) {
     await this.db
       .update(schema.devices)
       .set(device)

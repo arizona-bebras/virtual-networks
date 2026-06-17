@@ -1,0 +1,2 @@
+ALTER TABLE "events" ADD COLUMN "network_id" uuid;--> statement-breakpoint
+ALTER TABLE "events" ADD CONSTRAINT "events_network_id_networks_id_fkey" FOREIGN KEY ("network_id") REFERENCES "networks"("id") ON DELETE CASCADE;

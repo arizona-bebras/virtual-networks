@@ -7,7 +7,7 @@ import {
   index,
   inet,
   integer,
-  json,
+  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
@@ -229,13 +229,21 @@ export const entityEnum = pgEnum("entities", [
   "tag",
 ]);
 
+interface UpdatedField {
+  key: string,
+  old: string,
+  new: string
+}
+
 export const events = pgTable("events", {
   id: uuid(`id`).primaryKey().defaultRandom(),
-  action: actionEnum("action"),
-  entity: entityEnum("entity"),
-  updatedFields: json("updated_fields"),
-  userId: text("user_id").references(() => user.id, { onDelete: "no action" }),
-  time: timestamp("time").defaultNow(),
+  action: actionEnum("action").notNull(),
+  entity: entityEnum("entity").notNull(),
+  entity_object_id: uuid("entity_object_id"),
+  updatedFields: jsonb("updated_fields").$type<UpdatedField[]>(),
+  networkId: uuid("network_id").references(() => networks.id, { onDelete: "cascade"}),
+  userId: text("user_id").references(() => user.id, { onDelete: "no action" }).notNull(),
+  time: timestamp("time").defaultNow().notNull(),
 });
 
 export const relations = defineRelations(
@@ -293,6 +301,7 @@ export const relations = defineRelations(
         from: r.networks.keysId,
         to: r.keys.id,
       }),
+      events: r.many.events()
     },
 
     devices: {
@@ -356,11 +365,15 @@ export const relations = defineRelations(
       }),
     },
 
-    event: {
+    events: {
       user: r.one.user({
         from: r.events.userId,
         to: r.user.id,
       }),
+      network: r.one.networks({
+        from: r.events.networkId,
+        to: r.networks.id
+      })
     },
   }),
 );

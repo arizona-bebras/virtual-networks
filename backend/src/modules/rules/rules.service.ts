@@ -27,8 +27,12 @@ export class RulesService {
   ) {}
 
   async create(rule: CreateRuleDto, networkId: string, _: string) {
-    await this.db.insert(schema.rules).values({ ...rule, networkId });
+    const [createdRule]= await this.db
+      .insert(schema.rules)
+      .values({ ...rule, networkId })
+      .returning();
     this.emitRuleChanged(networkId, ChangeOperation.CHANGE_OPERATION_CREATED);
+    return createdRule;
   }
 
   async get(ruleId: string): Promise<RuleDto | undefined> {

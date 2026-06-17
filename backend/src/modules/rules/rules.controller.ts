@@ -43,7 +43,7 @@ export class RulesController {
     @Body() rule: CreateRuleDto,
     @Session() session: UserSession,
   ) {
-    await this.rulesService.create(rule, network_id, session.user.id);
+    return await this.rulesService.create(rule, network_id, session.user.id);
   }
 
   @Get()
@@ -111,7 +111,7 @@ export class RulesController {
   async update(
     @Param("network_id") network_id: string,
     @Param("rule_id") rule_id: string,
-    @Body() rule: UpdateRuleDto
+    @Body() rule: UpdateRuleDto,
   ) {
     await this.rulesService.update(rule_id, rule, network_id);
   }

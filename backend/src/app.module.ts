@@ -11,6 +11,7 @@ import { NetworksModule } from "./modules/networks/networks.module.js";
 import { RouterModule } from "./modules/router/router.module.js";
 import { RulesModule } from "./modules/rules/rules.module.js";
 import { TagsModule } from "./modules/tags/tags.module.js";
+import { EventsModule } from './modules/events/events.module.js';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { TagsModule } from "./modules/tags/tags.module.js";
       auth,
     }),
     RouterModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [

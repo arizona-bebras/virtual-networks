@@ -53,7 +53,6 @@ export type Database = NodePgDatabase<
         return new Proxy(rawDb, {
           get(target, prop) {
             const tx = cls.get("CURRENT_TRANSACTION");
-            console.log(tx ? "transaction" : "single")
             return tx ? tx[prop] : target[prop];
           },
         });
