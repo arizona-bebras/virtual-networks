@@ -5,12 +5,12 @@ import (
 )
 
 func validateConfig(cfg Config) error {
-	if len(cfg.Overlays) == 0 {
-		return fmt.Errorf("at least one overlay entry is required")
-	}
-	if len(cfg.Protocols) == 0 {
-		return fmt.Errorf("at least one protocol entry is required")
-	}
+	// if len(cfg.Overlays) == 0 {
+	// 	return fmt.Errorf("at least one overlay entry is required")
+	// }
+	// if len(cfg.Protocols) == 0 {
+	// 	return fmt.Errorf("at least one protocol entry is required")
+	// }
 
 	seenOverlays := make(map[string]struct{}, len(cfg.Overlays))
 	for _, overlay := range cfg.Overlays {
