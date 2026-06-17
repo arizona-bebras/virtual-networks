@@ -31,6 +31,9 @@ const creationMutation = createMutation(() =>
     queryClient.invalidateQueries({
       queryKey: queryKeys.networkTags(currentNetworkId),
     });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkEvents(currentNetworkId),
+    });
     dialogState = false;
   }),
 );
@@ -39,6 +42,9 @@ const updateMutation = createMutation(() =>
   tagUpdateMutation(() => {
     queryClient.invalidateQueries({
       queryKey: queryKeys.network(currentNetworkId),
+    });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkEvents(currentNetworkId),
     });
     dialogState = false;
   }),

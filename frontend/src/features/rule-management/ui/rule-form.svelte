@@ -36,8 +36,11 @@ const createMutationQuery = createMutation(() =>
   ruleCreationMutation(() => {
     queryClient.invalidateQueries({
       queryKey: queryKeys.networkRules(currentNetworkId),
-    }),
-      (dialogState = false);
+    });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkEvents(currentNetworkId),
+    });
+    dialogState = false;
   }),
 );
 
@@ -45,8 +48,11 @@ const updateMutationQuery = createMutation(() =>
   ruleUpdateMutation(() => {
     queryClient.invalidateQueries({
       queryKey: queryKeys.networkRules(currentNetworkId),
-    }),
-      (dialogState = false);
+    });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkEvents(currentNetworkId),
+    });
+    dialogState = false;
   }),
 );
 

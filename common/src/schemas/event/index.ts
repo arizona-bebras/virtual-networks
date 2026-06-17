@@ -14,7 +14,13 @@ const ActionEnum = z.union([
   z.object({
     type: z.literal("update"),
     updatedFields: z
-      .array(z.object({ key: z.string(), old: z.string(), new: z.string() }))
+      .array(
+        z.object({
+          key: z.string(),
+          old: z.coerce.string(),
+          new: z.coerce.string(),
+        }),
+      )
       .optional()
       .nullable(),
   }),
@@ -25,19 +31,19 @@ const ActionEnum = z.union([
 const EntitiesUnion = z.union([
   z.object({
     type: z.literal("device"),
-    info: DeviceSchema,
+    info: DeviceSchema.optional().nullable(),
   }),
   z.object({
     type: z.literal("rule"),
-    info: RuleSchema,
+    info: RuleSchema.optional().nullable(),
   }),
   z.object({
     type: z.literal("tag"),
-    info: TagSchema,
+    info: TagSchema.optional().nullable(),
   }),
   z.object({
     type: z.literal("network"),
-    info: NetworkSchema,
+    info: NetworkSchema.optional().nullable(),
   }),
 ]);
 

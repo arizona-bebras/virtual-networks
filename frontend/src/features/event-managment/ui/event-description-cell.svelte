@@ -10,7 +10,7 @@ let { action }: { action: Event["action"] } = $props();
   <span class="text-muted-foreground text-sm">Сущность была удалена</span>
 {:else if action.type === "update"}
   <div class="flex flex-col gap-1">
-    {#each action.updatedFields as field}
+    {#each action.updatedFields ?? [] as field}
       <div class="flex items-center gap-1.5 text-xs">
         <span
           class="font-semibold text-foreground/70 whitespace-nowrap lowercase"
@@ -34,6 +34,8 @@ let { action }: { action: Event["action"] } = $props();
           </span>
         </div>
       </div>
+    {:else}
+      <span class="text-muted-foreground text-sm">Сущность была обновлена</span>
     {/each}
   </div>
 {/if}

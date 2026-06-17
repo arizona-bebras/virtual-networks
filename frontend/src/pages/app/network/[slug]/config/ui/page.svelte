@@ -38,6 +38,9 @@ const updateMutation = createMutation(() =>
       queryKey: queryKeys.networks(),
       exact: true,
     });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkEvents(networkId),
+    });
   }),
 );
 
@@ -47,6 +50,9 @@ const deleteMutation = createMutation(() =>
     queryClient.invalidateQueries({
       queryKey: queryKeys.networks(),
       exact: true,
+    });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkEvents(networkId),
     });
     goto("/app");
   }),
