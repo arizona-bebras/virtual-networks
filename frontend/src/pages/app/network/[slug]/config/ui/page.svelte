@@ -5,25 +5,23 @@ import {
   useQueryClient,
 } from "@tanstack/svelte-query";
 import { UpdateNetworkSchema } from "common/schemas/network/update-network";
-import { TriangleAlert } from "lucide-svelte";
+import { Save, TriangleAlert } from "lucide-svelte";
 import { untrack } from "svelte";
 import { fade } from "svelte/transition";
-import { z } from "zod";
 import { goto } from "$app/navigation";
 import type { ValidationResult } from "$features/config/model/types";
 import CidrInfo from "$features/config/ui/CidrInfo.svelte";
 import CidrInput from "$features/config/ui/CidrInput.svelte";
 import CidrSuggestion from "$features/config/ui/CidrSuggestion.svelte";
+import BreadCrumb from "$features/device-management/ui/BreadCrumb.svelte";
 import { queryKeys } from "$shared/api/query-keys";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { cn } from "$shared/lib/utils.js";
-import Particles from "$shared/magic/particles/particles.svelte";
 import { Button } from "$shared/ui/button/index.js";
 import * as Card from "$shared/ui/card/index.js";
 import * as Form from "$shared/ui/form/index.js";
 import { Input } from "$shared/ui/input/index.js";
-import { Separator } from "$shared/ui/separator/index.js";
 import { Textarea } from "$shared/ui/textarea/index";
 import {
   networkConfig,
@@ -99,242 +97,206 @@ function handleDelete() {
 </script>
 
 {#if networkCfg.isSuccess}
-  <div
-    class="relative min-h-[calc(100vh-4rem)] w-full overflow-hidden py-8 px-4 sm:px-6 lg:px-8"
-  >
-    <Particles
-      class="absolute inset-0 z-0"
-      quantity={180}
-      staticity={50}
-      color="#000000"
-    />
+  <div class="p-2.5">
+    <div
+      class="mx-auto mb-4 flex w-full max-w-3xl flex-col justify-between rounded-bl-[4px] border bg-background p-6"
+    >
+      <BreadCrumb />
+      <div class="mt-4 flex flex-col gap-3">
+        <div class="space-y-1">
+          <h1 class="text-3xl font-bold tracking-tight">Конфигурация сети</h1>
+          <p class="text-muted-foreground text-[14px]">
+            Управляйте базовыми параметрами, доменом и адресным пространством.
+          </p>
+        </div>
 
-    <div class="relative z-10 mx-auto max-w-2xl space-y-6">
-      <!-- Header Section -->
-      <div
-        class="space-y-2 text-center animate-in fade-in slide-in-from-top duration-500"
-      >
-        <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">
-          Конфигурация сети
-        </h1>
-        <p class="mx-auto max-w-lg text-sm text-muted-foreground">
-          Настройте параметры вашей виртуальной сети и адресное пространство.
-        </p>
-
-        <div
-          class="flex items-center justify-center gap-2 pt-1 delay-100 animate-in fade-in slide-in-from-top duration-500"
-        >
-          <span
-            class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50"
-          >
-            Network ID:
-          </span>
+        <div class="flex items-center gap-2 text-xs text-muted-foreground">
+          <span class="font-medium">Network ID</span>
           <code
-            class="rounded-full border bg-background/50 px-3 py-0.5 text-[11px] font-medium backdrop-blur-sm transition-colors hover:border-primary/50"
+            class="rounded-[6px] border bg-muted/30 px-2.5 py-1 font-mono text-[11px] text-foreground"
           >
             {networkId}
           </code>
         </div>
       </div>
+    </div>
 
-      <!-- Settings Card -->
-      <div class="animate-in fade-in slide-in-from-bottom duration-500">
-        <Card.Root
-          class="overflow-hidden border-none bg-background/60 shadow-xl shadow-primary/5 backdrop-blur-xl ring-1 ring-border/50 rounded-3xl"
-        >
-          <Card.Header class="border-b bg-muted/20 pb-5 pt-6 px-6 sm:px-8">
-            <Card.Title class="text-xl">Общие настройки</Card.Title>
-            <Card.Description class="text-xs">
-              Основные параметры идентификации и маршрутизации
-            </Card.Description>
-          </Card.Header>
-          <Card.Content class="p-6 sm:p-8">
-            <form method="POST" use:enhance class="space-y-5 w-full">
-              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Form.Field {form} name="name">
-                  <Form.Control>
-                    {#snippet children({ props })}
-                      <Form.Label
-                        class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-0.5"
-                      >
-                        Название сети
-                      </Form.Label>
-                      <Input
-                        {...props}
-                        bind:value={$formData.name}
-                        placeholder="Моя сеть"
-                        class="h-10 bg-background/50 rounded-xl focus:bg-background transition-all"
-                      />
-                    {/snippet}
-                  </Form.Control>
-                  <Form.FieldErrors class="text-[10px]" />
-                </Form.Field>
-                <Form.Field {form} name="domain">
-                  <Form.Control>
-                    {#snippet children({ props })}
-                      <Form.Label
-                        class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-0.5"
-                      >
-                        Домен
-                      </Form.Label>
-                      <Input
-                        {...props}
-                        bind:value={$formData.domain}
-                        placeholder="internal"
-                        class="h-10 bg-background/50 rounded-xl focus:bg-background transition-all"
-                      />
-                    {/snippet}
-                  </Form.Control>
-                  <Form.FieldErrors class="text-[10px]" />
-                </Form.Field>
-              </div>
-
-              <Form.Field {form} name="description">
+    <div class="mx-auto grid w-full max-w-3xl gap-4">
+      <Card.Root class="bg-background pt-2">
+        <Card.Header class="gap-1 border-b px-6">
+          <Card.Title class="text-lg font-semibold">Общие настройки</Card.Title>
+          <Card.Description class="text-sm">
+            Основные параметры идентификации и маршрутизации сети
+          </Card.Description>
+        </Card.Header>
+        <Card.Content class="p-6">
+          <form method="POST" use:enhance class="space-y-5">
+            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+              <Form.Field {form} name="name">
                 <Form.Control>
                   {#snippet children({ props })}
-                    <Form.Label
-                      class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-0.5"
-                    >
-                      Описание
+                    <Form.Label type="required" class="text-sm">
+                      Название сети
                     </Form.Label>
-                    <Textarea
+                    <p class="mb-2 text-xs text-muted-foreground">
+                      Короткое имя, которое будет отображаться в списках и
+                      навигации.
+                    </p>
+                    <Input
                       {...props}
-                      bind:value={$formData.description}
-                      placeholder="Сеть для рабочих серверов..."
-                      class="min-h-[80px] bg-background/50 rounded-xl focus:bg-background transition-all"
+                      bind:value={$formData.name}
+                      placeholder="Моя сеть"
                     />
                   {/snippet}
                 </Form.Control>
-                <Form.FieldErrors class="text-[10px]" />
+                <Form.FieldErrors class="mt-1" />
               </Form.Field>
-              <div>
-                <p
-                  class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-0.5 mb-1"
-                >
-                  Адресное пространство
-                </p>
-                <div
-                  class="relative space-y-3 rounded-2xl border bg-muted/40 p-5 sm:p-6 ring-1 ring-border/30"
-                >
-                  {#if $formData.cidr}
-                    <div class="space-y-3">
-                      <CidrInput
-                        bind:value={$formData.cidr}
-                        bind:info={cidrFieldInfo}
-                      />
-                      <CidrInfo info={cidrFieldInfo} />
-                      <CidrSuggestion bind:cidr={$formData.cidr} />
-                    </div>
-                  {/if}
-                </div>
-              </div>
 
-              <div class="flex justify-end pt-2">
-                <Button
-                  type="submit"
-                  disabled={!valid()}
-                  class="px-8 h-10 font-bold transition-all active:scale-95 rounded-xl shadow-md shadow-primary/10"
-                >
-                  Сохранить
-                </Button>
-              </div>
-            </form>
-          </Card.Content>
-        </Card.Root>
-      </div>
-
-      <!-- Danger Zone -->
-      <div
-        class="pt-2 delay-400 animate-in fade-in slide-in-from-bottom duration-700"
-      >
-        <div
-          class={cn(
-            "group relative overflow-hidden rounded-2xl border transition-all duration-500",
-            isConfirming 
-              ? "border-destructive bg-destructive/[0.03] shadow-lg shadow-destructive/5" 
-              : "border-destructive/10 bg-destructive/[0.01] hover:border-destructive/20"
-          )}
-        >
-          <!-- Warning background pattern that appears on confirmation -->
-          <div
-            class={cn(
-              "absolute inset-0 opacity-[0.02] pointer-events-none transition-opacity duration-500",
-              isConfirming ? "opacity-[0.06]" : "opacity-[0.03]"
-            )}
-            style="background-image: repeating-linear-gradient(45deg, var(--destructive) 0, var(--destructive) 1px, transparent 0, transparent 10px);"
-          ></div>
-
-          <div
-            class="relative flex flex-col items-center justify-between gap-4 p-4 sm:p-5 backdrop-blur-sm sm:flex-row"
-          >
-            <div class="flex items-center gap-4">
-              <div
-                class={cn(
-                  "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-500",
-                  isConfirming 
-                    ? "bg-destructive text-destructive-foreground rotate-6 scale-105 shadow-md shadow-destructive/20" 
-                    : "bg-destructive/5 text-destructive ring-1 ring-destructive/10"
-                )}
-              >
-                <TriangleAlert
-                  class={cn("size-5", isConfirming && "animate-pulse")}
-                />
-              </div>
-
-              <div class="space-y-0.5 text-center sm:text-left">
-                <h3
-                  class={cn(
-                  "text-sm font-black tracking-tight uppercase transition-colors duration-500",
-                  isConfirming ? "text-destructive" : "text-destructive/70"
-                )}
-                >
-                  {isConfirming ? "Удалить сеть?" : "Опасная зона"}
-                </h3>
-                <p
-                  class="text-[10px] font-medium leading-tight text-muted-foreground/60 max-w-[280px]"
-                >
-                  {isConfirming 
-                    ? "Это действие необратимо. Все устройства будут отключены." 
-                    : "Удаление сети приведет к отключению всех устройств."}
-                </p>
-              </div>
+              <Form.Field {form} name="domain">
+                <Form.Control>
+                  {#snippet children({ props })}
+                    <Form.Label type="required" class="text-sm">
+                      Домен
+                    </Form.Label>
+                    <p class="mb-2 text-xs text-muted-foreground">
+                      Локальная DNS-зона для адресации устройств внутри сети.
+                    </p>
+                    <Input
+                      {...props}
+                      bind:value={$formData.domain}
+                      placeholder="internal"
+                    />
+                  {/snippet}
+                </Form.Control>
+                <Form.FieldErrors class="mt-1" />
+              </Form.Field>
             </div>
 
-            <div class="flex flex-col items-center gap-2 w-full sm:w-auto">
+            <Form.Field {form} name="description">
+              <Form.Control>
+                {#snippet children({ props })}
+                  <Form.Label class="text-sm">Описание</Form.Label>
+                  <p class="mb-2 text-xs text-muted-foreground">
+                    Заметка для команды: назначение сети, окружение или
+                    владельцы.
+                  </p>
+                  <Textarea
+                    {...props}
+                    bind:value={$formData.description}
+                    placeholder="Сеть для рабочих серверов..."
+                    class="min-h-24 rounded-[6px]"
+                  />
+                {/snippet}
+              </Form.Control>
+              <Form.FieldErrors class="mt-1" />
+            </Form.Field>
+
+            <Form.Field {form} name="cidr">
+              <Form.Control>
+                {#snippet children()}
+                  <div class="space-y-1">
+                    <div class="flex items-center justify-between gap-3">
+                      <div>
+                        <p class="text-sm font-medium">Адресное пространство</p>
+                        <p class="text-xs text-muted-foreground">
+                          CIDR-диапазон, из которого устройства получают
+                          внутренние адреса.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="rounded-[6px] border bg-muted/20 p-4">
+                      {#if $formData.cidr}
+                        <CidrInput
+                          bind:value={$formData.cidr}
+                          bind:info={cidrFieldInfo}
+                        />
+                        <CidrInfo info={cidrFieldInfo} />
+                        <CidrSuggestion bind:cidr={$formData.cidr} />
+                      {/if}
+                    </div>
+                  </div>
+                {/snippet}
+              </Form.Control>
+              <Form.FieldErrors class="mt-1" />
+            </Form.Field>
+
+            <div class="flex justify-end border-t pt-5">
+              <Button
+                type="submit"
+                disabled={!valid()}
+                class="gap-1 rounded-[6px]"
+              >
+                Сохранить
+                <Save class="size-3.5" />
+              </Button>
+            </div>
+          </form>
+        </Card.Content>
+      </Card.Root>
+
+      <Card.Root
+        class={cn(
+          "bg-background transition-colors",
+          isConfirming
+            ? "ring-destructive/60"
+            : "ring-destructive/20"
+        )}
+      >
+        <Card.Header class="border-b px-6">
+          <Card.Title
+            class="flex items-center gap-2 text-lg font-semibold text-destructive"
+          >
+            <TriangleAlert class="size-4" />
+            Опасная зона
+          </Card.Title>
+          <Card.Description class="text-sm">
+            Удаление сети отключит все устройства и связанные настройки.
+          </Card.Description>
+        </Card.Header>
+
+        <Card.Content class="p-6">
+          <div
+            class="flex flex-col gap-4 rounded-[6px] border border-destructive/20 bg-destructive/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div>
+              <p class="text-sm font-medium text-destructive">
+                {isConfirming ? "Подтвердите удаление сети" : "Удалить сеть"}
+              </p>
+              <p class="mt-1 text-xs text-muted-foreground">
+                {isConfirming
+                  ? "Это действие необратимо. Все устройства будут отключены."
+                  : "Нажмите удалить, затем подтвердите действие."}
+              </p>
+            </div>
+
+            <div class="flex shrink-0 flex-col gap-2 sm:flex-row">
               <Button
                 variant="destructive"
                 size="sm"
-                class={cn(
-                  "h-8 px-6 text-[11px] font-bold uppercase tracking-tight transition-all duration-300 rounded-lg",
-                  isConfirming 
-                    ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 scale-105 shadow-md shadow-destructive/20" 
-                    : "shadow-sm shadow-destructive/5 hover:shadow-destructive/10"
-                )}
+                class="rounded-[6px]"
                 onclick={handleDelete}
               >
-                {isConfirming ? "Подтвердить" : "Удалить"}
+                {isConfirming ? "Подтвердить удаление" : "Удалить сеть"}
               </Button>
 
               {#if isConfirming}
-                <button
-                  class="text-[8px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-all flex items-center gap-1.5"
-                  type="button"
-                  onclick={() => (isConfirming = false)}
-                  transition:fade={{ duration: 150 }}
-                >
-                  Отмена
-                </button>
+                <div transition:fade={{ duration: 150 }}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    class="w-full rounded-[6px]"
+                    type="button"
+                    onclick={() => (isConfirming = false)}
+                  >
+                    Отмена
+                  </Button>
+                </div>
               {/if}
             </div>
           </div>
-        </div>
-
-        <p
-          class="mt-4 text-center text-[7px] font-bold uppercase tracking-[0.4em] text-muted-foreground/15 pointer-events-none select-none"
-        >
-          Permanent Destruction Zone
-        </p>
-      </div>
+        </Card.Content>
+      </Card.Root>
     </div>
   </div>
 {/if}

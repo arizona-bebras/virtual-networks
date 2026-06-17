@@ -49,33 +49,38 @@ let isDialogOpen = $state(false);
       {#each userNetworks.data as network}
         {@const isCurrent = selectedNetwork === network}
         <DropdownMenu.Item
-          class="w-full flex justify-between group {isCurrent ? 'border border-border border-l-4 border-l-secondary rounded-r-lg bg-white' : ''}"
+          class="group flex w-full items-start justify-between gap-3 {isCurrent ? 'border border-border border-l-4 border-l-secondary rounded-r-lg bg-white' : ''}"
           onSelect={async () => {
                   goto(`/app/network/${network.id}/dashboard`);
                 }}
         >
-          <div class="flex gap-4 px-2 py-2.5 ">
+          <div class="flex min-w-0 flex-1 items-center gap-3 px-2 py-2.5">
             <div
-              class="{isCurrent ? 'bg-secondary' : ''} px-1 py-1 rounded-[6px]"
+              class="{isCurrent ? 'bg-secondary' : ''} flex size-8 shrink-0 items-center justify-center rounded-[6px]"
             >
               <Network
                 class="size-6.25 {isCurrent ? 'stroke-secondary-foreground' : 'stroke-muted-foreground'}"
               />
             </div>
-            <div>
-              <p>{network.name}</p>
-              <p class="text-muted-foreground">{network.description}</p>
+            <div class="min-w-0 flex-1">
+              <p class="truncate font-medium">{network.name}</p>
+              <p
+                class="line-clamp-2 whitespace-normal break-words text-muted-foreground"
+                title={network.description}
+              >
+                {network.description || "Без описания"}
+              </p>
             </div>
           </div>
-          <div class="flex flex-col gap-1">
+          <div class="flex shrink-0 flex-col gap-1 py-2.5 pr-2 text-right">
             <p
-              class="{isCurrent ? 'bg-secondary text-secondary-foreground': ''} border px-1 py-0.5 rounded-[4px]"
+              class="{isCurrent ? 'bg-secondary text-secondary-foreground': ''} whitespace-nowrap border px-1 py-0.5 rounded-[4px]"
             >
               {network.cidr}
             </p>
-            <div class="flex self-end justify-end">
-              <Globe />
-              <p class="">.{network.domain}</p>
+            <div class="flex max-w-28 self-end justify-end">
+              <Globe class="size-4 shrink-0" />
+              <p class="truncate">.{network.domain}</p>
             </div>
           </div>
         </DropdownMenu.Item>

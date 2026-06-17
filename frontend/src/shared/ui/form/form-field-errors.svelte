@@ -11,6 +11,12 @@ let {
 }: WithoutChild<FormPrimitive.FieldErrorsProps> & {
   errorClasses?: string | undefined | null;
 } = $props();
+
+function uniqueErrors(errors: string[]) {
+  return errors.filter(
+    (error, index) => error && errors.indexOf(error) === index,
+  );
+}
 </script>
 
 <FormPrimitive.FieldErrors
@@ -22,7 +28,7 @@ let {
     {#if childrenProp}
       {@render childrenProp({ errors, errorProps })}
     {:else}
-      {#each errors as error (error)}
+      {#each uniqueErrors(errors) as error (error)}
         <div {...errorProps} class={cn(errorClasses)}>{error}</div>
       {/each}
     {/if}
