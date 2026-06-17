@@ -169,14 +169,18 @@ export const colorEnum = pgEnum("color", [
   "orange",
 ]);
 
-export const tags = pgTable("tags", {
-  id: uuid(`id`).primaryKey().defaultRandom(),
-  name: varchar({ length: 255 }).notNull().unique(),
-  color: colorEnum("color"),
-  networkId: uuid("network_id")
-    .notNull()
-    .references(() => networks.id, { onDelete: "cascade" }),
-});
+export const tags = pgTable(
+  "tags",
+  {
+    id: uuid(`id`).primaryKey().defaultRandom(),
+    name: varchar({ length: 255 }).notNull(),
+    color: colorEnum("color"),
+    networkId: uuid("network_id")
+      .notNull()
+      .references(() => networks.id, { onDelete: "cascade" }),
+  },
+  (t) => [unique("network_tag_name_unique_idx").on(t.networkId, t.name)],
+);
 
 export const devicesTags = pgTable(
   "devices_tags",
