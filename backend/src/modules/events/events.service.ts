@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { EventDto } from "common/dto/event/index";
-import { and, eq, gt, lt, or } from "drizzle-orm";
+import { and, eq, gte, lt, or } from "drizzle-orm";
 import { type Database, DRIZZLE } from "../../db/database.module.js";
 
 @Injectable()
@@ -34,7 +34,7 @@ export class EventsService {
             entity ? eq(events.entity, entity) : undefined,
             action ? eq(events.action, action) : undefined,
             afterDatetime
-              ? gt(events.time, new Date(afterDatetime))
+              ? gte(events.time, new Date(afterDatetime))
               : undefined,
             beforeDatetime
               ? lt(events.time, new Date(beforeDatetime))
