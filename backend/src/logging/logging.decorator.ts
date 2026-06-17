@@ -43,7 +43,7 @@ export const LogEvents = (entity: "network" | "device" | "rule" | "tag") => {
             await tx.insert(schema.events).values({
               action: "create",
               entity,
-              entity_object_id: result.id,
+              entityObjectId: result.id,
               networkId: networkId,
               userId: cls.get("userId"),
             });
@@ -88,7 +88,7 @@ export const LogEvents = (entity: "network" | "device" | "rule" | "tag") => {
           await tx.insert(schema.events).values({
             action: "update",
             entity: entity,
-            entity_object_id: id,
+            entityObjectId: id,
             updatedFields: changes,
             networkId: networkId,
             userId: cls.get("userId"),
@@ -114,7 +114,7 @@ export const LogEvents = (entity: "network" | "device" | "rule" | "tag") => {
           await tx.insert(schema.events).values({
             action: "delete",
             entity: entity,
-            entity_object_id: id,
+            entityObjectId: id,
             networkId: networkId,
             userId: cls.get("userId"),
           });

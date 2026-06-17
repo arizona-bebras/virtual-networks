@@ -73,8 +73,8 @@ export class EventsController {
     @Query("event_latest_date") eventLatestDate: string,
   ): Promise<EventDto[]> {
     const events = await this.eventsService.get(
-      userId,
       networkId,
+      userId,
       action,
       entity,
       eventEarliestDate,

@@ -1,17 +1,17 @@
-import { Global, Module } from "@nestjs/common";
-import { ClsService } from "nestjs-cls";
-import { ClsModule } from "nestjs-cls";
-import type { ExtractTablesFromSchema } from "drizzle-orm";
-import "dotenv/config";
-import { sql } from "drizzle-orm";
-import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
-import type { Pool } from "pg";
-import { postgresUrl } from "./connection.js";
-import * as schema from "./schema.js";
+import { Global, Module } from '@nestjs/common';
+import { ClsService } from 'nestjs-cls';
+import { ClsModule } from 'nestjs-cls';
+import type { ExtractTablesFromSchema } from 'drizzle-orm';
+import 'dotenv/config';
+import { sql } from 'drizzle-orm';
+import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
+import type { Pool } from 'pg';
+import { postgresUrl } from './connection.js';
+import * as schema from './schema.js';
 
-export const RAW_DRIZZLE = "RAW_DRIZZLE";
+export const RAW_DRIZZLE = 'RAW_DRIZZLE';
 
-export const DRIZZLE = "DRIZZLE";
+export const DRIZZLE = 'DRIZZLE';
 type DatabaseSchema = ExtractTablesFromSchema<typeof schema>;
 export type Database = NodePgDatabase<
   DatabaseSchema,
@@ -23,11 +23,11 @@ export type Database = NodePgDatabase<
 @Global()
 @Module({
   imports: [
-      ClsModule.forRoot({
-        global: true,
-        middleware: { mount: false },
-      }),
-    ],
+    ClsModule.forRoot({
+      global: true,
+      middleware: { mount: false },
+    }),
+  ],
   providers: [
     {
       provide: RAW_DRIZZLE,
@@ -52,7 +52,7 @@ export type Database = NodePgDatabase<
       useFactory: (cls: ClsService, rawDb: Database) => {
         return new Proxy(rawDb, {
           get(target, prop) {
-            const tx = cls.get("CURRENT_TRANSACTION");
+            const tx = cls.get('CURRENT_TRANSACTION');
             return tx ? tx[prop] : target[prop];
           },
         });

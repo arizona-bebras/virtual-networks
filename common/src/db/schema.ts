@@ -239,7 +239,7 @@ export const events = pgTable("events", {
   id: uuid(`id`).primaryKey().defaultRandom(),
   action: actionEnum("action").notNull(),
   entity: entityEnum("entity").notNull(),
-  entity_object_id: uuid("entity_object_id"),
+  entityObjectId: uuid("entity_object_id"),
   updatedFields: jsonb("updated_fields").$type<UpdatedField[]>(),
   networkId: uuid("network_id").references(() => networks.id, { onDelete: "cascade"}),
   userId: text("user_id").references(() => user.id, { onDelete: "no action" }).notNull(),
