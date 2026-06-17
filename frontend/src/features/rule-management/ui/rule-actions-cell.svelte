@@ -20,6 +20,9 @@ const deleteMutation = createMutation(() =>
     queryClient.invalidateQueries({
       queryKey: queryKeys.networkRules(networkId),
     });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkEvents(networkId),
+    });
   }),
 );
 

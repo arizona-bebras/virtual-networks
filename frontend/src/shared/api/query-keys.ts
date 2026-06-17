@@ -33,6 +33,18 @@ export const queryKeys = {
       destTags?: string[];
     },
   ) => [...queryKeys.networkRules(networkId), filters ?? {}] as const,
+  networkEvents: (networkId: string) =>
+    [...queryKeys.network(networkId), "events"] as const,
+  networkEventsList: (
+    networkId: string,
+    filters?: {
+      userId?: string;
+      action?: string;
+      entity?: string;
+      eventEarliestDate?: string;
+      eventLatestDate?: string;
+    },
+  ) => [...queryKeys.networkEvents(networkId), filters ?? {}] as const,
   networkUsers: (networkId: string) =>
     [...queryKeys.network(networkId), "users"] as const,
 };

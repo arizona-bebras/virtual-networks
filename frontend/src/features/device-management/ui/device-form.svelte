@@ -58,6 +58,9 @@ const creationMutation = createMutation(() =>
     queryClient.invalidateQueries({
       queryKey: queryKeys.networkDeviceIp(currentNetworkId),
     });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkEvents(currentNetworkId),
+    });
     dialogState = false;
   }),
 );
@@ -66,6 +69,9 @@ const updateMutation = createMutation(() =>
   deviceUpdateMutation(() => {
     queryClient.invalidateQueries({
       queryKey: queryKeys.networkDeviceIp(currentNetworkId),
+    });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkEvents(currentNetworkId),
     });
   }),
 );
@@ -139,6 +145,9 @@ let {
     }
     queryClient.invalidateQueries({
       queryKey: queryKeys.networkDevices(currentNetworkId),
+    });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkEvents(currentNetworkId),
     });
     dialogState = false;
   },

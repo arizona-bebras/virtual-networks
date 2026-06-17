@@ -19,8 +19,10 @@ import {
 } from "proto";
 import { type Database, DRIZZLE } from "../../db/database.module.js";
 import * as schema from "../../db/schema.js";
+import { LogEvents } from "../../logging/logging.decorator.js";
 import { RouterService } from "../router/router.service.js";
 
+@LogEvents("device")
 @Injectable()
 export class DevicesService {
   constructor(
@@ -95,9 +97,16 @@ export class DevicesService {
       const [newDevice] = await tx
         .insert(schema.devices)
         .values({ ...device, keysId: keys.id, networkId })
-        .returning({ id: schema.devices.id });
+        .returning({
+          id: schema.devices.id,
+          name: schema.devices.name,
+          slug: schema.devices.slug,
+          ip: schema.devices.ip,
+          ownerId: schema.devices.ownerId,
+          networkId: schema.devices.networkId,
+        });
 
-      return newDevice.id;
+      return newDevice;
     });
 
     this.routerService.emitEvent(
@@ -201,7 +210,7 @@ export class DevicesService {
     });
   }
 
-  async update(id: string, networkId: string, device: UpdateDeviceDto) {
+  async update(id: string, device: UpdateDeviceDto, networkId: string) {
     await this.db
       .update(schema.devices)
       .set(device)
@@ -290,7 +299,12 @@ export class DevicesService {
     });
 
     if (!status) {
-      throw new NotFoundException("device not found");
+      return {
+        isOnline: false,
+        lastHandshakeTime: null,
+        bytesReceived: "0",
+        bytesSent: "0",
+      };
     }
 
     return {

@@ -2,6 +2,7 @@ import type { INestApplication } from "@nestjs/common";
 import { Test, type TestingModule } from "@nestjs/testing";
 import type { DeviceRelations } from "common/schemas/device/index";
 import { sql } from "drizzle-orm";
+import { ClsServiceManager } from "nestjs-cls";
 import request from "supertest";
 import type { App } from "supertest/types.js";
 import { Role } from "../src/authorization/role.enum.js";
@@ -81,16 +82,39 @@ describe("DevicesController (e2e)", () => {
         RouterService,
         {
           provide: DRIZZLE,
-          useValue: db,
+          useFactory: () => {
+            const cls = ClsServiceManager.getClsService();
+            return new Proxy(db, {
+              get(target, prop) {
+                const tx = cls.get("CURRENT_TRANSACTION");
+                // Если функция, обязательно биндим её контекст, чтобы Drizzle не ругался
+                if (tx && typeof tx[prop] === "function") {
+                  return tx[prop].bind(tx);
+                }
+                return tx ? tx[prop] : target[prop];
+              },
+            });
+          },
         },
       ],
     }).compile();
 
     app = moduleFixture.createNestApplication();
+
     app.use((req, _res, next) => {
       req.session = { user: { id: userId } };
       next();
     });
+
+    app.use((req, _res, next) => {
+      const cls = ClsServiceManager.getClsService();
+
+      cls.run(() => {
+        cls.set("userId", req?.session?.user?.id);
+        next();
+      });
+    });
+
     await app.init();
   });
 

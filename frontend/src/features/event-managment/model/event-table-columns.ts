@@ -104,7 +104,7 @@ export const columns: ColumnDef<Event>[] = [
       });
     },
     cell: ({ row }) => {
-      return row.original.user.name;
+      return row.original.user?.name;
     },
     enableGlobalFilter: true,
     meta: {
@@ -166,7 +166,7 @@ export const columns: ColumnDef<Event>[] = [
     },
   },
   {
-    accessorKey: "entities",
+    accessorKey: "entity",
     header: ({ column }) => {
       return renderComponent(EventColumnFilter, {
         column,
@@ -178,7 +178,7 @@ export const columns: ColumnDef<Event>[] = [
     },
     cell: ({ row }) => {
       return renderComponent(EntityCell, {
-        entity: row.original.entities,
+        entity: row.original.entity,
       });
     },
     enableGlobalFilter: true,

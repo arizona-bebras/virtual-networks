@@ -58,13 +58,13 @@ export class DevicesController {
     @Param("network_id") network_id: string,
     @Body() device: CreateDeviceDto,
     @Session() session: UserSession,
-  ): Promise<{ id: string }> {
-    const id = await this.devicesService.create(
+  ) {
+    const createdDevice = await this.devicesService.create(
       { ...device, ownerId: session.user.id },
       network_id,
     );
 
-    return { id };
+    return { id: createdDevice.id };
   }
 
   @Get()
@@ -149,7 +149,7 @@ export class DevicesController {
     @Param("device_id") id: string,
     @Body() device: UpdateDeviceDto,
   ) {
-    await this.devicesService.update(id, networkId, device);
+    await this.devicesService.update(id, device, networkId);
   }
 
   @Delete(":device_id")

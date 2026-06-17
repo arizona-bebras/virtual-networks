@@ -3,11 +3,12 @@ import { ReflectionService } from "@grpc/reflection";
 import { NestFactory } from "@nestjs/core";
 import { type MicroserviceOptions, Transport } from "@nestjs/microservices";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { ClsMiddleware, ClsServiceManager } from "nestjs-cls";
 import { AppModule } from "./app.module.js";
+import { auth } from "./auth.js";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    // Better Auth will re-add the default body parsers for non-auth routes.
     bodyParser: false,
   });
   app.connectMicroservice<MicroserviceOptions>({
@@ -25,6 +26,30 @@ async function bootstrap() {
     origin: process.env.TRUSTED_ORIGINS?.split(",").map((o) => o.trim()) || [],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
     credentials: true,
+  });
+
+  app.use(new ClsMiddleware(undefined).use);
+
+  app.use(async (req, _res, next) => {
+    try {
+      const session = await auth.api.getSession({
+        headers: req.headers,
+      });
+
+      console.log(session);
+      if (session?.user?.id) {
+        req.session = { user: { id: session.user.id } };
+
+        const cls = ClsServiceManager.getClsService();
+        if (cls) {
+          cls.set("userId", session.user.id);
+        }
+      }
+    } catch (error) {
+      console.error("Better-Auth session verification failed:", error);
+    }
+
+    next();
   });
   const config = new DocumentBuilder()
     .setTitle("Virtual Networks API")

@@ -23,6 +23,9 @@ const query = createMutation(() =>
       queryKey: queryKeys.networks(),
       exact: true,
     });
+    await queryClient.invalidateQueries({
+      queryKey: queryKeys.networkEvents(data.id),
+    });
     goto(`/app/network/${data.id}/dashboard`);
   }),
 );

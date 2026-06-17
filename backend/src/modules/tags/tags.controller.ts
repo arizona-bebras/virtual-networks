@@ -46,7 +46,8 @@ export class TagsController {
     @Param("network_id") network_id: string,
     @Body() tag: CreateTagDto,
   ) {
-    await this.tagsService.create(tag, network_id);
+    const createdTag = await this.tagsService.create(tag, network_id);
+    return createdTag;
   }
 
   @Get()
@@ -81,8 +82,11 @@ export class TagsController {
   })
   @ApiResponse({ status: 200, description: "Тег найден", type: TagDto })
   @ApiResponse({ status: 404, description: "Тег не найден" })
-  async getTag(@Param("tag_id") id: string): Promise<TagDto | undefined> {
-    return await this.tagsService.read(id);
+  async getTag(
+    @Param("tag_id") id: string,
+    @Param("network_id") network_id: string,
+  ): Promise<TagDto | undefined> {
+    return await this.tagsService.read(id, network_id);
   }
 
   @Put(":tag_id")
@@ -96,8 +100,12 @@ export class TagsController {
   @ApiBody({ type: UpdateTagDto })
   @ApiResponse({ status: 200, description: "Тег успешно обновлён" })
   @ApiResponse({ status: 404, description: "Тег не найден" })
-  async updateTag(@Param("tag_id") id: string, @Body() tag: UpdateTagDto) {
-    await this.tagsService.update(id, tag);
+  async updateTag(
+    @Param("tag_id") id: string,
+    @Param("network_id") networkId: string,
+    @Body() tag: UpdateTagDto,
+  ) {
+    await this.tagsService.update(id, tag, networkId);
   }
 
   @Delete(":tag_id")
@@ -110,7 +118,10 @@ export class TagsController {
   })
   @ApiResponse({ status: 200, description: "Тег успешно удалён" })
   @ApiResponse({ status: 404, description: "Тег не найден" })
-  async deleteTag(@Param("tag_id") id: string) {
-    await this.tagsService.delete(id);
+  async deleteTag(
+    @Param("tag_id") id: string,
+    @Param("network_id") network_id: string,
+  ) {
+    await this.tagsService.delete(id, network_id);
   }
 }
