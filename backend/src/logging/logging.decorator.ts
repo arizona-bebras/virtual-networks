@@ -1,11 +1,11 @@
+import { ClsServiceManager } from "nestjs-cls";
+import { type Database } from "../db/database.module.js";
 import * as schema from "../db/schema.js";
-import { type Database, DRIZZLE } from "../db/database.module.js";
-import { RouterService } from "../modules/router/router.service.js";
-import { NetworksService } from "../modules/networks/networks.service.js";
 import { DevicesService } from "../modules/devices/devices.service.js";
+import { NetworksService } from "../modules/networks/networks.service.js";
+import { RouterService } from "../modules/router/router.service.js";
 import { RulesService } from "../modules/rules/rules.service.js";
 import { TagsService } from "../modules/tags/tags.service.js";
-import { ClsServiceManager } from "nestjs-cls";
 
 export const LogEvents = (entity: "network" | "device" | "rule" | "tag") => {
   return <
@@ -27,18 +27,22 @@ export const LogEvents = (entity: "network" | "device" | "rule" | "tag") => {
 
     const cls = ClsServiceManager.getClsService();
 
-    const createMethod = target.prototype["create"];
+    const createMethod = target.prototype.create;
     if (createMethod) {
-      target.prototype["create"] = async function (
+      target.prototype.create = async function (
         data: string,
         networkId?: string,
         ...args: (string | object)[]
       ) {
         return this.db.transaction(async (tx) => {
-          cls.set("CURRENT_TRANSACTION", tx)
-          const result = await createMethod.call(this, data, networkId, ...args);
+          cls.set("CURRENT_TRANSACTION", tx);
+          const result = await createMethod.call(
+            this,
+            data,
+            networkId,
+            ...args,
+          );
 
-          console.log(result.id)
           if (result) {
             await tx.insert(schema.events).values({
               action: "create",
@@ -49,22 +53,22 @@ export const LogEvents = (entity: "network" | "device" | "rule" | "tag") => {
             });
           }
 
-          cls.set("CURRENT_TRANSACTION", null)
+          cls.set("CURRENT_TRANSACTION", null);
           return result;
         });
       };
     }
 
-    const updateMethod = target.prototype["update"];
+    const updateMethod = target.prototype.update;
     if (updateMethod) {
-      target.prototype["update"] = async function (
+      target.prototype.update = async function (
         id: string,
         data: object,
         networkId?: string,
         ...args: (string | object)[]
       ) {
         return this.db.transaction(async (tx) => {
-          cls.set("CURRENT_TRANSACTION", tx)
+          cls.set("CURRENT_TRANSACTION", tx);
           const oldData = await tx.query[entityTableDict[entity]].findFirst({
             where: { id: id },
           });
@@ -83,7 +87,13 @@ export const LogEvents = (entity: "network" | "device" | "rule" | "tag") => {
             }
           }
 
-          const result = await updateMethod.call(this, id, data, networkId, ...args);
+          const result = await updateMethod.call(
+            this,
+            id,
+            data,
+            networkId,
+            ...args,
+          );
 
           await tx.insert(schema.events).values({
             action: "update",
@@ -94,22 +104,22 @@ export const LogEvents = (entity: "network" | "device" | "rule" | "tag") => {
             userId: cls.get("userId"),
           });
 
-          cls.set("CURRENT_TRANSACTION", null)
+          cls.set("CURRENT_TRANSACTION", null);
           return result;
         });
       };
     }
 
-    const deleteMethod = target.prototype["delete"];
+    const deleteMethod = target.prototype.delete;
     if (deleteMethod) {
-      target.prototype["delete"] = async function (
+      target.prototype.delete = async function (
         id: string,
         networkId?: string,
         ...args: (string | object)[]
       ) {
         return this.db.transaction(async (tx) => {
-          cls.set("CURRENT_TRANSACTION", tx)
-          const result = await deleteMethod.call(this, id, ...args);
+          cls.set("CURRENT_TRANSACTION", tx);
+          const result = await deleteMethod.call(this, id, networkId, ...args);
 
           await tx.insert(schema.events).values({
             action: "delete",
@@ -119,7 +129,7 @@ export const LogEvents = (entity: "network" | "device" | "rule" | "tag") => {
             userId: cls.get("userId"),
           });
 
-          cls.set("CURRENT_TRANSACTION", null)
+          cls.set("CURRENT_TRANSACTION", null);
           return result;
         });
       };

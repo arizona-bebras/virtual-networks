@@ -299,7 +299,12 @@ export class DevicesService {
     });
 
     if (!status) {
-      throw new NotFoundException("device not found");
+      return {
+        isOnline: false,
+        lastHandshakeTime: null,
+        bytesReceived: "0",
+        bytesSent: "0",
+      };
     }
 
     return {

@@ -230,9 +230,9 @@ export const entityEnum = pgEnum("entities", [
 ]);
 
 interface UpdatedField {
-  key: string,
-  old: string,
-  new: string
+  key: string;
+  old: string;
+  new: string;
 }
 
 export const events = pgTable("events", {
@@ -241,8 +241,12 @@ export const events = pgTable("events", {
   entity: entityEnum("entity").notNull(),
   entityObjectId: uuid("entity_object_id"),
   updatedFields: jsonb("updated_fields").$type<UpdatedField[]>(),
-  networkId: uuid("network_id").references(() => networks.id, { onDelete: "cascade"}),
-  userId: text("user_id").references(() => user.id, { onDelete: "no action" }).notNull(),
+  networkId: uuid("network_id").references(() => networks.id, {
+    onDelete: "cascade",
+  }),
+  userId: text("user_id")
+    .references(() => user.id, { onDelete: "no action" })
+    .notNull(),
   time: timestamp("time").defaultNow().notNull(),
 });
 
@@ -301,7 +305,7 @@ export const relations = defineRelations(
         from: r.networks.keysId,
         to: r.keys.id,
       }),
-      events: r.many.events()
+      events: r.many.events(),
     },
 
     devices: {
@@ -372,8 +376,8 @@ export const relations = defineRelations(
       }),
       network: r.one.networks({
         from: r.events.networkId,
-        to: r.networks.id
-      })
+        to: r.networks.id,
+      }),
     },
   }),
 );

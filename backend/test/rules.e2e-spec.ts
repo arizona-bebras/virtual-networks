@@ -2,6 +2,7 @@ import { jest } from "@jest/globals";
 import type { INestApplication } from "@nestjs/common";
 import { Test, type TestingModule } from "@nestjs/testing";
 import type { RuleRelation } from "common/schemas/rule/index";
+import { ClsServiceManager } from "nestjs-cls";
 import {
   ChangedResourceType,
   ChangeOperation,
@@ -21,7 +22,6 @@ import {
   createTestDatabase,
   type TestDatabase,
 } from "./test-database.js";
-import { ClsMiddleware, ClsServiceManager } from "nestjs-cls";
 
 const userId = "user-1";
 const networkId = "11111111-1111-1111-1111-111111111111";
@@ -123,16 +123,16 @@ describe("RulesController (e2e)", () => {
       req.session = { user: { id: userId } };
       next();
     });
-  
+
     app.use((req, _res, next) => {
       const cls = ClsServiceManager.getClsService();
-      
+
       cls.run(() => {
         cls.set("userId", req?.session?.user?.id);
         next();
       });
     });
-  
+
     await app.init();
   });
 

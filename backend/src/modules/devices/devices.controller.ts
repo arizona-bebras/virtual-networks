@@ -64,7 +64,7 @@ export class DevicesController {
       network_id,
     );
 
-    return { ...createdDevice };
+    return { id: createdDevice.id };
   }
 
   @Get()

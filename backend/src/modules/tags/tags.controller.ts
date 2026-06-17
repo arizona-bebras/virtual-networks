@@ -7,7 +7,6 @@ import {
   Post,
   Put,
   Query,
-  Session,
   UseGuards,
 } from "@nestjs/common";
 import {
@@ -18,7 +17,7 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { AuthGuard, type UserSession } from "@thallesp/nestjs-better-auth";
+import { AuthGuard } from "@thallesp/nestjs-better-auth";
 import { CreateTagDto } from "common/dto/tag/create-tag";
 import { TagDto } from "common/dto/tag/index";
 import { UpdateTagDto } from "common/dto/tag/update-tag";
@@ -48,7 +47,7 @@ export class TagsController {
     @Body() tag: CreateTagDto,
   ) {
     const createdTag = await this.tagsService.create(tag, network_id);
-    return createdTag
+    return createdTag;
   }
 
   @Get()
@@ -122,7 +121,6 @@ export class TagsController {
   async deleteTag(
     @Param("tag_id") id: string,
     @Param("network_id") network_id: string,
-
   ) {
     await this.tagsService.delete(id, network_id);
   }

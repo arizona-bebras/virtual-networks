@@ -15,6 +15,7 @@ import type { UpdateNetworkDto } from "common/dto/network/update-network";
 import { sql } from "drizzle-orm";
 import { and, eq } from "drizzle-orm/sql/expressions/conditions";
 import { Address4 } from "ip-address";
+import { ClsServiceManager } from "nestjs-cls";
 import {
   ChangedResourceType,
   ChangeOperation,
@@ -24,7 +25,6 @@ import { type Database, DRIZZLE } from "../../db/database.module.js";
 import * as schema from "../../db/schema.js";
 import { LogEvents } from "../../logging/logging.decorator.js";
 import { RouterService } from "../router/router.service.js";
-import { ClsServiceManager } from "nestjs-cls";
 
 @LogEvents("network")
 @Injectable()
@@ -34,9 +34,7 @@ export class NetworksService {
     private readonly routerService: RouterService,
   ) {}
 
-  async create(
-    networkData: CreateNetworkDto,
-  ): Promise<NetworkDto | undefined> {
+  async create(networkData: CreateNetworkDto): Promise<NetworkDto | undefined> {
     const userId = ClsServiceManager.getClsService().get("userId");
     return this.db.transaction(async (tx) => {
       const { publicKey, privateKey } = generateKeyPairSync("x25519");
@@ -106,10 +104,7 @@ export class NetworksService {
     });
   }
 
-  async enter(
-    _credentials: NetworkEnterCredentialsDto,
-    networkId: string,
-  ) {
+  async enter(_credentials: NetworkEnterCredentialsDto, networkId: string) {
     const userId = ClsServiceManager.getClsService().get("userId");
     await this.db.insert(schema.networkUsers).values({
       userId,
@@ -150,9 +145,7 @@ export class NetworksService {
     });
   }
 
-  async getNetworkUsers(
-    networkId: string,
-  ): Promise<NetworkUsersDto> {
+  async getNetworkUsers(networkId: string): Promise<NetworkUsersDto> {
     const userId = ClsServiceManager.getClsService().get("userId");
     const users = await this.db
       .select({

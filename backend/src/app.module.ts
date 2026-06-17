@@ -7,11 +7,11 @@ import { AppService } from "./app.service.js";
 import { auth } from "./auth.js";
 import { DatabaseModule } from "./db/database.module.js";
 import { DevicesModule } from "./modules/devices/devices.module.js";
+import { EventsModule } from "./modules/events/events.module.js";
 import { NetworksModule } from "./modules/networks/networks.module.js";
 import { RouterModule } from "./modules/router/router.module.js";
 import { RulesModule } from "./modules/rules/rules.module.js";
 import { TagsModule } from "./modules/tags/tags.module.js";
-import { EventsModule } from './modules/events/events.module.js';
 
 @Module({
   imports: [

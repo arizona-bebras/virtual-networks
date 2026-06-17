@@ -13,7 +13,7 @@ export const mockEvents: Event[] = [
     action: {
       type: "create",
     },
-    entities: {
+    entity: {
       type: "device",
       info: {
         id: "d1111111-1111-1111-1111-111111111111",
@@ -37,7 +37,7 @@ export const mockEvents: Event[] = [
       updatedFields: [{ key: "port", old: "80", new: "443" }],
     },
     time: "2026-05-30T11:15:00Z",
-    entities: {
+    entity: {
       type: "rule",
       info: {
         id: "r1111111-1111-1111-1111-111111111111",
@@ -61,7 +61,7 @@ export const mockEvents: Event[] = [
       type: "create",
     },
     time: "2026-05-30T12:30:00Z",
-    entities: {
+    entity: {
       type: "tag",
       info: {
         id: "t1111111-1111-1111-1111-111111111111",
@@ -82,7 +82,7 @@ export const mockEvents: Event[] = [
       type: "delete",
     },
     time: "2026-05-30T13:45:00Z",
-    entities: {
+    entity: {
       type: "device",
       info: {
         id: "d2222222-2222-2222-2222-222222222222",
@@ -105,7 +105,7 @@ export const mockEvents: Event[] = [
       type: "delete",
     },
     time: "2026-05-30T14:20:00Z",
-    entities: {
+    entity: {
       type: "rule",
       info: {
         id: "r2222222-2222-2222-2222-222222222222",
@@ -137,7 +137,7 @@ export const mockEvents: Event[] = [
       ],
     },
     time: "2026-05-31T09:00:00Z",
-    entities: {
+    entity: {
       type: "network",
       info: {
         id: "n1111111-1111-1111-1111-111111111111",
@@ -162,7 +162,7 @@ export const mockEvents: Event[] = [
       updatedFields: [{ key: "ip", old: "192.168.1.10", new: "192.168.1.25" }],
     },
     time: "2026-05-31T10:30:00Z",
-    entities: {
+    entity: {
       type: "device",
       info: {
         id: "d1111111-1111-1111-1111-111111111111",
@@ -186,7 +186,7 @@ export const mockEvents: Event[] = [
       updatedFields: [{ key: "color", old: "blue", new: "purple" }],
     },
     time: "2026-05-31T11:45:00Z",
-    entities: {
+    entity: {
       type: "tag",
       info: {
         id: "t1111111-1111-1111-1111-111111111111",
@@ -211,7 +211,7 @@ export const mockEvents: Event[] = [
       ],
     },
     time: "2026-05-31T14:10:00Z",
-    entities: {
+    entity: {
       type: "rule",
       info: {
         id: "r1111111-1111-1111-1111-111111111111",
@@ -236,7 +236,7 @@ export const mockEvents: Event[] = [
       updatedFields: [{ key: "domain", old: "main-net", new: "corp-net" }],
     },
     time: "2026-06-01T12:20:00Z",
-    entities: {
+    entity: {
       type: "network",
       info: {
         id: "n1111111-1111-1111-1111-111111111111",

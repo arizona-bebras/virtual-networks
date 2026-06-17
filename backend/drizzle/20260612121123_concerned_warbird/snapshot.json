@@ -2,59 +2,34 @@
   "version": "8",
   "dialect": "postgres",
   "id": "4b4c5dff-dd79-47d3-868b-153d0b3e0fa0",
-  "prevIds": [
-    "5e5afee7-271f-4ef1-884f-83906f77774e"
-  ],
+  "prevIds": ["5e5afee7-271f-4ef1-884f-83906f77774e"],
   "ddl": [
     {
-      "values": [
-        "create",
-        "update",
-        "delete"
-      ],
+      "values": ["create", "update", "delete"],
       "name": "actions",
       "entityType": "enums",
       "schema": "public"
     },
     {
-      "values": [
-        "red",
-        "green",
-        "blue",
-        "yellow",
-        "purple",
-        "orange"
-      ],
+      "values": ["red", "green", "blue", "yellow", "purple", "orange"],
       "name": "color",
       "entityType": "enums",
       "schema": "public"
     },
     {
-      "values": [
-        "network",
-        "device",
-        "rule",
-        "tag"
-      ],
+      "values": ["network", "device", "rule", "tag"],
       "name": "entities",
       "entityType": "enums",
       "schema": "public"
     },
     {
-      "values": [
-        "TCP",
-        "UDP",
-        "ICMP"
-      ],
+      "values": ["TCP", "UDP", "ICMP"],
       "name": "protocol",
       "entityType": "enums",
       "schema": "public"
     },
     {
-      "values": [
-        "admin",
-        "user"
-      ],
+      "values": ["admin", "user"],
       "name": "user_role",
       "entityType": "enums",
       "schema": "public"
@@ -1326,14 +1301,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "account_user_id_user_id_fkey",
@@ -1343,14 +1314,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "owner_id"
-      ],
+      "columns": ["owner_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "devices_owner_id_user_id_fkey",
@@ -1360,14 +1327,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "network_id"
-      ],
+      "columns": ["network_id"],
       "schemaTo": "public",
       "tableTo": "networks",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "devices_network_id_networks_id_fkey",
@@ -1377,14 +1340,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "keys_id"
-      ],
+      "columns": ["keys_id"],
       "schemaTo": "public",
       "tableTo": "keys",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "devices_keys_id_keys_id_fkey",
@@ -1394,14 +1353,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "device_id"
-      ],
+      "columns": ["device_id"],
       "schemaTo": "public",
       "tableTo": "devices",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "devices_tags_device_id_devices_id_fkey",
@@ -1411,14 +1366,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "tag_id"
-      ],
+      "columns": ["tag_id"],
       "schemaTo": "public",
       "tableTo": "tags",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "devices_tags_tag_id_tags_id_fkey",
@@ -1428,14 +1379,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "events_user_id_user_id_fkey",
@@ -1445,14 +1392,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "network_id"
-      ],
+      "columns": ["network_id"],
       "schemaTo": "public",
       "tableTo": "networks",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "network_users_network_id_networks_id_fkey",
@@ -1462,14 +1405,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "network_users_user_id_user_id_fkey",
@@ -1479,14 +1418,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "creator_id"
-      ],
+      "columns": ["creator_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "networks_creator_id_user_id_fkey",
@@ -1496,14 +1431,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "keys_id"
-      ],
+      "columns": ["keys_id"],
       "schemaTo": "public",
       "tableTo": "keys",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "networks_keys_id_keys_id_fkey",
@@ -1513,14 +1444,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "device_id"
-      ],
+      "columns": ["device_id"],
       "schemaTo": "public",
       "tableTo": "devices",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "peer_states_device_id_devices_id_fkey",
@@ -1530,14 +1457,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "network_id"
-      ],
+      "columns": ["network_id"],
       "schemaTo": "public",
       "tableTo": "networks",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "peer_states_network_id_networks_id_fkey",
@@ -1547,14 +1470,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "source_id"
-      ],
+      "columns": ["source_id"],
       "schemaTo": "public",
       "tableTo": "tags",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "rules_source_id_tags_id_fkey",
@@ -1564,14 +1483,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "dest_id"
-      ],
+      "columns": ["dest_id"],
       "schemaTo": "public",
       "tableTo": "tags",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "rules_dest_id_tags_id_fkey",
@@ -1581,14 +1496,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "network_id"
-      ],
+      "columns": ["network_id"],
       "schemaTo": "public",
       "tableTo": "networks",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "rules_network_id_networks_id_fkey",
@@ -1598,14 +1509,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "session_user_id_user_id_fkey",
@@ -1615,14 +1522,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "network_id"
-      ],
+      "columns": ["network_id"],
       "schemaTo": "public",
       "tableTo": "networks",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "tags_network_id_networks_id_fkey",
@@ -1631,10 +1534,7 @@
       "table": "tags"
     },
     {
-      "columns": [
-        "device_id",
-        "tag_id"
-      ],
+      "columns": ["device_id", "tag_id"],
       "nameExplicit": false,
       "name": "devices_tags_pkey",
       "entityType": "pks",
@@ -1642,10 +1542,7 @@
       "table": "devices_tags"
     },
     {
-      "columns": [
-        "network_id",
-        "user_id"
-      ],
+      "columns": ["network_id", "user_id"],
       "nameExplicit": false,
       "name": "network_users_pkey",
       "entityType": "pks",
@@ -1653,9 +1550,7 @@
       "table": "network_users"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "account_pkey",
       "schema": "public",
@@ -1663,9 +1558,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "devices_pkey",
       "schema": "public",
@@ -1673,9 +1566,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "events_pkey",
       "schema": "public",
@@ -1683,9 +1574,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "jwks_pkey",
       "schema": "public",
@@ -1693,9 +1582,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "keys_pkey",
       "schema": "public",
@@ -1703,9 +1590,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "networks_pkey",
       "schema": "public",
@@ -1713,9 +1598,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "peer_states_pkey",
       "schema": "public",
@@ -1723,9 +1606,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "rules_pkey",
       "schema": "public",
@@ -1733,9 +1614,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "session_pkey",
       "schema": "public",
@@ -1743,9 +1622,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "tags_pkey",
       "schema": "public",
@@ -1753,9 +1630,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "user_pkey",
       "schema": "public",
@@ -1763,9 +1638,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "verification_pkey",
       "schema": "public",
@@ -1774,10 +1647,7 @@
     },
     {
       "nameExplicit": true,
-      "columns": [
-        "ip",
-        "network_id"
-      ],
+      "columns": ["ip", "network_id"],
       "nullsNotDistinct": false,
       "name": "network_ip_unique_idx",
       "entityType": "uniques",
@@ -1786,9 +1656,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "device_id"
-      ],
+      "columns": ["device_id"],
       "nullsNotDistinct": false,
       "name": "peer_states_device_id_key",
       "schema": "public",
@@ -1797,9 +1665,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "token"
-      ],
+      "columns": ["token"],
       "nullsNotDistinct": false,
       "name": "session_token_key",
       "schema": "public",
@@ -1808,9 +1674,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "name"
-      ],
+      "columns": ["name"],
       "nullsNotDistinct": false,
       "name": "tags_name_key",
       "schema": "public",
@@ -1819,9 +1683,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "email"
-      ],
+      "columns": ["email"],
       "nullsNotDistinct": false,
       "name": "user_email_key",
       "schema": "public",

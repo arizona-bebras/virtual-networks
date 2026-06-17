@@ -29,8 +29,11 @@ export class TagsService {
   }
 
   async create(tag: CreateTagDto, networkId: string) {
-    const [createdTag] = await this.db.insert(schema.tags).values({ ...tag, networkId }).returning();
-    return createdTag
+    const [createdTag] = await this.db
+      .insert(schema.tags)
+      .values({ ...tag, networkId })
+      .returning();
+    return createdTag;
   }
 
   async read(id: string, networkId: string): Promise<TagDto | undefined> {

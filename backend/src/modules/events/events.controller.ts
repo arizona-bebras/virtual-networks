@@ -1,30 +1,11 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  NotFoundException,
-  Param,
-  Post,
-  Put,
-  Query,
-  UseGuards,
-} from "@nestjs/common";
-import {
-  ApiBody,
-  ApiOperation,
-  ApiParam,
-  ApiQuery,
-  ApiResponse,
-  ApiTags,
-} from "@nestjs/swagger";
+import { Controller, Get, Param, Query, UseGuards } from "@nestjs/common";
+import { ApiOperation, ApiQuery, ApiResponse } from "@nestjs/swagger";
 import { AuthGuard } from "@thallesp/nestjs-better-auth";
+import { EventDto } from "common/dto/event/index";
+import { Role } from "../../authorization/role.enum.js";
 import { Roles } from "../../authorization/roles.decorator.js";
 import { RolesGuard } from "../../authorization/roles.guard.js";
-import { Role } from "../../authorization/role.enum.js";
 import { EventsService } from "./events.service.js";
-import { EventDto } from "common/dto/event/index";
-import * as schema from "common/db/schema"
 
 @Controller("networks/:network_id/events")
 @UseGuards(AuthGuard, RolesGuard)
@@ -81,6 +62,6 @@ export class EventsController {
       eventLatestDate,
     );
 
-    return events
+    return events;
   }
 }

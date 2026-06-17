@@ -1,6 +1,7 @@
 import type { INestApplication } from "@nestjs/common";
 import { Test, type TestingModule } from "@nestjs/testing";
 import type { Network } from "common/schemas/network/index";
+import { ClsServiceManager } from "nestjs-cls";
 import request from "supertest";
 import type { App } from "supertest/types.js";
 import { Role } from "../src/authorization/role.enum.js";
@@ -15,7 +16,6 @@ import {
   createTestDatabase,
   type TestDatabase,
 } from "./test-database.js";
-import { ClsMiddleware, ClsServiceManager } from "nestjs-cls";
 
 const userId = "user-1";
 const networkId = "11111111-1111-1111-1111-111111111111";
@@ -54,7 +54,7 @@ describe("NetworksController (e2e)", () => {
 
   beforeEach(async () => {
     db = await createTestDatabase();
-  
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [NetworksController],
       providers: [
@@ -79,23 +79,23 @@ describe("NetworksController (e2e)", () => {
         },
       ],
     }).compile();
-  
+
     app = moduleFixture.createNestApplication();
-  
+
     app.use((req, _res, next) => {
       req.session = { user: { id: userId } };
       next();
     });
-  
+
     app.use((req, _res, next) => {
       const cls = ClsServiceManager.getClsService();
-      
+
       cls.run(() => {
         cls.set("userId", req?.session?.user?.id);
         next();
       });
     });
-  
+
     await app.init();
   });
 

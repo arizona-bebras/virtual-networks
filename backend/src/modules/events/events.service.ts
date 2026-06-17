@@ -1,9 +1,7 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { type Database, DRIZZLE } from '../../db/database.module.js';
-import * as schema from '../../db/schema.js';
-import type { SQL } from 'drizzle-orm';
-import { and, or, eq, gt, lt } from 'drizzle-orm';
-import { EventDto } from 'common/dto/event/index';
+import { Inject, Injectable } from "@nestjs/common";
+import { EventDto } from "common/dto/event/index";
+import { and, eq, gt, lt, or } from "drizzle-orm";
+import { type Database, DRIZZLE } from "../../db/database.module.js";
 
 @Injectable()
 export class EventsService {
@@ -12,16 +10,16 @@ export class EventsService {
   async get(
     networkId: string,
     userId?: string,
-    action?: 'create' | 'update' | 'delete',
-    entity?: 'network' | 'device' | 'tag' | 'rule',
+    action?: "create" | "update" | "delete",
+    entity?: "network" | "device" | "tag" | "rule",
     afterDatetime?: string,
     beforeDatetime?: string,
   ): Promise<EventDto[]> {
     const entityToTableMap = {
-      network: 'networks',
-      device: 'devices',
-      tag: 'tags',
-      rule: 'rules',
+      network: "networks",
+      device: "devices",
+      tag: "tags",
+      rule: "rules",
     };
     const eventLogs = await this.db.query.events.findMany({
       where: {
@@ -57,18 +55,20 @@ export class EventsService {
     const events: EventDto[] = [];
 
     for (const log of eventLogs) {
-      let action: EventDto['action'];
+      let action: EventDto["action"];
       switch (log.action) {
-        case 'update':
-          action = { type: 'update', updatedFields: log.updatedFields };
+        case "update":
+          action = { type: "update", updatedFields: log.updatedFields };
           break;
-        case 'delete':
-          action = { type: 'delete' };
+        case "delete":
+          action = { type: "delete" };
           break;
         default:
-          action = { type: 'create' };
+          action = { type: "create" };
       }
-      const object = await this.db.query[entityToTableMap[log.entity]].findFirst({
+      const object = await this.db.query[
+        entityToTableMap[log.entity]
+      ].findFirst({
         where: {
           id: log.entityObjectId,
         },

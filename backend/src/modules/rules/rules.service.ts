@@ -27,7 +27,7 @@ export class RulesService {
   ) {}
 
   async create(rule: CreateRuleDto, networkId: string, _: string) {
-    const [createdRule]= await this.db
+    const [createdRule] = await this.db
       .insert(schema.rules)
       .values({ ...rule, networkId })
       .returning();

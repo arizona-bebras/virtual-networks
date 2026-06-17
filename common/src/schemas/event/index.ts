@@ -13,9 +13,10 @@ const ActionEnum = z.union([
   }),
   z.object({
     type: z.literal("update"),
-    updatedFields: z.array(
-      z.object({ key: z.string(), old: z.string(), new: z.string() }),
-    ).optional().nullable(),
+    updatedFields: z
+      .array(z.object({ key: z.string(), old: z.string(), new: z.string() }))
+      .optional()
+      .nullable(),
   }),
   z.object({
     type: z.literal("delete"),

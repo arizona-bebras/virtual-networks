@@ -1,11 +1,11 @@
 import "@nestjs/platform-express";
-import { ClsMiddleware, ClsServiceManager } from "nestjs-cls";
 import { ReflectionService } from "@grpc/reflection";
 import { NestFactory } from "@nestjs/core";
 import { type MicroserviceOptions, Transport } from "@nestjs/microservices";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { ClsMiddleware, ClsServiceManager } from "nestjs-cls";
 import { AppModule } from "./app.module.js";
-import { auth } from "./auth.js"
+import { auth } from "./auth.js";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -32,24 +32,24 @@ async function bootstrap() {
 
   app.use(async (req, _res, next) => {
     try {
-          const session = await auth.api.getSession({
-            headers: req.headers,
-          });
+      const session = await auth.api.getSession({
+        headers: req.headers,
+      });
 
-          console.log(session)
-          if (session?.user?.id) {
-            req.session = { user: { id: session.user.id } };
-    
-            const cls = ClsServiceManager.getClsService();
-            if (cls) {
-              cls.set("userId", session.user.id);
-            }
-          }
-        } catch (error) {
-          console.error("Better-Auth session verification failed:", error);
+      console.log(session);
+      if (session?.user?.id) {
+        req.session = { user: { id: session.user.id } };
+
+        const cls = ClsServiceManager.getClsService();
+        if (cls) {
+          cls.set("userId", session.user.id);
         }
-    
-        next();
+      }
+    } catch (error) {
+      console.error("Better-Auth session verification failed:", error);
+    }
+
+    next();
   });
   const config = new DocumentBuilder()
     .setTitle("Virtual Networks API")
