@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  VirtualNetworks
+    Qnlink
   <br>
 </h1>
 
@@ -29,9 +29,9 @@
 
 ## Purpose
 
-**VirtualNetworks** is a comprehensive software-defined networking platform designed to eliminate the risks and complexities of traditional VPNs. Built on **Zero Trust** principles, it makes your protected infrastructure "invisible" to external threats by moving routing and access control to a managed control plane.
+**Qnlink** is a comprehensive software-defined networking platform designed to eliminate the risks and complexities of traditional VPNs. Built on **Zero Trust** principles, it makes your protected infrastructure "invisible" to external threats by moving routing and access control to a managed control plane.
 
-Designed for system engineers and IT administrators, VirtualNetworks provides a powerful **graph-based web editor** to manage your entire network topology visually, replacing cryptic configuration files with an intuitive and transparent interface.
+Designed for system engineers and IT administrators, Qnlink provides a powerful **graph-based web editor** to manage your entire network topology visually, replacing cryptic configuration files with an intuitive and transparent interface.
 
 ## Key Features
 
@@ -44,7 +44,7 @@ Designed for system engineers and IT administrators, VirtualNetworks provides a 
 
 ## Architecture
 
-VirtualNetworks uses a distributed architecture where the intelligence is centered in the **Control Plane**, while the traffic is handled by independent **V-Routers**. For a more in-depth look, see the [Architecture Documentation](ARCHITECTURE.md).
+Qnlink uses a distributed architecture where the intelligence is centered in the **Control Plane**, while the traffic is handled by independent **V-Routers**. For a more in-depth look, see the [Architecture Documentation](ARCHITECTURE.md).
 
 ```mermaid
 graph TD
