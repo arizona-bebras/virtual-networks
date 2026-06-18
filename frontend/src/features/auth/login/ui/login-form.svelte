@@ -3,7 +3,7 @@ import { LoaderCircle } from "@lucide/svelte";
 import { createMutation } from "@tanstack/svelte-query";
 import SuperDebug from "sveltekit-superforms";
 import type { z } from "zod/v4";
-import { goto } from "$app/navigation";
+import { goto, invalidate } from "$app/navigation";
 import { authClient } from "$shared/api/auth-client.js";
 import { useForm } from "$shared/lib/forms/use-form.svelte";
 import { Button } from "$shared/ui/button/index.js";
@@ -22,6 +22,7 @@ const loginQuery = createMutation(() => ({
     });
 
     if (!error) {
+      invalidate('auth:session');
       goto("/app");
       return responseData;
     }

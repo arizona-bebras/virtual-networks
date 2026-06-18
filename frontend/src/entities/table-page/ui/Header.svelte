@@ -66,7 +66,7 @@ function bulkRemoveSelected() {
     </div>
 
     <div class="flex items-center gap-1">
-      {#if selectedIds.length > 0}
+      <!-- {#if false}
         <div in:fade={{ duration: 150 }}>
           <Button
             variant="destructive"
@@ -79,7 +79,7 @@ function bulkRemoveSelected() {
             )
           </Button>
         </div>
-      {/if}
+      {/if} -->
       <Button onclick={() => (isAddDialogOpen = true)} class="rounded-[6px]">
         {(currentPage && addLabels[currentPage]) || "Добавить"}
         <Plus class="mr-1 size-3" />

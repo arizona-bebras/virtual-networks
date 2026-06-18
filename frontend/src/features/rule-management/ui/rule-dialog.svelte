@@ -9,11 +9,13 @@ let {
   rule,
   title,
   description,
+  initialValues,
 }: {
   open: boolean;
   title: string;
   rule?: RuleRelation;
   description?: string;
+  initialValues?: { sourceId?: string | null; destId?: string | null };
 } = $props();
 </script>
 
@@ -32,6 +34,6 @@ let {
         {/if}
       </div>
     </Dialog.Header>
-    <RuleForm pageData={rule} bind:dialogState={open} />
+    <RuleForm pageData={rule} {initialValues} bind:dialogState={open} />
   </Dialog.Content>
 </Dialog.Root>

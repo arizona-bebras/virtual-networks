@@ -23,7 +23,12 @@ import { ruleCreationMutation, ruleUpdateMutation } from "../api/query";
 let {
   pageData,
   dialogState = $bindable(),
-}: { pageData?: RuleRelation; dialogState: boolean } = $props();
+  initialValues,
+}: {
+  pageData?: RuleRelation;
+  dialogState: boolean;
+  initialValues?: { sourceId?: string | null; destId?: string | null };
+} = $props();
 
 let currentNetworkId = $derived(getNetworkId().id);
 const userTags = createQuery(() => deviceTags.userTags(currentNetworkId));
@@ -93,6 +98,9 @@ $effect(() => {
     $formData.destId = pageData?.destId;
     $formData.protocol = pageData?.protocol;
     $formData.port = Number(pageData?.port) || null;
+  } else if (initialValues) {
+    $formData.sourceId = initialValues.sourceId ?? null;
+    $formData.destId = initialValues.destId ?? null;
   }
 });
 </script>

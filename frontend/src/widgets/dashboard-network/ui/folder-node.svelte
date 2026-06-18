@@ -19,33 +19,40 @@ import {
 import { flip } from "svelte/animate";
 import { cubicOut } from "svelte/easing";
 import { fly, slide } from "svelte/transition";
-import { goto } from "$app/navigation";
-import { page } from "$app/state";
-import type { FolderNodeData } from "$entities/node/model/types";
-import LinkButton from "$entities/node/ui/LinkButton.svelte";
+import type { DeviceRelations } from "common/schemas/device/index";
+import { getDeviceEdit } from "$shared/lib/device-edit-context";
 import { Button } from "$shared/ui/button/index.js";
 import * as Card from "$shared/ui/card/index.js";
 import { Input } from "$shared/ui/input/index.js";
 
-let { id, data, selected }: NodeProps<Node<FolderNodeData>> = $props();
+// biome-ignore lint/suspicious/noExplicitAny: unused legacy component
+let { id, data, selected }: NodeProps<Node<any>> = $props();
+
+const deviceEdit = getDeviceEdit();
 
 let displayMode = $state<"graphical" | "list">("graphical");
 let searchQuery = $state("");
 
 let filteredDevices = $derived(
   searchQuery
-    ? data.devices.filter((d) =>
+    // biome-ignore lint/suspicious/noExplicitAny: unused legacy component
+    ? data.devices.filter((d: any) =>
         d.name.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : data.devices,
 );
 
 function handleBurst() {}
+
+function openDeviceEdit(device: DeviceRelations, e: MouseEvent) {
+  e.stopPropagation();
+  deviceEdit.open(device);
+}
 </script>
 
 <NodeToolbar {id} isVisible={selected} position={Position.Top}>
   <div
-    class="flex items-center gap-1 bg-background/95 backdrop-blur-md border border-border p-1.5 rounded-2xl shadow-2xl mb-3"
+    class="flex items-center gap-1 bg-background/95 backdrop-blur-md border border-border p-1.5 rounded-2xl shadow-2xl"
   >
     <Button
       variant={displayMode === 'graphical' ? 'secondary' : 'ghost'}
@@ -63,16 +70,6 @@ function handleBurst() {}
     >
       <List size={18} />
     </Button>
-    <div class="w-px h-5 bg-border mx-1.5"></div>
-    <Button
-      variant="ghost"
-      size="icon"
-      class="size-8 rounded-lg text-destructive hover:bg-destructive/10"
-      onclick={handleBurst}
-      title="Disintegrate into individual nodes"
-    >
-      <Ungroup size={16} />
-    </Button>
   </div>
 </NodeToolbar>
 
@@ -80,7 +77,8 @@ function handleBurst() {}
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 {#if displayMode === "graphical"}
   <Card.Root
-    class="w-44 bg-muted/10 border-border hover:bg-muted/30 transition-all cursor-pointer group shadow-lg border-2"
+    onclick={() => { displayMode = 'list'}}
+    class="w-44 bg-muted border-border hover:bg-muted/90 transition-all cursor-pointer group shadow-lg border-2"
   >
     <div class="p-3 flex items-center justify-between">
       <div class="flex items-center gap-3">
@@ -94,7 +92,7 @@ function handleBurst() {}
             {data.label || "Group"}
           </span>
           <span class="text-[9px] text-muted-foreground font-medium">
-            {searchQuery ? filteredDevices.length : data.count || 0} entities
+            {searchQuery ? filteredDevices.length : data.count || 0} устройств
           </span>
         </div>
       </div>
@@ -104,8 +102,9 @@ function handleBurst() {}
       />
     </div>
   </Card.Root>
-{:else}
+{:else if displayMode === 'list'}
   <Card.Root
+    ondblclick={() => { displayMode = 'graphical'}}
     class="w-72 bg-background/40 backdrop-blur-xl border-border shadow-2xl border-2 overflow-hidden rounded-2xl"
   >
     <div
@@ -145,7 +144,7 @@ function handleBurst() {}
     >
       {#each filteredDevices as device (device.ip)}
         <div
-          class="p-3 flex items-center gap-3 bg-muted/30 hover:bg-primary/5 rounded-xl transition-all border border-border/50 hover:border-primary/30 group relative overflow-hidden"
+          class="p-3 flex items-center gap-3 bg-muted/30 hover:bg-primary/5 rounded-xl transition-all border border-border/50  group relative overflow-hidden"
         >
           <div
             class="p-2 bg-background/50 rounded-lg border border-border/50 group-hover:border-primary/30 group-hover:bg-secondary/85 transition-all shadow-sm"
@@ -169,9 +168,14 @@ function handleBurst() {}
             </span>
           </div>
 
-          <LinkButton
-            redirectLink={`/app/network/${page.params.slug}/devices?editDevice=${device.id}`}
-          />
+          <Button
+            variant="ghost"
+            size="icon"
+            class="size-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+            onclick={(e) => openDeviceEdit(device, e)}
+          >
+            <SquarePen size={11} />
+          </Button>
 
           <div
             class="absolute inset-0 bg-gradient-to-r from-primary/0 to-primary/5 translate-x-full group-hover:translate-x-0 transition-transform duration-500 -z-10"

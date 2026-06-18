@@ -18,8 +18,9 @@ let {
 
 <div class="flex flex-wrap gap-1">
   {#each tags as tag (tag.id)}
-    {#if !excludedTags?.some((filterTag) => filterTag.name === tag.name)}
-      <TagBadge {tag} onclick={() => onclick?.(tag.name)} />
-    {/if}
+    {@const isExcluded = excludedTags?.some((filterTag) => filterTag.name === tag.name)}
+    <div class={isExcluded ? "opacity-40 pointer-events-none select-none" : ""}>
+      <TagBadge {tag} onclick={isExcluded ? undefined : () => onclick?.(tag.name)} />
+    </div>
   {/each}
 </div>

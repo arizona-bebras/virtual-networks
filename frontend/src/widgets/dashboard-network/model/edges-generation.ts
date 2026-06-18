@@ -1,7 +1,7 @@
 import type { Edge, Node } from "@xyflow/svelte";
 import type { RuleRelation } from "common/schemas/rule/index";
 import type { Tag } from "common/schemas/tag/index";
-import type { FolderNodeData } from "$entities/node/model/types";
+import type { DeviceNodeData } from "$entities/node/model/types";
 
 function createEndpointEdges(
   ruleId: string,
@@ -38,26 +38,38 @@ export function ruleEdges(rules: RuleRelation[], tags: Tag[]): Edge[] {
   ]);
 }
 
-export function deviceFolderToTagEdges(
-  deviceFolders: Node<FolderNodeData>[],
+export function deviceToTagEdges(
+  deviceNodes: Node<DeviceNodeData>[],
+  tagNodeIds: Set<string>,
 ): Edge[] {
   const edges: Edge[] = [];
-  for (const [index, folder] of deviceFolders.entries()) {
-    if (folder.data.folderType === "source") {
-      // Flow: Source Folder (-150) -> Source Tag (100)
-      edges.push({
-        id: `folder-source-${index + 1}`,
-        source: folder.id,
-        target: `source-${folder.data.connectingTagId}`,
-      });
-    } else {
-      // Flow: Dest Tag (650) -> Dest Folder (850)
-      edges.push({
-        id: `dest-folder-${index + 1}`,
-        source: `dest-${folder.data.connectingTagId}`,
-        target: folder.id,
-      });
+
+  for (const deviceNode of deviceNodes) {
+    const isSourceSide = deviceNode.id.startsWith("source-");
+    const { device } = deviceNode.data;
+
+    for (const tag of device.tags ?? []) {
+      if (isSourceSide) {
+        const tagNodeId = `source-${tag.id}`;
+        if (tagNodeIds.has(tagNodeId)) {
+          edges.push({
+            id: `${deviceNode.id}--${tagNodeId}`,
+            source: deviceNode.id,
+            target: tagNodeId,
+          });
+        }
+      } else {
+        const tagNodeId = `dest-${tag.id}`;
+        if (tagNodeIds.has(tagNodeId)) {
+          edges.push({
+            id: `${tagNodeId}--${deviceNode.id}`,
+            source: tagNodeId,
+            target: deviceNode.id,
+          });
+        }
+      }
     }
   }
+
   return edges;
 }
