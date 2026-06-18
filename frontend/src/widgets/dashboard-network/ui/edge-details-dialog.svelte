@@ -7,9 +7,13 @@ import {
   Tag,
   Trash2,
 } from "@lucide/svelte";
-import type { Edge, Node } from "@xyflow/svelte";
 import { createMutation, useQueryClient } from "@tanstack/svelte-query";
-import type { DeviceNodeData, RuleNodeData, TagNodeData } from "$entities/node/model/types";
+import type { Edge, Node } from "@xyflow/svelte";
+import type {
+  DeviceNodeData,
+  RuleNodeData,
+  TagNodeData,
+} from "$entities/node/model/types";
 import { tagDeviceRemove } from "$features/device-management/api/query";
 import { ruleUpdateMutation } from "$features/rule-management/api/query";
 import { queryKeys } from "$shared/api/query-keys";
@@ -34,30 +38,46 @@ const queryClient = useQueryClient();
 
 const removeTagMutation = createMutation(() =>
   tagDeviceRemove(() => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.networkDevices(networkId) });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkDevices(networkId),
+    });
     open = false;
   }),
 );
 
 const detachRuleMutation = createMutation(() =>
   ruleUpdateMutation(() => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.networkRules(networkId) });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkRules(networkId),
+    });
     open = false;
   }),
 );
 
-type EdgeKind = "device-to-tag" | "tag-to-device" | "tag-to-rule" | "rule-to-tag" | "unknown";
+type EdgeKind =
+  | "device-to-tag"
+  | "tag-to-device"
+  | "tag-to-rule"
+  | "rule-to-tag"
+  | "unknown";
 
 let edgeKind: EdgeKind = $derived(
-  !sourceNode || !targetNode ? "unknown" :
-  sourceNode.type === "device" && targetNode.type === "tag" ? "device-to-tag" :
-  sourceNode.type === "tag" && targetNode.type === "device" ? "tag-to-device" :
-  sourceNode.type === "tag" && targetNode.type === "rule" ? "tag-to-rule" :
-  sourceNode.type === "rule" && targetNode.type === "tag" ? "rule-to-tag" :
-  "unknown"
+  !sourceNode || !targetNode
+    ? "unknown"
+    : sourceNode.type === "device" && targetNode.type === "tag"
+      ? "device-to-tag"
+      : sourceNode.type === "tag" && targetNode.type === "device"
+        ? "tag-to-device"
+        : sourceNode.type === "tag" && targetNode.type === "rule"
+          ? "tag-to-rule"
+          : sourceNode.type === "rule" && targetNode.type === "tag"
+            ? "rule-to-tag"
+            : "unknown",
 );
 
-let isDeleting = $derived(removeTagMutation.isPending || detachRuleMutation.isPending);
+let isDeleting = $derived(
+  removeTagMutation.isPending || detachRuleMutation.isPending,
+);
 
 function handleDelete() {
   if (!edge) return;
@@ -74,9 +94,17 @@ function handleDelete() {
       deviceId: edge.target.slice("dest-device-".length),
     });
   } else if (edgeKind === "tag-to-rule") {
-    detachRuleMutation.mutate({ networkId, ruleId: edge.target, ruleInfo: { sourceId: null } });
+    detachRuleMutation.mutate({
+      networkId,
+      ruleId: edge.target,
+      ruleInfo: { sourceId: null },
+    });
   } else if (edgeKind === "rule-to-tag") {
-    detachRuleMutation.mutate({ networkId, ruleId: edge.source, ruleInfo: { destId: null } });
+    detachRuleMutation.mutate({
+      networkId,
+      ruleId: edge.source,
+      ruleInfo: { destId: null },
+    });
   }
 }
 
@@ -104,15 +132,19 @@ const kindTitle: Record<EdgeKind, string> = {
   "tag-to-device": "Назначение тега",
   "tag-to-rule": "Источник правила",
   "rule-to-tag": "Назначение правила",
-  "unknown": "Связь",
+  unknown: "Связь",
 };
 
 const kindDescription: Record<EdgeKind, string> = {
-  "device-to-tag": "Устройство привязано к тегу. Удаление отвяжет его и уберёт из тегового сегмента.",
-  "tag-to-device": "Устройство привязано к тегу. Удаление отвяжет его и уберёт из тегового сегмента.",
-  "tag-to-rule": "Тег задаёт источник трафика в правиле. Удаление освободит поле источника.",
-  "rule-to-tag": "Тег задаёт назначение трафика в правиле. Удаление освободит поле назначения.",
-  "unknown": "Удалить эту связь?",
+  "device-to-tag":
+    "Устройство привязано к тегу. Удаление отвяжет его и уберёт из тегового сегмента.",
+  "tag-to-device":
+    "Устройство привязано к тегу. Удаление отвяжет его и уберёт из тегового сегмента.",
+  "tag-to-rule":
+    "Тег задаёт источник трафика в правиле. Удаление освободит поле источника.",
+  "rule-to-tag":
+    "Тег задаёт назначение трафика в правиле. Удаление освободит поле назначения.",
+  unknown: "Удалить эту связь?",
 };
 
 const nodeColors: Record<string, string> = {
@@ -139,7 +171,9 @@ const nodeTypeBadge: Record<string, string> = {
         <Dialog.Title class="text-sm font-semibold leading-none mb-0.5">
           Детали связи
         </Dialog.Title>
-        <Dialog.Description class="text-[11px] text-muted-foreground leading-none">
+        <Dialog.Description
+          class="text-[11px] text-muted-foreground leading-none"
+        >
           {kindTitle[edgeKind]}
         </Dialog.Description>
       </div>
@@ -151,7 +185,9 @@ const nodeTypeBadge: Record<string, string> = {
         <!-- Source node card -->
         <div class="flex-1 rounded-xl border bg-muted/40 p-3 min-w-0">
           <div class="flex items-center gap-2 mb-1.5">
-            <div class="p-1.5 rounded-md border {nodeColors[sourceNode?.type ?? 'rule']} shrink-0">
+            <div
+              class="p-1.5 rounded-md border {nodeColors[sourceNode?.type ?? 'rule']} shrink-0"
+            >
               {#if sourceNode?.type === "device"}
                 <Monitor class="size-3" />
               {:else if sourceNode?.type === "tag"}
@@ -160,27 +196,41 @@ const nodeTypeBadge: Record<string, string> = {
                 <Shield class="size-3" />
               {/if}
             </div>
-            <span class="text-[9px] font-bold uppercase tracking-wider text-muted-foreground truncate">
+            <span
+              class="text-[9px] font-bold uppercase tracking-wider text-muted-foreground truncate"
+            >
               {nodeTypeBadge[sourceNode?.type ?? ""] ?? "—"}
             </span>
           </div>
-          <p class="text-xs font-semibold truncate leading-tight">{nodeLabel(sourceNode)}</p>
+          <p class="text-xs font-semibold truncate leading-tight">
+            {nodeLabel(sourceNode)}
+          </p>
           {#if nodeSublabel(sourceNode)}
-            <p class="text-[10px] text-muted-foreground font-mono mt-0.5 truncate">{nodeSublabel(sourceNode)}</p>
+            <p
+              class="text-[10px] text-muted-foreground font-mono mt-0.5 truncate"
+            >
+              {nodeSublabel(sourceNode)}
+            </p>
           {/if}
         </div>
 
         <!-- Arrow -->
         <div class="flex flex-col items-center gap-0.5 shrink-0">
-          <div class="h-px w-6 bg-gradient-to-r from-border to-primary/50"></div>
+          <div
+            class="h-px w-6 bg-gradient-to-r from-border to-primary/50"
+          ></div>
           <div class="size-1.5 rounded-full bg-primary/70"></div>
-          <div class="h-px w-6 bg-gradient-to-r from-primary/50 to-border"></div>
+          <div
+            class="h-px w-6 bg-gradient-to-r from-primary/50 to-border"
+          ></div>
         </div>
 
         <!-- Target node card -->
         <div class="flex-1 rounded-xl border bg-muted/40 p-3 min-w-0">
           <div class="flex items-center gap-2 mb-1.5">
-            <div class="p-1.5 rounded-md border {nodeColors[targetNode?.type ?? 'rule']} shrink-0">
+            <div
+              class="p-1.5 rounded-md border {nodeColors[targetNode?.type ?? 'rule']} shrink-0"
+            >
               {#if targetNode?.type === "device"}
                 <Monitor class="size-3" />
               {:else if targetNode?.type === "tag"}
@@ -189,19 +239,29 @@ const nodeTypeBadge: Record<string, string> = {
                 <Shield class="size-3" />
               {/if}
             </div>
-            <span class="text-[9px] font-bold uppercase tracking-wider text-muted-foreground truncate">
+            <span
+              class="text-[9px] font-bold uppercase tracking-wider text-muted-foreground truncate"
+            >
               {nodeTypeBadge[targetNode?.type ?? ""] ?? "—"}
             </span>
           </div>
-          <p class="text-xs font-semibold truncate leading-tight">{nodeLabel(targetNode)}</p>
+          <p class="text-xs font-semibold truncate leading-tight">
+            {nodeLabel(targetNode)}
+          </p>
           {#if nodeSublabel(targetNode)}
-            <p class="text-[10px] text-muted-foreground font-mono mt-0.5 truncate">{nodeSublabel(targetNode)}</p>
+            <p
+              class="text-[10px] text-muted-foreground font-mono mt-0.5 truncate"
+            >
+              {nodeSublabel(targetNode)}
+            </p>
           {/if}
         </div>
       </div>
 
       <!-- Info banner -->
-      <div class="mt-4 flex items-start gap-2.5 rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+      <div
+        class="mt-4 flex items-start gap-2.5 rounded-lg border border-border bg-muted/30 px-3 py-2.5"
+      >
         <AlertCircle class="size-3.5 text-muted-foreground shrink-0 mt-0.5" />
         <p class="text-[11px] text-muted-foreground leading-relaxed">
           {kindDescription[edgeKind]}

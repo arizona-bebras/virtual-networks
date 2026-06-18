@@ -16,10 +16,10 @@ import {
   NodeToolbar,
   Position,
 } from "@xyflow/svelte";
+import type { DeviceRelations } from "common/schemas/device/index";
 import { flip } from "svelte/animate";
 import { cubicOut } from "svelte/easing";
 import { fly, slide } from "svelte/transition";
-import type { DeviceRelations } from "common/schemas/device/index";
 import { getDeviceEdit } from "$shared/lib/device-edit-context";
 import { Button } from "$shared/ui/button/index.js";
 import * as Card from "$shared/ui/card/index.js";
@@ -35,14 +35,12 @@ let searchQuery = $state("");
 
 let filteredDevices = $derived(
   searchQuery
-    // biome-ignore lint/suspicious/noExplicitAny: unused legacy component
-    ? data.devices.filter((d: any) =>
+    ? // biome-ignore lint/suspicious/noExplicitAny: unused legacy component
+      data.devices.filter((d: any) =>
         d.name.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : data.devices,
 );
-
-function handleBurst() {}
 
 function openDeviceEdit(device: DeviceRelations, e: MouseEvent) {
   e.stopPropagation();

@@ -39,10 +39,6 @@ const addLabels: Record<string, string> = {
   rules: "Добавить правило",
   tags: "Добавить тег",
 };
-
-function bulkRemoveSelected() {
-  console.log("Delete rules:");
-}
 </script>
 
 <div

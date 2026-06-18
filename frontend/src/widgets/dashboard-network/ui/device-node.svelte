@@ -39,8 +39,12 @@ const deviceEdit = getDeviceEdit();
       <Monitor size={14} class="text-muted-foreground" />
     </div>
     <div class="flex flex-col min-w-0">
-      <span class="text-[10px] font-bold truncate leading-tight">{data.name}</span>
-      <span class="text-[9px] text-muted-foreground font-mono truncate">{data.ip}</span>
+      <span class="text-[10px] font-bold truncate leading-tight">
+        {data.name}
+      </span>
+      <span class="text-[9px] text-muted-foreground font-mono truncate">
+        {data.ip}
+      </span>
     </div>
   </div>
 </Card.Root>

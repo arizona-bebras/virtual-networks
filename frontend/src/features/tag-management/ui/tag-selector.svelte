@@ -1,7 +1,11 @@
 <!-- tag selector -->
 <script lang="ts">
 import { Plus, Tag } from "@lucide/svelte";
-import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
+import {
+  createMutation,
+  createQuery,
+  useQueryClient,
+} from "@tanstack/svelte-query";
 import type { Column } from "@tanstack/table-core";
 import type { DeviceRelations } from "common/schemas/device/index";
 import type { Tag as TagType } from "common/schemas/tag/index";
@@ -63,9 +67,9 @@ function toggleTag(tag: FilterValueWithId) {
 
 // inline create form
 const colors = [
-  { label: "Red",    value: "red",    bg: "bg-red-500"    },
-  { label: "Green",  value: "green",  bg: "bg-green-500"  },
-  { label: "Blue",   value: "blue",   bg: "bg-blue-500"   },
+  { label: "Red", value: "red", bg: "bg-red-500" },
+  { label: "Green", value: "green", bg: "bg-green-500" },
+  { label: "Blue", value: "blue", bg: "bg-blue-500" },
   { label: "Yellow", value: "yellow", bg: "bg-yellow-500" },
   { label: "Purple", value: "purple", bg: "bg-purple-500" },
   { label: "Orange", value: "orange", bg: "bg-orange-500" },
@@ -85,7 +89,9 @@ const createMutationFn = createMutation(() => ({
     return data;
   },
   onSuccess: (created) => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.networkTags(networkID) });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.networkTags(networkID),
+    });
     if (created) oncreate?.(created);
     newName = "";
     newColor = null;
@@ -151,7 +157,9 @@ function handleCreate(e: Event) {
 
 <div class="border-t border-border mt-1 pt-1">
   {#if showCreate}
-    <p class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+    <p
+      class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2"
+    >
       Новый тег
     </p>
     <Input

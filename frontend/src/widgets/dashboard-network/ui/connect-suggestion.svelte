@@ -1,7 +1,7 @@
 <script lang="ts">
 import { Shield, Tag } from "@lucide/svelte";
-import { Button } from "$shared/ui/button/index.js";
 import { onClickOutside } from "runed";
+import { Button } from "$shared/ui/button/index.js";
 
 type SuggestionKind = "tag" | "rule" | null;
 
@@ -28,21 +28,22 @@ const POPUP_HEIGHT = 100;
 const OFFSET = 12;
 
 let container = $state<HTMLElement>()!;
-onClickOutside(() => container, () => { onclose() })
+onClickOutside(
+  () => container,
+  () => {
+    onclose();
+  },
+);
 
 let left = $derived(Math.min(x + OFFSET, window.innerWidth - POPUP_WIDTH - 8));
 let top = $derived(Math.min(y + OFFSET, window.innerHeight - POPUP_HEIGHT - 8));
 
 let kind: SuggestionKind = $derived(
-  fromNodeType === "device" ? "tag" :
-  fromNodeType === "tag" ? "rule" :
-  null
+  fromNodeType === "device" ? "tag" : fromNodeType === "tag" ? "rule" : null,
 );
 
 let label = $derived(
-  kind === "tag" ? "Создать тег" :
-  kind === "rule" ? "Создать правило" :
-  null
+  kind === "tag" ? "Создать тег" : kind === "rule" ? "Создать правило" : null,
 );
 
 function handleAction() {
@@ -74,7 +75,9 @@ function handleAction() {
     style="left: {left}px; top: {top}px; width: {POPUP_WIDTH}px;"
     onmousedown={(e) => e.stopPropagation()}
   >
-    <p class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-0.5">
+    <p
+      class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-0.5"
+    >
       Привязать к...
     </p>
     <Button

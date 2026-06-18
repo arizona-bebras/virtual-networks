@@ -11,7 +11,7 @@ import type {
 const RULE_Y_STEP = 135;
 const TAG_Y_STEP = RULE_Y_STEP;
 const DEVICE_Y_WITHOUT_TAGS = 150;
-const DEVICE_DEFAULT_Y = 100;
+// const DEVICE_DEFAULT_Y = 100;
 
 export function ruleDataToNode(rules: RuleRelation[]): Node<RuleNodeData>[] {
   const sortedRules = [...rules].sort((a, b) => {
@@ -182,7 +182,9 @@ export function deviceDataToNode(
 
   return (devices ?? []).map((device) => {
     const firstKnownTag = device.tags?.find((t) => tagPosMap.has(t.id));
-    const baseY = firstKnownTag ? (tagPosMap.get(firstKnownTag.id) ?? fallbackY) : fallbackY;
+    const baseY = firstKnownTag
+      ? (tagPosMap.get(firstKnownTag.id) ?? fallbackY)
+      : fallbackY;
 
     const slot = ySlots.get(baseY) ?? 0;
     ySlots.set(baseY, slot + 1);

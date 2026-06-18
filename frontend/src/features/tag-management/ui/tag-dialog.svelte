@@ -11,7 +11,13 @@ let {
   title,
   description,
   oncreate,
-}: { open: boolean; title: string; tag?: Tag; description?: string; oncreate?: (tag: Tag) => void } = $props();
+}: {
+  open: boolean;
+  title: string;
+  tag?: Tag;
+  description?: string;
+  oncreate?: (tag: Tag) => void;
+} = $props();
 </script>
 
 <Dialog.Root bind:open>

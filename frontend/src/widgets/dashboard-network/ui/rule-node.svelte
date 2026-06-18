@@ -1,5 +1,11 @@
 <script lang="ts">
-import { Lock, ShieldAlert, ShieldCheck, SquarePen, Trash } from "@lucide/svelte";
+import {
+  Lock,
+  ShieldAlert,
+  ShieldCheck,
+  SquarePen,
+  Trash,
+} from "@lucide/svelte";
 import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 import {
   Handle,
@@ -9,8 +15,8 @@ import {
   Position,
 } from "@xyflow/svelte";
 import type { RuleNodeData } from "$entities/node/model/types";
-import RuleDialog from "$features/rule-management/ui/rule-dialog.svelte";
 import { ruleDeletionMutation } from "$features/rule-management/api/query";
+import RuleDialog from "$features/rule-management/ui/rule-dialog.svelte";
 import { queryKeys } from "$shared/api/query-keys";
 import { getNetworkId } from "$shared/lib/network-id-context";
 import { Button } from "$shared/ui/button/index.js";

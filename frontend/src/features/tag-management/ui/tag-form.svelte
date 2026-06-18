@@ -15,8 +15,11 @@ let {
   tag,
   dialogState = $bindable(),
   oncreate,
-}: { tag?: Tag; dialogState: boolean; oncreate?: (tag: Tag) => void } =
-  $props();
+}: {
+  tag?: Tag;
+  dialogState: boolean;
+  oncreate?: (tag: Tag) => void;
+} = $props();
 
 const queryClient = getQueryClientContext();
 let currentNetworkId = $derived(getNetworkId().id);

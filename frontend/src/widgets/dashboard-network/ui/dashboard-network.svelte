@@ -1,8 +1,8 @@
 <script lang="ts">
 import {
   Background,
-  Controls,
   type Connection,
+  Controls,
   type Edge,
   type IsValidConnection,
   type Node,
@@ -15,11 +15,15 @@ import {
   createQuery,
   useQueryClient,
 } from "@tanstack/svelte-query";
-import { untrack } from "svelte";
 import type { DeviceRelations } from "common/schemas/device/index";
 import type { RuleRelation } from "common/schemas/rule/index";
 import type { Tag } from "common/schemas/tag/index";
-import type { DeviceNodeData, RuleNodeData, TagNodeData } from "$entities/node/model/types";
+import { untrack } from "svelte";
+import type {
+  DeviceNodeData,
+  RuleNodeData,
+  TagNodeData,
+} from "$entities/node/model/types";
 import { tagDeviceCreation } from "$features/device-management/api/query";
 import DeviceDialog from "$features/device-management/ui/device-dialog.svelte";
 import {
@@ -75,15 +79,28 @@ let edges = $state.raw<Edge[]>([]);
 // edge click dialog
 let selectedEdge = $state<Edge | null>(null);
 let isEdgeDialogOpen = $state(false);
-let selectedEdgeSourceNode = $derived(selectedEdge ? (nodes.find((n) => n.id === selectedEdge?.source) ?? null) : null);
-let selectedEdgeTargetNode = $derived(selectedEdge ? (nodes.find((n) => n.id === selectedEdge?.target) ?? null) : null);
+let selectedEdgeSourceNode = $derived(
+  selectedEdge
+    ? (nodes.find((n) => n.id === selectedEdge?.source) ?? null)
+    : null,
+);
+let selectedEdgeTargetNode = $derived(
+  selectedEdge
+    ? (nodes.find((n) => n.id === selectedEdge?.target) ?? null)
+    : null,
+);
 
 // drag-to-rule creation
 let pendingRule = $state<{ sourceId?: string; destId?: string } | null>(null);
 let isRuleCreateOpen = $state(false);
 
 // unconnected drop suggestion
-type ConnectSuggestionState = { x: number; y: number; fromNodeType: string; fromNodeId: string } | null;
+type ConnectSuggestionState = {
+  x: number;
+  y: number;
+  fromNodeType: string;
+  fromNodeId: string;
+} | null;
 let connectSuggestion = $state<ConnectSuggestionState>(null);
 let pendingDeviceLink = $state<string | null>(null);
 
@@ -234,7 +251,9 @@ const isValidConnection: IsValidConnection = (conn) => {
 
   // source-device → source-tag: assign tag to device
   if (src?.type === "device" && tgt?.type === "tag") {
-    return conn.source.startsWith("source-") && conn.target.startsWith("source-");
+    return (
+      conn.source.startsWith("source-") && conn.target.startsWith("source-")
+    );
   }
 
   // dest-tag → dest-device: assign tag to device
@@ -310,10 +329,21 @@ $effect(() => {
 const handleConnectEnd: OnConnectEnd = (event, connectionState) => {
   if (connectionState.isValid) return;
   const fromNode = connectionState.fromNode;
-  if (!fromNode || !fromNode.type || fromNode.type === "rule") return;
-  const clientX = event instanceof MouseEvent ? event.clientX : event.changedTouches?.[0]?.clientX ?? 0;
-  const clientY = event instanceof MouseEvent ? event.clientY : event.changedTouches?.[0]?.clientY ?? 0;
-  connectSuggestion = { x: clientX, y: clientY, fromNodeType: fromNode.type, fromNodeId: fromNode.id };
+  if (!fromNode?.type || fromNode.type === "rule") return;
+  const clientX =
+    event instanceof MouseEvent
+      ? event.clientX
+      : (event.changedTouches?.[0]?.clientX ?? 0);
+  const clientY =
+    event instanceof MouseEvent
+      ? event.clientY
+      : (event.changedTouches?.[0]?.clientY ?? 0);
+  connectSuggestion = {
+    x: clientX,
+    y: clientY,
+    fromNodeType: fromNode.type,
+    fromNodeId: fromNode.id,
+  };
 };
 
 function handlePaneContextMenu({ event }: { event: MouseEvent }) {
@@ -418,7 +448,6 @@ function handleContextMenuAction(action: ContextMenuAction) {
     onnodecontextmenu={handleNodeContextMenu}
     connectionLineStyle=""
     connectionRadius={40}
-
     class="relative"
   >
     <Background />
@@ -428,7 +457,6 @@ function handleContextMenuAction(action: ContextMenuAction) {
       onopenDevice={() => (isDeviceCreateOpen = true)}
     />
   </SvelteFlow>
-
 
   {#if contextMenu}
     <GraphContextMenu
@@ -453,7 +481,11 @@ function handleContextMenuAction(action: ContextMenuAction) {
       }
     }}
   />
-  <DeviceDialog bind:open={isDeviceCreateOpen} title="Новое устройство" description="Добавьте устройство в сеть" />
+  <DeviceDialog
+    bind:open={isDeviceCreateOpen}
+    title="Новое устройство"
+    description="Добавьте устройство в сеть"
+  />
   <DeviceDialog
     bind:open={isDeviceEditOpen}
     title="Редактировать устройство"

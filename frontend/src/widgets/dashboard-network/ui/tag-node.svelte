@@ -9,11 +9,11 @@ import {
   Position,
 } from "@xyflow/svelte";
 import type { TagNodeData } from "$entities/node/model/types";
-import TagDialog from "$features/tag-management/ui/tag-dialog.svelte";
 import { tagDeletionMutation } from "$features/tag-management/api/query";
+import TagDialog from "$features/tag-management/ui/tag-dialog.svelte";
 import { queryKeys } from "$shared/api/query-keys";
-import { colorVariants } from "$shared/lib/tag-color-mapping";
 import { getNetworkId } from "$shared/lib/network-id-context";
+import { colorVariants } from "$shared/lib/tag-color-mapping";
 import { Button } from "$shared/ui/button/index.js";
 import * as Card from "$shared/ui/card/index.js";
 
