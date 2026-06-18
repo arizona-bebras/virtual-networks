@@ -517,6 +517,7 @@ function handleContextMenuAction(action: ContextMenuAction) {
     <GraphToolbar
       onopenTag={() => (isTagCreateOpen = true)}
       onopenDevice={() => (isDeviceCreateOpen = true)}
+      onopenRule={() => (isRuleCreateOpen = true)}
     />
   </SvelteFlow>
 

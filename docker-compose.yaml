@@ -28,7 +28,7 @@ services:
       - "50051:50051"
     environment:
       PORT: 3000
-      TRUSTED_ORIGINS: ${TRUSTED_ORIGINS:-http://localhost:5173}
+      TRUSTED_ORIGINS: http://localhost:5173,http://192.168.1.136
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-supersecretkey}
       POSTGRES_HOST: db

@@ -5,9 +5,11 @@ import { Button } from "$shared/ui/button/index.js";
 let {
   onopenTag,
   onopenDevice,
+  onopenRule,
 }: {
   onopenTag: () => void;
   onopenDevice: () => void;
+  onopenRule: () => void;
 } = $props();
 </script>
 
@@ -21,7 +23,7 @@ let {
     <Button variant="ghost" size="sm" onclick={onopenTag}>
       <Tag size={13} class="mr-1" /> Тег
     </Button>
-    <Button variant="ghost" size="sm" onclick={onopenTag}>
+    <Button variant="ghost" size="sm" onclick={onopenRule}>
       <Shield size={13} class="mr-1" /> Правило
     </Button>
   </div>
