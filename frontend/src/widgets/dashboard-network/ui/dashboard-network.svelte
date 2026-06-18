@@ -231,35 +231,48 @@ function handleNodeDragStop(event: { targetNode: Node | null }) {
   }
 }
 
-function computeHighlightedIds(startId: string): Set<string> {
-  const highlighted = new Set<string>();
+type HighlightedPath = {
+  nodeIds: Set<string>;
+  edgeIds: Set<string>;
+};
+
+function computeHighlightedPath(startId: string): HighlightedPath {
+  const nodeIds = new Set<string>();
+  const edgeIds = new Set<string>();
   const queue = [startId];
-  while (queue.length > 0) {
-    const current = queue.shift()!;
-    if (highlighted.has(current)) continue;
-    highlighted.add(current);
+  const followsEdge = startId.startsWith("source-device-")
+    ? (edge: Edge, nodeId: string) => edge.source === nodeId
+    : (edge: Edge, nodeId: string) => edge.target === nodeId;
+  const nextNodeId = startId.startsWith("source-device-")
+    ? (edge: Edge) => edge.target
+    : (edge: Edge) => edge.source;
+
+  for (let index = 0; index < queue.length; index++) {
+    const current = queue[index]!;
+    if (nodeIds.has(current)) continue;
+    nodeIds.add(current);
+
     for (const edge of edges) {
-      if (edge.source === current && !highlighted.has(edge.target))
-        queue.push(edge.target);
-      if (edge.target === current && !highlighted.has(edge.source))
-        queue.push(edge.source);
+      if (!followsEdge(edge, current)) continue;
+
+      edgeIds.add(edge.id);
+      const next = nextNodeId(edge);
+      if (!nodeIds.has(next)) queue.push(next);
     }
   }
-  return highlighted;
+
+  return { nodeIds, edgeIds };
 }
 
-function applyHighlight(highlighted: Set<string> | null) {
+function applyHighlight(highlighted: HighlightedPath | null) {
   const active = highlighted !== null;
   nodes = nodes.map((n) => ({
     ...n,
-    class: active && !highlighted!.has(n.id) ? "opacity-20" : "",
+    class: active && !highlighted!.nodeIds.has(n.id) ? "opacity-20" : "",
   }));
   edges = edges.map((e) => ({
     ...e,
-    style:
-      active && !(highlighted!.has(e.source) && highlighted!.has(e.target))
-        ? "opacity: 0.06;"
-        : "",
+    style: active && !highlighted!.edgeIds.has(e.id) ? "opacity: 0.06;" : "",
   }));
 }
 
@@ -275,7 +288,7 @@ function handleSelectionChange({
   const nextId = device?.id ?? null;
   if (nextId === _lastHighlightId) return;
   _lastHighlightId = nextId;
-  applyHighlight(device ? computeHighlightedIds(device.id) : null);
+  applyHighlight(device ? computeHighlightedPath(device.id) : null);
 }
 
 const isValidConnection: IsValidConnection = (conn) => {
