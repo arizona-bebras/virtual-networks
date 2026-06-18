@@ -22,7 +22,6 @@ const loginQuery = createMutation(() => ({
     });
 
     if (!error) {
-      invalidate("auth:session");
       goto("/app");
       return responseData;
     }
