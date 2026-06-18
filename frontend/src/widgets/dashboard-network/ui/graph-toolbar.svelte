@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Monitor, Tag } from "@lucide/svelte";
+import { Monitor, Shield, Tag } from "@lucide/svelte";
 import { Button } from "$shared/ui/button/index.js";
 
 let {
@@ -20,6 +20,9 @@ let {
     </Button>
     <Button variant="ghost" size="sm" onclick={onopenTag}>
       <Tag size={13} class="mr-1" /> Тег
+    </Button>
+    <Button variant="ghost" size="sm" onclick={onopenTag}>
+      <Shield size={13} class="mr-1" /> Правило
     </Button>
   </div>
 </div>
