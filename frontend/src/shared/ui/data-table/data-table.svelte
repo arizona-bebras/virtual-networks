@@ -12,6 +12,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type PaginationState,
   type RowSelectionState,
   type SortingState,
   type Table as TableType,
@@ -41,6 +42,10 @@ let {
 
 let sorting = $state<SortingState>([]);
 let columnFilters = $state<ColumnFiltersState>([]);
+let pagination = $state<PaginationState>({
+  pageIndex: 0,
+  pageSize: 10,
+});
 let rowSelection = $state<RowSelectionState>({});
 
 $effect(() => {
@@ -61,6 +66,9 @@ const tableInstance = createSvelteTable({
     get columnFilters() {
       return columnFilters;
     },
+    get pagination() {
+      return pagination;
+    },
     get rowSelection() {
       return rowSelection;
     },
@@ -79,6 +87,13 @@ const tableInstance = createSvelteTable({
       columnFilters = updater(columnFilters);
     } else {
       columnFilters = updater;
+    }
+  },
+  onPaginationChange: (updater) => {
+    if (typeof updater === "function") {
+      pagination = updater(pagination);
+    } else {
+      pagination = updater;
     }
   },
   onRowSelectionChange: (updater) => {

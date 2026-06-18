@@ -19,8 +19,10 @@ let {
   globalFilter = $bindable(),
   selectedIds,
   table,
+  canCreate = true,
 }: {
   title: string;
+  canCreate?: boolean;
   description: string;
   globalFilter: string;
   selectedIds: string[];
@@ -80,10 +82,12 @@ function bulkRemoveSelected() {
           </Button>
         </div>
       {/if} -->
-      <Button onclick={() => (isAddDialogOpen = true)} class="rounded-[6px]">
-        {(currentPage && addLabels[currentPage]) || "Добавить"}
-        <Plus class="mr-1 size-3" />
-      </Button>
+      {#if canCreate}
+        <Button onclick={() => (isAddDialogOpen = true)} class="rounded-[6px]">
+          {(currentPage && addLabels[currentPage]) || "Добавить"}
+          <Plus class="mr-1 size-3" />
+        </Button>
+      {/if}
     </div>
   </div>
   <div class=""><DataTableFilters {table} /></div>

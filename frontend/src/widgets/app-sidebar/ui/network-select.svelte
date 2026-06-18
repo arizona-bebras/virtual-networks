@@ -34,8 +34,8 @@ let isDialogOpen = $state(false);
             <span class="text-sm font-semibold truncate w-32">
               {selectedNetwork?.name ?? userNetworks.data?.[0]?.name}
             </span>
-            <span class="text-xs text-muted-foreground">
-              {selectedNetwork?.cidr ?? userNetworks.data?.[0]?.cidr}
+            <span class="text-xs text-muted-foreground truncate ellipsis w-32">
+              {selectedNetwork?.description ?? userNetworks.data?.[0]?.description}
             </span>
           </div>
         {/if}

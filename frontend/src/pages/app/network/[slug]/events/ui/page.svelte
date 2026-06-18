@@ -178,6 +178,7 @@ function bulkRemoveSelected() {
   <Header
     title="События"
     description="Отслеживайте все изменения, произошедшие в сети"
+    canCreate={false}
     bind:globalFilter
     {selectedIds}
     {table}
