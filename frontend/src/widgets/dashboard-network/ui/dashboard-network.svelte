@@ -239,8 +239,10 @@ function computeHighlightedIds(startId: string): Set<string> {
     if (highlighted.has(current)) continue;
     highlighted.add(current);
     for (const edge of edges) {
-      if (edge.source === current && !highlighted.has(edge.target)) queue.push(edge.target);
-      if (edge.target === current && !highlighted.has(edge.source)) queue.push(edge.source);
+      if (edge.source === current && !highlighted.has(edge.target))
+        queue.push(edge.target);
+      if (edge.target === current && !highlighted.has(edge.source))
+        queue.push(edge.source);
     }
   }
   return highlighted;
@@ -263,7 +265,12 @@ function applyHighlight(highlighted: Set<string> | null) {
 
 let _lastHighlightId: string | null = null;
 
-function handleSelectionChange({ nodes: sel }: { nodes: Node[]; edges: Edge[] }) {
+function handleSelectionChange({
+  nodes: sel,
+}: {
+  nodes: Node[];
+  edges: Edge[];
+}) {
   const device = sel.find((n) => n.type === "device");
   const nextId = device?.id ?? null;
   if (nextId === _lastHighlightId) return;
