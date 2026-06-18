@@ -215,6 +215,7 @@ $effect(() => {
           allTagNodeIds,
         ),
       ];
+      _lastHighlightId = null;
     });
   }
 });
@@ -228,6 +229,46 @@ function handleNodeDragStop(event: { targetNode: Node | null }) {
   if (event.targetNode) {
     nodes = resolveCollisions(nodes, event.targetNode.id);
   }
+}
+
+function computeHighlightedIds(startId: string): Set<string> {
+  const highlighted = new Set<string>();
+  const queue = [startId];
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    if (highlighted.has(current)) continue;
+    highlighted.add(current);
+    for (const edge of edges) {
+      if (edge.source === current && !highlighted.has(edge.target)) queue.push(edge.target);
+      if (edge.target === current && !highlighted.has(edge.source)) queue.push(edge.source);
+    }
+  }
+  return highlighted;
+}
+
+function applyHighlight(highlighted: Set<string> | null) {
+  const active = highlighted !== null;
+  nodes = nodes.map((n) => ({
+    ...n,
+    class: active && !highlighted!.has(n.id) ? "opacity-20" : "",
+  }));
+  edges = edges.map((e) => ({
+    ...e,
+    style:
+      active && !(highlighted!.has(e.source) && highlighted!.has(e.target))
+        ? "opacity: 0.06;"
+        : "",
+  }));
+}
+
+let _lastHighlightId: string | null = null;
+
+function handleSelectionChange({ nodes: sel }: { nodes: Node[]; edges: Edge[] }) {
+  const device = sel.find((n) => n.type === "device");
+  const nextId = device?.id ?? null;
+  if (nextId === _lastHighlightId) return;
+  _lastHighlightId = nextId;
+  applyHighlight(device ? computeHighlightedIds(device.id) : null);
 }
 
 const isValidConnection: IsValidConnection = (conn) => {
@@ -444,6 +485,7 @@ function handleContextMenuAction(action: ContextMenuAction) {
     onconnect={handleConnect}
     onconnectend={handleConnectEnd}
     {isValidConnection}
+    onselectionchange={handleSelectionChange}
     onpanecontextmenu={handlePaneContextMenu}
     onnodecontextmenu={handleNodeContextMenu}
     connectionLineStyle=""
