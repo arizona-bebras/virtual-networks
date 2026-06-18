@@ -81,7 +81,7 @@ const deleteTagMutation = createMutation(() => tagDeviceRemove(() => {}));
 
 let isTagSelectorOpen = $state(false);
 // svelte-ignore state_referenced_locally
-let deviceTagsArray = $state(device?.tags || []);
+let deviceTagsArray = $state([...(device?.tags ?? [])]);
 
 let {
   forms: form,
@@ -271,10 +271,9 @@ $effect(() => {
         <TagSelector
           onclick={(name) => {
             const tag = userTagsQuery.data?.find((t) => t.name === name);
-            if (tag){
-              deviceTagsArray.push(tag);
-            }
+            if (tag) deviceTagsArray.push(tag);
           }}
+          oncreate={(tag) => deviceTagsArray.push(tag)}
           excludedTags={deviceTagsArray}
         />
       </Popover.Content>

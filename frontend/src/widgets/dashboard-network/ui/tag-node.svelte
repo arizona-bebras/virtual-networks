@@ -1,5 +1,6 @@
 <script lang="ts">
-import { SquarePen, Tag } from "@lucide/svelte";
+import { SquarePen, Tag, Trash } from "@lucide/svelte";
+import { createMutation, getQueryClientContext } from "@tanstack/svelte-query";
 import {
   Handle,
   type Node,
@@ -7,17 +8,58 @@ import {
   NodeToolbar,
   Position,
 } from "@xyflow/svelte";
-import { goto } from "$app/navigation";
-import { page } from "$app/state";
 import type { TagNodeData } from "$entities/node/model/types";
-import LinkButton from "$entities/node/ui/LinkButton.svelte";
+import { tagDeletionMutation } from "$features/tag-management/api/query";
+import TagDialog from "$features/tag-management/ui/tag-dialog.svelte";
+import { queryKeys } from "$shared/api/query-keys";
+import { getNetworkId } from "$shared/lib/network-id-context";
 import { colorVariants } from "$shared/lib/tag-color-mapping";
+import { Button } from "$shared/ui/button/index.js";
 import * as Card from "$shared/ui/card/index.js";
 
-let { id, data }: NodeProps<Node<TagNodeData>> = $props();
+let { id, data, selected }: NodeProps<Node<TagNodeData>> = $props();
 
 let colorObj = $derived(colorVariants[data.color ?? "gray"]);
+let isEditOpen = $state(false);
+
+const queryClient = getQueryClientContext();
+let currentNetworkId = $derived(getNetworkId().id);
+
+const deleteMutation = createMutation(() =>
+  tagDeletionMutation(() => {
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.network(currentNetworkId),
+    });
+  }),
+);
+
+function handleDelete() {
+  deleteMutation.mutate({ networkId: currentNetworkId, tagId: data.id });
+}
 </script>
+
+<NodeToolbar {id} isVisible={selected} position={Position.Top}>
+  <div
+    class="flex gap-1 bg-background/95 backdrop-blur border border-border p-1 rounded-xl shadow-lg"
+  >
+    <Button
+      variant="ghost"
+      size="icon"
+      class="size-7"
+      onclick={() => (isEditOpen = true)}
+    >
+      <SquarePen size={12} />
+    </Button>
+    <Button
+      variant="ghost"
+      size="icon"
+      class="size-7 text-destructive hover:bg-destructive/10"
+      onclick={handleDelete}
+    >
+      <Trash size={12} />
+    </Button>
+  </div>
+</NodeToolbar>
 
 <Card.Root
   class="group relative w-36 bg-card border {colorObj.borderColor} {colorObj.backgroundColor} shadow-sm overflow-hidden hover:brightness-75 hover:opacity-75 hover:shadow-md transition-all duration-200 rounded-[14px]"
@@ -32,23 +74,24 @@ let colorObj = $derived(colorVariants[data.color ?? "gray"]);
       <span class="text-[10px] font-bold truncate leading-tight">
         {data.name}
       </span>
-      <!-- {#if data.id}
-        <span
-          class="text-[8px] font-mono text-muted-foreground truncate leading-tight"
-        >
-          {data.id.slice(0, 8)}
-        </span>
-      {/if} -->
     </div>
-    <LinkButton
-      redirectLink={`/app/network/${page.params.slug}/tags?editTag=${data.id}`}
-    />
   </div>
 </Card.Root>
 
-{#if import.meta.env.DEV}
-  <NodeToolbar>{id}</NodeToolbar>
-{/if}
+<Handle
+  type="target"
+  position={Position.Left}
+  class="!size-3 hover:!bg-secondary/30 !border-2 !border-primary transition-colors"
+/>
+<Handle
+  type="source"
+  position={Position.Right}
+  class="!size-3 hover:!bg-secondary/30 !border-2 !border-primary transition-colors"
+/>
 
-<Handle type="target" position={Position.Left} />
-<Handle type="source" position={Position.Right} />
+<TagDialog
+  bind:open={isEditOpen}
+  title="Редактировать тег"
+  description="Обновите данные тега"
+  tag={{ id: data.id, name: data.name, color: data.color === 'gray' ? null : data.color, devicesCount: data.count }}
+/>

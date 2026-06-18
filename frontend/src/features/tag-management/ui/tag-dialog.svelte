@@ -10,7 +10,14 @@ let {
   tag,
   title,
   description,
-}: { open: boolean; title: string; tag?: Tag; description?: string } = $props();
+  oncreate,
+}: {
+  open: boolean;
+  title: string;
+  tag?: Tag;
+  description?: string;
+  oncreate?: (tag: Tag) => void;
+} = $props();
 </script>
 
 <Dialog.Root bind:open>
@@ -28,6 +35,6 @@ let {
         {/if}
       </div>
     </Dialog.Header>
-    <TagForm {tag} bind:dialogState={open} />
+    <TagForm {tag} {oncreate} bind:dialogState={open} />
   </Dialog.Content>
 </Dialog.Root>

@@ -1,46 +1,61 @@
 <script lang="ts">
-import { Monitor } from "@lucide/svelte";
-import { Handle, Position } from "@xyflow/svelte";
-import { Badge } from "$shared/ui/badge/index.js";
+import { Monitor, SquarePen } from "@lucide/svelte";
+import {
+  Handle,
+  type Node,
+  type NodeProps,
+  NodeToolbar,
+  Position,
+} from "@xyflow/svelte";
+import type { DeviceNodeData } from "$entities/node/model/types";
+import { getDeviceEdit } from "$shared/lib/device-edit-context";
+import { Button } from "$shared/ui/button/index.js";
 import * as Card from "$shared/ui/card/index.js";
 
-let { data } = $props();
+let { id, data, selected }: NodeProps<Node<DeviceNodeData>> = $props();
+const deviceEdit = getDeviceEdit();
 </script>
 
-<Card.Root class="w-48 bg-card border-border shadow-sm">
-  <Card.Header class="border-b">
-    <div class="flex items-center justify-between gap-1">
-      <div class="flex items-center gap-1 min-w-0">
-        <Monitor class="size-3 text-primary flex-shrink-0" />
-        <Card.Title class="text-[10px] font-bold truncate leading-none">
-          {data.name}
-        </Card.Title>
-      </div>
-      <div
-        class={`size-1.5 rounded-full flex-shrink-0 ${data.online ? 'bg-green-500' : 'bg-red-500'}`}
-      ></div>
+<NodeToolbar {id} isVisible={selected} position={Position.Top}>
+  <div
+    class="flex gap-1 bg-background/95 backdrop-blur border border-border p-1 rounded-xl shadow-lg"
+  >
+    <Button
+      variant="ghost"
+      size="icon"
+      class="size-7"
+      onclick={() => deviceEdit.open(data.device)}
+    >
+      <SquarePen size={12} />
+    </Button>
+  </div>
+</NodeToolbar>
+
+<Card.Root
+  class="w-40 bg-card border-border border shadow-sm hover:shadow-md transition-all duration-200"
+>
+  <div class="flex items-center gap-2 p-2">
+    <div class="p-1.5 rounded-md bg-secondary flex-shrink-0">
+      <Monitor size={14} class="text-muted-foreground" />
     </div>
-  </Card.Header>
-  <Card.Content class="flex flex-col gap-1 py-1">
-    <div class="text-[9px] font-mono text-muted-foreground leading-none">
-      {data.ip}
+    <div class="flex flex-col min-w-0">
+      <span class="text-[10px] font-bold truncate leading-tight">
+        {data.name}
+      </span>
+      <span class="text-[9px] text-muted-foreground font-mono truncate">
+        {data.ip}
+      </span>
     </div>
-    <div class="flex flex-wrap gap-0.5">
-      {#each data.tags as tag}
-        <Badge
-          variant="secondary"
-          class="text-[8px] px-1 py-0 h-3 border-none leading-none"
-        >
-          {tag}
-        </Badge>
-      {/each}
-    </div>
-  </Card.Content>
+  </div>
 </Card.Root>
 
-{#if data.isSource}
-  <Handle type="source" position={Position.Right} />
-{/if}
-{#if data.isTarget}
-  <Handle type="target" position={Position.Left} />
-{/if}
+<Handle
+  type="target"
+  position={Position.Left}
+  class="!size-3 hover:!bg-secondary/30 !border-2 !border-primary transition-colors"
+/>
+<Handle
+  type="source"
+  position={Position.Right}
+  class="!size-3 hover:!bg-secondary/30 !border-2 !border-primary transition-colors"
+/>

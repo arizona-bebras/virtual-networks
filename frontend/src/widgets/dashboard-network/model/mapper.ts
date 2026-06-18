@@ -3,7 +3,7 @@ import type { DeviceRelations } from "common/schemas/device/index";
 import type { RuleRelation } from "common/schemas/rule/index";
 import type { Tag } from "common/schemas/tag/index";
 import type {
-  FolderNodeData,
+  DeviceNodeData,
   RuleNodeData,
   TagNodeData,
 } from "$entities/node/model/types";
@@ -11,7 +11,7 @@ import type {
 const RULE_Y_STEP = 135;
 const TAG_Y_STEP = RULE_Y_STEP;
 const DEVICE_Y_WITHOUT_TAGS = 150;
-const DEVICE_DEFAULT_Y = 100;
+// const DEVICE_DEFAULT_Y = 100;
 
 export function ruleDataToNode(rules: RuleRelation[]): Node<RuleNodeData>[] {
   const sortedRules = [...rules].sort((a, b) => {
@@ -31,6 +31,8 @@ export function ruleDataToNode(rules: RuleRelation[]): Node<RuleNodeData>[] {
       protocol: rule.protocol || "TCP",
       port: rule.port?.toString() || "*",
       action: "allow",
+      sourceId: rule.sourceId ?? null,
+      destId: rule.destId ?? null,
     },
     position: { x: 350, y: (index + 1) * RULE_Y_STEP },
   }));
@@ -157,74 +159,46 @@ export function tagDataToNode(
 //   console.log("Итоговые папки:", nodes);
 //   return nodes;
 // }
-function upsertFolderNode(
-  nodesMap: Map<string, Node<FolderNodeData>>,
-  device: DeviceRelations,
-  config: {
-    id: string;
-    label: string;
-    tagId: string;
-    x: number;
-    y: number;
-    type: "dest" | "source";
-  },
-) {
-  const existingNode = nodesMap.get(config.id);
-  if (existingNode) {
-    existingNode.data.devices.push(device);
-    existingNode.data.count += 1;
-  } else {
-    nodesMap.set(config.id, {
-      id: config.id,
-      type: "folder",
-      data: {
-        label: config.label,
-        devices: [device],
-        connectingTagId: config.tagId,
-        folderType: config.type,
-        count: 1,
-      },
-      position: { x: config.x, y: config.y },
-    });
-  }
-}
+const DEVICE_SPACING = 65;
 
 export function deviceDataToNode(
   devices: DeviceRelations[] | undefined,
-  isDestFolders: boolean = false,
+  isDestSide: boolean = false,
   tagNodes: Node[] = [],
-): Node<FolderNodeData>[] {
-  const nodesMap = new Map<string, Node<FolderNodeData>>();
-  const tagPosMap = new Map(tagNodes.map((n) => [n.data.id, n.position.y]));
+): Node<DeviceNodeData>[] {
+  const tagPosMap = new Map<string, number>(
+    tagNodes.map((n) => [n.data.id as string, n.position.y]),
+  );
 
-  const POSITION_X = isDestFolders ? 850 : -150;
-  const FOLDER_TYPE = isDestFolders ? "dest" : "source";
-  const UNTAGGED_Y =
-    Math.max(...Array.from(tagPosMap.values()), 0) + DEVICE_Y_WITHOUT_TAGS;
+  const POSITION_X = isDestSide ? 950 : -250;
+  const SIDE = isDestSide ? "dest" : "source";
+  const tagYValues = Array.from(tagPosMap.values());
+  const fallbackY =
+    (tagYValues.length > 0 ? Math.max(...tagYValues) : 0) +
+    DEVICE_Y_WITHOUT_TAGS;
 
-  for (const device of devices ?? []) {
-    const effectiveTags =
-      device.tags && device.tags.length > 0
-        ? device.tags
-        : [{ id: "untagged", name: "Без тегов", isMock: true }];
+  // Slot counter: baseY → how many devices are already placed at that y band
+  const ySlots = new Map<number, number>();
 
-    for (const tag of effectiveTags) {
-      const nodeId = `${FOLDER_TYPE}-folder-${tag.id}`;
-      // @ts-expect-error tag could be mock
-      const positionY = tag.isMock
-        ? UNTAGGED_Y
-        : (tagPosMap.get(tag.id) ?? DEVICE_DEFAULT_Y);
+  return (devices ?? []).map((device) => {
+    const firstKnownTag = device.tags?.find((t) => tagPosMap.has(t.id));
+    const baseY = firstKnownTag
+      ? (tagPosMap.get(firstKnownTag.id) ?? fallbackY)
+      : fallbackY;
 
-      upsertFolderNode(nodesMap, device, {
-        id: nodeId,
-        label: tag.name || "Unknown",
-        tagId: tag.id,
-        x: POSITION_X,
-        y: positionY,
-        type: FOLDER_TYPE,
-      });
-    }
-  }
+    const slot = ySlots.get(baseY) ?? 0;
+    ySlots.set(baseY, slot + 1);
 
-  return Array.from(nodesMap.values());
+    return {
+      id: `${SIDE}-device-${device.id}`,
+      type: "device",
+      data: {
+        id: device.id,
+        name: device.name,
+        ip: device.ip,
+        device,
+      },
+      position: { x: POSITION_X, y: baseY + slot * DEVICE_SPACING },
+    };
+  });
 }

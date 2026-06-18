@@ -1,9 +1,12 @@
 import { mutationOptions } from "@tanstack/svelte-query";
 import type { CreateTag } from "common/schemas/tag/create-tag";
+import type { Tag } from "common/schemas/tag/index";
 import type { UpdateTag } from "common/schemas/tag/update-tag";
 import { client } from "$shared/api/openapi-client";
 
-export const tagCreationMutation = (onSuccess: () => void) =>
+export const tagCreationMutation = (
+  onSuccess: (tag: Tag | undefined) => void,
+) =>
   mutationOptions({
     mutationFn: async ({
       networkId,

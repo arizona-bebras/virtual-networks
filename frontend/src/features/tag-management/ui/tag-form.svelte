@@ -11,8 +11,15 @@ import { Input } from "$shared/ui/input/index.js";
 import { Separator } from "$shared/ui/separator/index";
 import { tagCreationMutation, tagUpdateMutation } from "../api/query";
 
-let { tag, dialogState = $bindable() }: { tag?: Tag; dialogState: boolean } =
-  $props();
+let {
+  tag,
+  dialogState = $bindable(),
+  oncreate,
+}: {
+  tag?: Tag;
+  dialogState: boolean;
+  oncreate?: (tag: Tag) => void;
+} = $props();
 
 const queryClient = getQueryClientContext();
 let currentNetworkId = $derived(getNetworkId().id);
@@ -27,7 +34,7 @@ const colors = [
 ] as const;
 
 const creationMutation = createMutation(() =>
-  tagCreationMutation(() => {
+  tagCreationMutation((created) => {
     queryClient.invalidateQueries({
       queryKey: queryKeys.networkTags(currentNetworkId),
     });
@@ -35,6 +42,7 @@ const creationMutation = createMutation(() =>
       queryKey: queryKeys.networkEvents(currentNetworkId),
     });
     dialogState = false;
+    if (created) oncreate?.(created);
   }),
 );
 

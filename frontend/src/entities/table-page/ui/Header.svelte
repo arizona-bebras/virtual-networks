@@ -39,10 +39,6 @@ const addLabels: Record<string, string> = {
   rules: "Добавить правило",
   tags: "Добавить тег",
 };
-
-function bulkRemoveSelected() {
-  console.log("Delete rules:");
-}
 </script>
 
 <div
@@ -68,7 +64,7 @@ function bulkRemoveSelected() {
     </div>
 
     <div class="flex items-center gap-1">
-      {#if selectedIds.length > 0}
+      <!-- {#if false}
         <div in:fade={{ duration: 150 }}>
           <Button
             variant="destructive"
@@ -81,7 +77,7 @@ function bulkRemoveSelected() {
             )
           </Button>
         </div>
-      {/if}
+      {/if} -->
       {#if canCreate}
         <Button onclick={() => (isAddDialogOpen = true)} class="rounded-[6px]">
           {(currentPage && addLabels[currentPage]) || "Добавить"}
